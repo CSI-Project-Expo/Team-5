@@ -57,22 +57,47 @@ function enterApp() {
   showNav(true);
   document.getElementById('scUser').textContent = user.username;
   updateStats();
+  checkLevelUnlocks();
   goTo('page-scenarios');
 }
 
 function updateStats() {
-  const p = user.progress?.bruteforce?.level1 || {};
-  const done = [p.p1, p.p2, p.p3].filter(Boolean).length;
-  const pct = Math.round((done / 3) * 100);
+  const l1 = user.progress?.bruteforce?.level1 || {};
+  const l2 = user.progress?.bruteforce?.level2 || {};
+  const doneL1 = [l1.p1, l1.p2, l1.p3].filter(Boolean).length;
+  const doneL2 = [l2.p1, l2.p2, l2.p3].filter(Boolean).length;
+  const totalDone = doneL1 + doneL2;
+  const pct = Math.round((totalDone / 6) * 100);
   document.getElementById('stM').textContent = pct + '%';
-  document.getElementById('stD').textContent = done + '/3';
-  document.getElementById('bfPct').textContent = pct + '%';
-  document.getElementById('bfBar').style.width = pct + '%';
-  const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER'];
-  document.getElementById('stR').textContent = ranks[done] || 'DEFENDER';
+  document.getElementById('stD').textContent = totalDone + '/6';
+  document.getElementById('bfPct').textContent = Math.round((doneL1 / 3) * 100) + '%';
+  document.getElementById('bfBar').style.width = Math.round((doneL1 / 3) * 100) + '%';
+  const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'ELITE', 'MASTER'];
+  document.getElementById('stR').textContent = ranks[totalDone] || 'MASTER';
 }
 
 function startL1() { curPart = 1; mcqDone = {}; fitbDone = {}; renderStepper(); showPart(1); goTo('page-l1'); }
+
+function startL2() {
+  const l1 = user.progress?.bruteforce?.level1 || {};
+  const l1Done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length === 3;
+  if (!l1Done) return; // still locked
+  window.location.href = 'brute-force-level2.html';
+}
+
+function checkLevelUnlocks() {
+  const l1 = user.progress?.bruteforce?.level1 || {};
+  const l1Done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length === 3;
+  const l2card = document.getElementById('l2card');
+  const l2badge = document.getElementById('l2badge');
+  if (l1Done && l2card) {
+    l2card.classList.remove('lv-locked');
+    if (l2badge) { l2badge.textContent = 'AVAILABLE'; l2badge.className = 'lv-badge open'; }
+  }
+  const l2 = user.progress?.bruteforce?.level2 || {};
+  const l2Done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length === 3;
+  if (l2Done && l2badge) { l2badge.textContent = 'COMPLETE'; l2badge.className = 'lv-badge done'; }
+}
 
 function goPart(n) {
   curPart = n; renderStepper(); showPart(n);
@@ -152,21 +177,22 @@ function chkB(id, ans, fbId) {
 }
 
 async function finishL1() {
-  saveP('p1'); saveP('p2'); saveP('p3');
+  saveP('p1', 'level1'); saveP('p2', 'level1'); saveP('p3', 'level1');
   document.getElementById('l1badge').textContent = 'COMPLETE';
   document.getElementById('l1badge').className = 'lv-badge done';
   updateStats();
   goTo('page-bflevels');
 }
 
-async function saveP(part) {
-  if (!user.progress) user.progress = { bruteforce: { level1: {} } };
-  if (!user.progress.bruteforce) user.progress.bruteforce = { level1: {} };
-  if (!user.progress.bruteforce.level1) user.progress.bruteforce.level1 = {};
-  user.progress.bruteforce.level1[part] = true;
+async function saveP(part, level) {
+  level = level || 'level1'; // default to level1 for backward compatibility
+  if (!user.progress) user.progress = {};
+  if (!user.progress.bruteforce) user.progress.bruteforce = {};
+  if (!user.progress.bruteforce[level]) user.progress.bruteforce[level] = {};
+  user.progress.bruteforce[level][part] = true;
   localStorage.setItem('ss_user', JSON.stringify(user));
   try {
-    await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'bruteforce', level: 'level1', mode: part, completed: true }) });
+    await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'bruteforce', level, mode: part, completed: true }) });
   } catch {}
 }
 
