@@ -57,23 +57,42 @@ function enterApp() {
   showNav(true);
   document.getElementById('scUser').textContent = user.username;
   updateStats();
+  updateSqlStats();
   checkLevelUnlocks();
-  goTo('page-scenarios');
+  const goto = sessionStorage.getItem('ss_goto');
+  if (goto) { sessionStorage.removeItem('ss_goto'); goTo(goto); }
+  else goTo('page-scenarios');
 }
 
 function updateStats() {
   const l1 = user.progress?.bruteforce?.level1 || {};
   const l2 = user.progress?.bruteforce?.level2 || {};
+  const sq1 = user.progress?.sqli?.level1 || {};
+  const sq2 = user.progress?.sqli?.level2 || {};
   const doneL1 = [l1.p1, l1.p2, l1.p3].filter(Boolean).length;
   const doneL2 = [l2.p1, l2.p2, l2.p3].filter(Boolean).length;
-  const totalDone = doneL1 + doneL2;
-  const pct = Math.round((totalDone / 6) * 100);
+  const sq1Done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length;
+  const sq2Done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length;
+  const totalDone = doneL1 + doneL2 + sq1Done + sq2Done;
+  const pct = Math.round((totalDone / 12) * 100);
   document.getElementById('stM').textContent = pct + '%';
-  document.getElementById('stD').textContent = totalDone + '/6';
-  document.getElementById('bfPct').textContent = Math.round((doneL1 / 3) * 100) + '%';
-  document.getElementById('bfBar').style.width = Math.round((doneL1 / 3) * 100) + '%';
-  const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'ELITE', 'MASTER'];
-  document.getElementById('stR').textContent = ranks[totalDone] || 'MASTER';
+  document.getElementById('stD').textContent = totalDone + '/12';
+  document.getElementById('bfPct').textContent = Math.round(((doneL1 + doneL2) / 6) * 100) + '%';
+  document.getElementById('bfBar').style.width = Math.round(((doneL1 + doneL2) / 6) * 100) + '%';
+  const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'ELITE', 'MASTER', 'VETERAN', 'LEGEND', 'ELITE', 'ELITE', 'ELITE', 'ELITE'];
+  document.getElementById('stR').textContent = ranks[totalDone] || 'ELITE';
+}
+
+function updateSqlStats() {
+  const p1 = user.progress?.sqli?.level1 || {};
+  const p2 = user.progress?.sqli?.level2 || {};
+  const done1 = [p1.p1, p1.p2, p1.p3].filter(Boolean).length;
+  const done2 = [p2.p1, p2.p2, p2.p3].filter(Boolean).length;
+  const pct = Math.round(((done1 + done2) / 6) * 100);
+  const pctEl = document.getElementById('sqiPct');
+  const barEl = document.getElementById('sqiBar');
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (barEl) barEl.style.width = pct + '%';
 }
 
 function startL1() { curPart = 1; mcqDone = {}; fitbDone = {}; renderStepper(); showPart(1); goTo('page-l1'); }
@@ -86,17 +105,32 @@ function startL2() {
 }
 
 function checkLevelUnlocks() {
+  // BF Level 2 unlock
   const l1 = user.progress?.bruteforce?.level1 || {};
   const l1Done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length === 3;
   const l2card = document.getElementById('l2card');
   const l2badge = document.getElementById('l2badge');
-  if (l1Done && l2card) {
-    l2card.classList.remove('lv-locked');
-    if (l2badge) { l2badge.textContent = 'AVAILABLE'; l2badge.className = 'lv-badge open'; }
-  }
+  if (l1Done && l2card) { l2card.classList.remove('lv-locked'); if (l2badge) { l2badge.textContent = 'AVAILABLE'; l2badge.className = 'lv-badge open'; } }
   const l2 = user.progress?.bruteforce?.level2 || {};
   const l2Done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length === 3;
   if (l2Done && l2badge) { l2badge.textContent = 'COMPLETE'; l2badge.className = 'lv-badge done'; }
+  // SQL Level 2 unlock
+  const sq1 = user.progress?.sqli?.level1 || {};
+  const sq1done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length === 3;
+  const sqCard = document.getElementById('sqll2card');
+  const sqBadge = document.getElementById('sqll2badge');
+  if (sq1done && sqCard) { sqCard.classList.remove('lv-locked'); if (sqBadge) { sqBadge.textContent = 'AVAILABLE'; sqBadge.className = 'lv-badge open'; } }
+  const sq2 = user.progress?.sqli?.level2 || {};
+  if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3 && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
+  // SQL Level 1 badge complete state
+  const sql1badge = document.getElementById('sql1badge');
+  if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
+}
+
+function startSqlL2() {
+  const sq1 = user.progress?.sqli?.level1 || {};
+  if ([sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length < 3) return;
+  window.location.href = 'sql-injection-level2.html';
 }
 
 function goPart(n) {
@@ -205,3 +239,107 @@ function setSt(err, msg) {
 
 document.getElementById('lp').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 document.getElementById('lu').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('lp').focus(); });
+
+// ══════════════════════════════════════════════
+//  SQL INJECTION MODULE
+// ══════════════════════════════════════════════
+let sqlCurPart = 1, sqlMcqDone = {}, sqlFitbDone = {};
+
+function startSqlL1() { sqlCurPart = 1; sqlMcqDone = {}; sqlFitbDone = {}; sqlRenderStepper(); sqlShowPart(1); goTo('page-sql1'); }
+
+function sqlGoPart(n) {
+  sqlCurPart = n; sqlRenderStepper(); sqlShowPart(n);
+  document.getElementById('page-sql1').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function sqlShowPart(n) {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('sqlpart' + i);
+    e.className = 'part' + (i === n ? ' part-on' : '');
+  }
+}
+
+function sqlRenderStepper() {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('sstp' + i);
+    e.className = 'stp' + (i < sqlCurPart ? ' stp-done' : i === sqlCurPart ? ' stp-active' : '');
+  }
+  document.getElementById('ssl1').className = 'stp-line' + (sqlCurPart > 1 ? ' stp-done' : '');
+  document.getElementById('ssl2').className = 'stp-line' + (sqlCurPart > 2 ? ' stp-done' : '');
+}
+
+const SQL_CANS = { sq1: 1, sq2: 2, sq3: 0, sq4: 2, sq5: 2 };
+const SQL_CFBT = {
+  sq1: ['❌ That describes malware — SQLi manipulates queries, not files.','✅ Correct! SQL Injection inserts malicious SQL into input fields to manipulate database queries.','❌ That describes a Man-in-the-Middle attack, not SQL Injection.','❌ That is brute force — a completely different attack type.'],
+  sq2: ['❌ Error-Based SQLi reads database errors, not UNION results.','❌ Blind SQLi infers results from behavior changes, not UNION.','✅ Exactly! Union-Based SQLi uses UNION to chain queries and pull data from other tables.','❌ Time-Based is a subtype of Blind SQLi using SLEEP() — not UNION.'],
+  sq3: ['✅ Correct! Blind SQLi infers data from page behavior (Boolean-Based) or delay times (Time-Based).','❌ Reading error messages describes Error-Based SQLi, not Blind.','❌ Using UNION to combine results describes Union-Based SQLi.','❌ Stolen credentials describe credential stuffing, not Blind SQLi.'],
+  sq4: ['❌ addslashes() is weak — numeric injection still bypasses it.','❌ Hiding errors is good practice but doesn\'t stop injection.','✅ Correct! Prepared statements treat input as data — not SQL code — making injection impossible.','❌ Authentication helps access control but doesn\'t stop SQLi in forms.'],
+  sq5: ['❌ The breach was massive — 100+ million, not 500 records.','❌ Customers were the primary victims — over 100 million of them.','✅ Exactly! 100M+ customers had SSNs, addresses and credit scores exposed in the Capital One breach.','❌ The data was accessed in plaintext — SSNs and financial records were fully readable.']
+};
+
+function sqlAnsQ(qId, chosen) {
+  const c = SQL_CANS[qId];
+  const opts = document.getElementById(qId).querySelectorAll('.q-opt');
+  opts.forEach(o => o.classList.add('q-dis'));
+  opts[chosen].classList.add(chosen === c ? 'q-ok' : 'q-no');
+  if (chosen !== c) opts[c].classList.add('q-ok');
+  const fb = document.getElementById(qId + 'fb');
+  fb.textContent = SQL_CFBT[qId][chosen];
+  fb.className = 'q-fb show ' + (chosen === c ? 'ok' : 'no');
+  sqlMcqDone[qId] = (chosen === c);
+  if (Object.keys(sqlMcqDone).length === 5) {
+    const score = Object.values(sqlMcqDone).filter(Boolean).length;
+    const sv = document.getElementById('sqlMcqSV');
+    sv.textContent = score + '/5';
+    sv.style.color = score >= 4 ? 'var(--green)' : score >= 3 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('sqlMcqScore').classList.add('show');
+    document.getElementById('sqlBtnP3').disabled = false;
+    sqlSaveP('p2');
+  }
+}
+
+const SQL_BANS = { sb1: 'sql injection', sb2: 'union', sb3: 'blind', sb4: 'prepared statements', sb5: 'error-based', sb6: 'capital one' };
+
+function sqlChkB(id, ans, fbId) {
+  const inp = document.getElementById(id);
+  const val = inp.value.trim().toLowerCase();
+  const fb = document.getElementById(fbId);
+  if (!val) { fb.textContent = '⚠️ Type an answer first.'; fb.className = 'fitb-fb show no'; return; }
+  if (val === ans) {
+    inp.classList.add('bok'); inp.disabled = true;
+    fb.textContent = '✅ Correct!'; fb.className = 'fitb-fb show ok';
+    sqlFitbDone[id] = true;
+  } else {
+    inp.classList.add('bno');
+    fb.textContent = '❌ Not quite — check the word bank and try again.'; fb.className = 'fitb-fb show no';
+    sqlFitbDone[id] = false;
+    setTimeout(() => { inp.classList.remove('bno'); inp.value = ''; }, 1300);
+  }
+  if (Object.keys(SQL_BANS).every(k => sqlFitbDone[k] === true)) {
+    const sv = document.getElementById('sqlFitbSV');
+    sv.textContent = '6/6'; sv.style.color = 'var(--green)';
+    document.getElementById('sqlFitbScore').classList.add('show');
+    document.getElementById('sqlBtnFinish').disabled = false;
+    sqlSaveP('p3');
+  }
+}
+
+async function finishSqlL1() {
+  sqlSaveP('p1'); sqlSaveP('p2'); sqlSaveP('p3');
+  document.getElementById('sql1badge').textContent = 'COMPLETE';
+  document.getElementById('sql1badge').className = 'lv-badge done';
+  updateSqlStats();
+  goTo('page-sqilevels');
+}
+
+async function sqlSaveP(part) {
+  if (!user.progress) user.progress = {};
+  if (!user.progress.sqli) user.progress.sqli = { level1: {} };
+  if (!user.progress.sqli.level1) user.progress.sqli.level1 = {};
+  user.progress.sqli.level1[part] = true;
+  localStorage.setItem('ss_user', JSON.stringify(user));
+  updateSqlStats();
+  try {
+    await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'sqli', level: 'level1', mode: part, completed: true }) });
+  } catch {}
+}
