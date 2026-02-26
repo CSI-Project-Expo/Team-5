@@ -57,6 +57,7 @@ function enterApp() {
   showNav(true);
   document.getElementById('scUser').textContent = user.username;
   updateStats();
+  updateSqlStats();
   goTo('page-scenarios');
 }
 
@@ -179,3 +180,143 @@ function setSt(err, msg) {
 
 document.getElementById('lp').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 document.getElementById('lu').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('lp').focus(); });
+
+// ══════════════════════════════════════════════
+//  SQL INJECTION MODULE
+// ══════════════════════════════════════════════
+let sqlCurPart = 1, sqlMcqDone = {}, sqlFitbDone = {};
+
+function startSqlL1() { sqlCurPart = 1; sqlMcqDone = {}; sqlFitbDone = {}; sqlRenderStepper(); sqlShowPart(1); goTo('page-sql1'); }
+
+function sqlGoPart(n) {
+  sqlCurPart = n; sqlRenderStepper(); sqlShowPart(n);
+  document.getElementById('page-sql1').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function sqlShowPart(n) {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('sqlpart' + i);
+    e.className = 'part' + (i === n ? ' part-on' : '');
+  }
+}
+
+function sqlRenderStepper() {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('sstp' + i);
+    e.className = 'stp' + (i < sqlCurPart ? ' stp-done' : i === sqlCurPart ? ' stp-active' : '');
+  }
+  document.getElementById('ssl1').className = 'stp-line' + (sqlCurPart > 1 ? ' stp-done' : '');
+  document.getElementById('ssl2').className = 'stp-line' + (sqlCurPart > 2 ? ' stp-done' : '');
+}
+
+// MCQ correct answers (0-indexed)
+const SQL_CANS = { sq1: 1, sq2: 2, sq3: 1, sq4: 2, sq5: 2 };
+const SQL_CFBT = {
+  sq1: [
+    '❌ That describes malware — SQLi manipulates queries, not files.',
+    '✅ Correct! SQL Injection inserts malicious SQL into input fields to manipulate database queries.',
+    '❌ That describes a Man-in-the-Middle attack, not SQL Injection.',
+    '❌ That is brute force — a completely different attack type.'
+  ],
+  sq2: [
+    '❌ Error-Based SQLi reads database errors, not UNION results.',
+    '❌ Blind SQLi infers results from behavior changes, not UNION.',
+    '✅ Exactly! Union-Based SQLi uses UNION to chain queries and pull data from other tables.',
+    '❌ Time-Based is a subtype of Blind SQLi using SLEEP() — not UNION.'
+  ],
+  sq3: [
+    '❌ Reading error messages describes Error-Based SQLi, not Blind.',
+    '✅ Correct! Blind SQLi infers data from page behavior (Boolean-Based) or delay times (Time-Based).',
+    '❌ Using UNION to combine results describes Union-Based SQLi.',
+    '❌ Stolen credentials describe credential stuffing, not Blind SQLi.'
+  ],
+  sq4: [
+    '❌ addslashes() is weak — numeric injection still bypasses it.',
+    '❌ Hiding errors is good practice but doesn\'t stop injection.',
+    '✅ Correct! Prepared statements treat input as data — not SQL code — making injection impossible.',
+    '❌ Authentication helps access control but doesn\'t stop SQLi in forms.'
+  ],
+  sq5: [
+    '❌ The breach was massive — 100+ million, not 500 records.',
+    '❌ Customers were the primary victims — over 100 million of them.',
+    '✅ Exactly! 100M+ customers had SSNs, addresses and credit scores exposed in the Capital One breach.',
+    '❌ The data was accessed in plaintext — SSNs and financial records were fully readable.'
+  ]
+};
+
+function sqlAnsQ(qId, chosen) {
+  const c = SQL_CANS[qId];
+  const opts = document.getElementById(qId).querySelectorAll('.q-opt');
+  opts.forEach(o => o.classList.add('q-dis'));
+  opts[chosen].classList.add(chosen === c ? 'q-ok' : 'q-no');
+  if (chosen !== c) opts[c].classList.add('q-ok');
+  const fb = document.getElementById(qId + 'fb');
+  fb.textContent = SQL_CFBT[qId][chosen];
+  fb.className = 'q-fb show ' + (chosen === c ? 'ok' : 'no');
+  sqlMcqDone[qId] = (chosen === c);
+  if (Object.keys(sqlMcqDone).length === 5) {
+    const score = Object.values(sqlMcqDone).filter(Boolean).length;
+    const sv = document.getElementById('sqlMcqSV');
+    sv.textContent = score + '/5';
+    sv.style.color = score >= 4 ? 'var(--green)' : score >= 3 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('sqlMcqScore').classList.add('show');
+    document.getElementById('sqlBtnP3').disabled = false;
+    sqlSaveP('p2');
+  }
+}
+
+const SQL_BANS = { sb1: 'sql injection', sb2: 'union', sb3: 'blind', sb4: 'prepared statements', sb5: 'error-based', sb6: 'capital one' };
+
+function sqlChkB(id, ans, fbId) {
+  const inp = document.getElementById(id);
+  const val = inp.value.trim().toLowerCase();
+  const fb = document.getElementById(fbId);
+  if (!val) { fb.textContent = '⚠️ Type an answer first.'; fb.className = 'fitb-fb show no'; return; }
+  if (val === ans) {
+    inp.classList.add('bok'); inp.disabled = true;
+    fb.textContent = '✅ Correct!'; fb.className = 'fitb-fb show ok';
+    sqlFitbDone[id] = true;
+  } else {
+    inp.classList.add('bno');
+    fb.textContent = '❌ Not quite — check the word bank and try again.'; fb.className = 'fitb-fb show no';
+    sqlFitbDone[id] = false;
+    setTimeout(() => { inp.classList.remove('bno'); inp.value = ''; }, 1300);
+  }
+  if (Object.keys(SQL_BANS).every(k => sqlFitbDone[k] === true)) {
+    const sv = document.getElementById('sqlFitbSV');
+    sv.textContent = '6/6'; sv.style.color = 'var(--green)';
+    document.getElementById('sqlFitbScore').classList.add('show');
+    document.getElementById('sqlBtnFinish').disabled = false;
+    sqlSaveP('p3');
+  }
+}
+
+async function finishSqlL1() {
+  sqlSaveP('p1'); sqlSaveP('p2'); sqlSaveP('p3');
+  document.getElementById('sql1badge').textContent = 'COMPLETE';
+  document.getElementById('sql1badge').className = 'lv-badge done';
+  updateSqlStats();
+  goTo('page-sqilevels');
+}
+
+async function sqlSaveP(part) {
+  if (!user.progress) user.progress = {};
+  if (!user.progress.sqli) user.progress.sqli = { level1: {} };
+  if (!user.progress.sqli.level1) user.progress.sqli.level1 = {};
+  user.progress.sqli.level1[part] = true;
+  localStorage.setItem('ss_user', JSON.stringify(user));
+  updateSqlStats();
+  try {
+    await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'sqli', level: 'level1', mode: part, completed: true }) });
+  } catch {}
+}
+
+function updateSqlStats() {
+  const p = user.progress?.sqli?.level1 || {};
+  const done = [p.p1, p.p2, p.p3].filter(Boolean).length;
+  const pct = Math.round((done / 3) * 100);
+  const pctEl = document.getElementById('sqiPct');
+  const barEl = document.getElementById('sqiBar');
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (barEl) barEl.style.width = pct + '%';
+}
