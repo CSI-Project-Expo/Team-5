@@ -238,6 +238,13 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .fitb-fb.no{color:var(--red);}
 .btn-chk{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:7px 18px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:6px;transition:all .2s;margin-top:8px;}
 .btn-chk:hover{background:var(--cyan);color:#040d1a;}
+/* SQL LEVELS PAGE */
+#page-sqilevels .pinner{max-width:1000px;margin:0 auto;padding:90px 40px 80px;}
+/* SQL LEVEL 1 PAGE */
+#page-sql1 .pinner{max-width:960px;margin:0 auto;padding:90px 40px 80px;}
+/* Clickable sidebar card */
+.sc-side-card-link{cursor:pointer;transition:all .3s;}
+.sc-side-card-link:hover{border-color:var(--cyan);box-shadow:0 0 22px rgba(0,245,255,0.12);transform:translateY(-2px);}
 @media(max-width:860px){
   .login-grid,.sc-layout{grid-template-columns:1fr;}
   .levels-grid,.atgrid{grid-template-columns:1fr 1fr;}
@@ -347,7 +354,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       </div>
       <div class="sc-sidebar">
         <div class="sidebar-hdr">SCENARIO DEPLOYMENT</div>
-        <div class="sc-side-card"><div class="sc-side-icon">🗄️</div><div class="sc-side-info"><h3>SQL Injection</h3><span class="coming-tag">COMING SOON</span></div></div>
+        <div class="sc-side-card sc-side-card-link" onclick="goTo('page-sqilevels')"><div class="sc-side-icon" style="opacity:1;">🗄️</div><div class="sc-side-info"><h3 style="color:var(--text);">SQL Injection</h3><div class="prog-lbl" style="margin-top:5px;"><span>Completion</span><span id="sqiPct">0%</span></div><div class="prog-track" style="height:4px;margin-top:4px;margin-bottom:0;"><div class="prog-fill" id="sqiBar" style="width:0%"></div></div></div></div>
         <div class="sc-side-card"><div class="sc-side-icon">🌐</div><div class="sc-side-info"><h3>Recon &amp; OSINT</h3><span class="coming-tag">COMING SOON</span></div></div>
         <div class="sc-side-card"><div class="sc-side-icon">🛡️</div><div class="sc-side-info"><h3>Malware Analysis</h3><span class="coming-tag">COMING SOON</span></div></div>
       </div>
@@ -675,19 +682,40 @@ function enterApp(){
   showNav(true);
   document.getElementById('scUser').textContent=user.username;
   updateStats();
+  updateSqlStats();
   checkLevelUnlocks();
-  goTo('page-scenarios');
+  // Handle redirect back from level 2 page
+  const goto=sessionStorage.getItem('ss_goto');
+  if(goto){sessionStorage.removeItem('ss_goto');goTo(goto);}
+  else goTo('page-scenarios');
 }
 function updateStats(){
-  const p=user.progress?.bruteforce?.level1||{};
-  const done=[p.p1,p.p2,p.p3].filter(Boolean).length;
-  const pct=Math.round((done/3)*100);
+  const bf=user.progress?.bruteforce?.level1||{};
+  const bfDone=[bf.p1,bf.p2,bf.p3].filter(Boolean).length;
+  const sq1=user.progress?.sqli?.level1||{};
+  const sq1Done=[sq1.p1,sq1.p2,sq1.p3].filter(Boolean).length;
+  const sq2=user.progress?.sqli?.level2||{};
+  const sq2Done=[sq2.p1,sq2.p2,sq2.p3].filter(Boolean).length;
+  const totalDone=bfDone+sq1Done+sq2Done;
+  const pct=Math.round((totalDone/9)*100);
   document.getElementById('stM').textContent=pct+'%';
-  document.getElementById('stD').textContent=done+'/3';
-  document.getElementById('bfPct').textContent=pct+'%';
-  document.getElementById('bfBar').style.width=pct+'%';
-  const ranks=['RECRUIT','ANALYST','SPECIALIST','DEFENDER'];
-  document.getElementById('stR').textContent=ranks[done]||'DEFENDER';
+  document.getElementById('stD').textContent=totalDone+'/9';
+  document.getElementById('bfPct').textContent=Math.round((bfDone/3)*100)+'%';
+  document.getElementById('bfBar').style.width=Math.round((bfDone/3)*100)+'%';
+  const ranks=['RECRUIT','ANALYST','SPECIALIST','DEFENDER','EXPERT','ELITE','MASTER','VETERAN','LEGEND','ELITE'];
+  document.getElementById('stR').textContent=ranks[totalDone]||'ELITE';
+}
+function updateSqlStats(){
+  const p1=user.progress?.sqli?.level1||{};
+  const p2=user.progress?.sqli?.level2||{};
+  const done1=[p1.p1,p1.p2,p1.p3].filter(Boolean).length;
+  const done2=[p2.p1,p2.p2,p2.p3].filter(Boolean).length;
+  const totalDone=done1+done2;
+  const pct=Math.round((totalDone/6)*100);
+  const pctEl=document.getElementById('sqiPct');
+  const barEl=document.getElementById('sqiBar');
+  if(pctEl) pctEl.textContent=pct+'%';
+  if(barEl) barEl.style.width=pct+'%';
 }
 function startL1(){curPart=1;mcqDone={};fitbDone={};renderStepper();showPart(1);goTo('page-l1');}
 function startL2(){
@@ -696,6 +724,7 @@ function startL2(){
   window.location.href='brute-force-level2.html';
 }
 function checkLevelUnlocks(){
+  // BF unlock
   const l1=user.progress?.bruteforce?.level1||{};
   const l1done=[l1.p1,l1.p2,l1.p3].filter(Boolean).length===3;
   const card=document.getElementById('l2card');
@@ -703,6 +732,22 @@ function checkLevelUnlocks(){
   if(l1done&&card){card.classList.remove('lv-locked');badge.textContent='AVAILABLE';badge.className='lv-badge open';}
   const l2=user.progress?.bruteforce?.level2||{};
   if([l2.p1,l2.p2,l2.p3].filter(Boolean).length===3&&badge){badge.textContent='COMPLETE';badge.className='lv-badge done';}
+  // SQL unlock
+  const sq1=user.progress?.sqli?.level1||{};
+  const sq1done=[sq1.p1,sq1.p2,sq1.p3].filter(Boolean).length===3;
+  const sqCard=document.getElementById('sqll2card');
+  const sqBadge=document.getElementById('sqll2badge');
+  if(sq1done&&sqCard){sqCard.classList.remove('lv-locked');sqBadge.textContent='AVAILABLE';sqBadge.className='lv-badge open';}
+  const sq2=user.progress?.sqli?.level2||{};
+  if([sq2.p1,sq2.p2,sq2.p3].filter(Boolean).length===3&&sqBadge){sqBadge.textContent='COMPLETE';sqBadge.className='lv-badge done';}
+  // Mark SQL Level 1 badge as complete if done
+  const sql1badge=document.getElementById('sql1badge');
+  if(sq1done&&sql1badge){sql1badge.textContent='COMPLETE';sql1badge.className='lv-badge done';}
+}
+function startSqlL2(){
+  const sq1=user.progress?.sqli?.level1||{};
+  if([sq1.p1,sq1.p2,sq1.p3].filter(Boolean).length<3)return;
+  window.location.href='sql-injection-level2.html';
 }
 function goPart(n){curPart=n;renderStepper();showPart(n);document.getElementById('page-l1').scrollTo({top:0,behavior:'smooth'});}
 function showPart(n){for(let i=1;i<=3;i++){const e=document.getElementById('part'+i);e.className='part'+(i===n?' part-on':'');}}
@@ -788,6 +833,413 @@ function setSt(err,msg){
 }
 document.getElementById('lp').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 document.getElementById('lu').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('lp').focus(); });
+
+// ══════════════════════════════════════════════
+//  SQL INJECTION MODULE
+// ══════════════════════════════════════════════
+let sqlCurPart = 1, sqlMcqDone = {}, sqlFitbDone = {};
+
+function startSqlL1() { sqlCurPart = 1; sqlMcqDone = {}; sqlFitbDone = {}; sqlRenderStepper(); sqlShowPart(1); goTo('page-sql1'); }
+
+function sqlGoPart(n) {
+  sqlCurPart = n; sqlRenderStepper(); sqlShowPart(n);
+  document.getElementById('page-sql1').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function sqlShowPart(n) {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('sqlpart' + i);
+    e.className = 'part' + (i === n ? ' part-on' : '');
+  }
+}
+
+function sqlRenderStepper() {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('sstp' + i);
+    e.className = 'stp' + (i < sqlCurPart ? ' stp-done' : i === sqlCurPart ? ' stp-active' : '');
+  }
+  document.getElementById('ssl1').className = 'stp-line' + (sqlCurPart > 1 ? ' stp-done' : '');
+  document.getElementById('ssl2').className = 'stp-line' + (sqlCurPart > 2 ? ' stp-done' : '');
+}
+
+const SQL_CANS = { sq1: 1, sq2: 2, sq3: 1, sq4: 2, sq5: 2 };
+const SQL_CFBT = {
+  sq1: ['❌ That describes malware — SQLi manipulates queries, not files.','✅ Correct! SQL Injection inserts malicious SQL into input fields to manipulate database queries.','❌ That describes a Man-in-the-Middle attack, not SQL Injection.','❌ That is brute force — a completely different attack type.'],
+  sq2: ['❌ Error-Based SQLi reads database errors, not UNION results.','❌ Blind SQLi infers results from behavior changes, not UNION.','✅ Exactly! Union-Based SQLi uses UNION to chain queries and pull data from other tables.','❌ Time-Based is a subtype of Blind SQLi using SLEEP() — not UNION.'],
+  sq3: ['✅ Correct! Blind SQLi infers data from page behavior (Boolean-Based) or delay times (Time-Based).','❌ Reading error messages describes Error-Based SQLi, not Blind.','❌ Using UNION to combine results describes Union-Based SQLi.','❌ Stolen credentials describe credential stuffing, not Blind SQLi.'],
+  sq4: ['❌ addslashes() is weak — numeric injection still bypasses it.','❌ Hiding errors is good practice but doesn\'t stop injection.','✅ Correct! Prepared statements treat input as data — not SQL code — making injection impossible.','❌ Authentication helps access control but doesn\'t stop SQLi in forms.'],
+  sq5: ['❌ The breach was massive — 100+ million, not 500 records.','❌ Customers were the primary victims — over 100 million of them.','✅ Exactly! 100M+ customers had SSNs, addresses and credit scores exposed in the Capital One breach.','❌ The data was accessed in plaintext — SSNs and financial records were fully readable.']
+};
+
+function sqlAnsQ(qId, chosen) {
+  const c = SQL_CANS[qId];
+  const opts = document.getElementById(qId).querySelectorAll('.q-opt');
+  opts.forEach(o => o.classList.add('q-dis'));
+  opts[chosen].classList.add(chosen === c ? 'q-ok' : 'q-no');
+  if (chosen !== c) opts[c].classList.add('q-ok');
+  const fb = document.getElementById(qId + 'fb');
+  fb.textContent = SQL_CFBT[qId][chosen];
+  fb.className = 'q-fb show ' + (chosen === c ? 'ok' : 'no');
+  sqlMcqDone[qId] = (chosen === c);
+  if (Object.keys(sqlMcqDone).length === 5) {
+    const score = Object.values(sqlMcqDone).filter(Boolean).length;
+    const sv = document.getElementById('sqlMcqSV');
+    sv.textContent = score + '/5';
+    sv.style.color = score >= 4 ? 'var(--green)' : score >= 3 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('sqlMcqScore').classList.add('show');
+    document.getElementById('sqlBtnP3').disabled = false;
+    sqlSaveP('p2');
+  }
+}
+
+const SQL_BANS = { sb1: 'sql injection', sb2: 'union', sb3: 'blind', sb4: 'prepared statements', sb5: 'error-based', sb6: 'capital one' };
+
+function sqlChkB(id, ans, fbId) {
+  const inp = document.getElementById(id);
+  const val = inp.value.trim().toLowerCase();
+  const fb = document.getElementById(fbId);
+  if (!val) { fb.textContent = '⚠️ Type an answer first.'; fb.className = 'fitb-fb show no'; return; }
+  if (val === ans) {
+    inp.classList.add('bok'); inp.disabled = true;
+    fb.textContent = '✅ Correct!'; fb.className = 'fitb-fb show ok';
+    sqlFitbDone[id] = true;
+  } else {
+    inp.classList.add('bno');
+    fb.textContent = '❌ Not quite — check the word bank and try again.'; fb.className = 'fitb-fb show no';
+    sqlFitbDone[id] = false;
+    setTimeout(() => { inp.classList.remove('bno'); inp.value = ''; }, 1300);
+  }
+  if (Object.keys(SQL_BANS).every(k => sqlFitbDone[k] === true)) {
+    const sv = document.getElementById('sqlFitbSV');
+    sv.textContent = '6/6'; sv.style.color = 'var(--green)';
+    document.getElementById('sqlFitbScore').classList.add('show');
+    document.getElementById('sqlBtnFinish').disabled = false;
+    sqlSaveP('p3');
+  }
+}
+
+async function finishSqlL1() {
+  sqlSaveP('p1'); sqlSaveP('p2'); sqlSaveP('p3');
+  document.getElementById('sql1badge').textContent = 'COMPLETE';
+  document.getElementById('sql1badge').className = 'lv-badge done';
+  updateSqlStats();
+  goTo('page-sqilevels');
+}
+
+async function sqlSaveP(part) {
+  if (!user.progress) user.progress = {};
+  if (!user.progress.sqli) user.progress.sqli = { level1: {} };
+  if (!user.progress.sqli.level1) user.progress.sqli.level1 = {};
+  user.progress.sqli.level1[part] = true;
+  localStorage.setItem('ss_user', JSON.stringify(user));
+  updateSqlStats();
+  try {
+    await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'sqli', level: 'level1', mode: part, completed: true }) });
+  } catch {}
+}
+
+function updateSqlStats() {
+  const p = user.progress?.sqli?.level1 || {};
+  const done = [p.p1, p.p2, p.p3].filter(Boolean).length;
+  const pct = Math.round((done / 3) * 100);
+  const pctEl = document.getElementById('sqiPct');
+  const barEl = document.getElementById('sqiBar');
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (barEl) barEl.style.width = pct + '%';
+}
 </script>
+
+<!-- ════════ PAGE: SQL INJECTION LEVELS ════════ -->
+<div id="page-sqilevels" class="page">
+  <div class="pinner">
+    <div class="breadcrumb">
+      <span class="bc-link" onclick="goTo('page-scenarios')">Home</span>
+      <span class="bc-sep">›</span><span>SQL Injection Protocol</span>
+    </div>
+    <div class="pg-title">🗄️ SQL Injection Protocol</div>
+    <div class="pg-sub">3 progressive levels — theory, interactive examples, MCQs, and fill-in-the-blank exercises.</div>
+    <div class="levels-grid">
+      <div class="lv-card" onclick="startSqlL1()">
+        <div class="lv-top">
+          <div class="lv-bgn">1</div>
+          <div class="lv-icon">📖</div>
+          <div class="lv-title">What is SQL Injection?</div>
+          <div class="lv-desc">Core concepts, attack types (Error, Union, Blind), security levels, and real-world Capital One breach example.</div>
+        </div>
+        <div class="lv-foot"><span class="lv-parts">3 parts · Theory + MCQ + FillBlank</span><span class="lv-badge open" id="sql1badge">AVAILABLE</span></div>
+      </div>
+      <div class="lv-card lv-locked" id="sqll2card" onclick="startSqlL2()">
+        <div class="lv-top">
+          <div class="lv-bgn">2</div>
+          <div class="lv-icon">🔧</div>
+          <div class="lv-title">Exploitation Techniques</div>
+          <div class="lv-desc">Hands-on offensive ops — manual injection probes, automated sqlmap scans, and live UNION data extraction.</div>
+        </div>
+        <div class="lv-foot"><span class="lv-parts">3 phases · Hands-on Lab</span><span class="lv-badge locked" id="sqll2badge">🔒 LOCKED</span></div>
+      </div>
+      <div class="lv-card lv-locked">
+        <div class="lv-top">
+          <div class="lv-bgn">3</div>
+          <div class="lv-icon">🛡️</div>
+          <div class="lv-title">Defense &amp; Prevention</div>
+          <div class="lv-desc">Prepared statements, input validation, WAF rules, ORM frameworks — stop SQLi before it starts.</div>
+        </div>
+        <div class="lv-foot"><span class="lv-parts">3 parts · Blue Team Ops</span><span class="lv-badge locked">🔒 LOCKED</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ PAGE: SQL LEVEL 1 ════════ -->
+<div id="page-sql1" class="page">
+  <div class="pinner">
+    <div class="breadcrumb">
+      <span class="bc-link" onclick="goTo('page-scenarios')">Home</span>
+      <span class="bc-sep">›</span>
+      <span class="bc-link" onclick="goTo('page-sqilevels')">SQL Injection</span>
+      <span class="bc-sep">›</span><span>Level 1</span>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper">
+      <div class="stp stp-active" id="sstp1"><div class="stp-circle">1</div><span class="stp-lbl">THEORY</span></div>
+      <div class="stp-line" id="ssl1"></div>
+      <div class="stp" id="sstp2"><div class="stp-circle">2</div><span class="stp-lbl">QUIZ</span></div>
+      <div class="stp-line" id="ssl2"></div>
+      <div class="stp" id="sstp3"><div class="stp-circle">3</div><span class="stp-lbl">FILL BLANKS</span></div>
+    </div>
+
+    <!-- PART 1: THEORY -->
+    <div class="part part-on" id="sqlpart1">
+      <div class="sec-title">Part 1 — <span>Understanding SQL Injection</span></div>
+      <div class="sec-sub">Learn what SQLi is, how attackers exploit it, the three main attack types, and how to defend against it.</div>
+
+      <div class="callout"><strong>💡 What is SQL Injection?</strong><br/>SQL Injection (SQLi) is a security vulnerability that occurs when an attacker inserts <strong>malicious SQL code</strong> into user input fields. Instead of just reading your input as data, the database actually <strong>executes it as a command</strong> — allowing attackers to retrieve, modify, or delete sensitive data. In some cases they can escalate privileges and gain full control of the server.</div>
+
+      <div class="anim-panel">
+        <div class="anim-title">⚡ LIVE ATTACK SIMULATION — HOW SQL INJECTION WORKS</div>
+        <div class="anim-scene" style="flex-wrap:wrap;gap:10px;">
+          <div class="anim-box"><div class="ab-ico">👤</div><div class="ab-lbl">ATTACKER</div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div class="arr">→</div>
+            <div class="pw-stream">
+              <div class="pw-try pw-fail" style="font-size:11px;">❌ 1 (normal user)</div>
+              <div class="pw-try pw-fail" style="font-size:11px;">❌ 1' (syntax error)</div>
+              <div class="pw-try pw-win" style="font-size:11px;">✅ 1' OR '1'='1 ← ALL ROWS!</div>
+            </div>
+          </div>
+          <div class="anim-box"><div class="ab-ico">🗄️</div><div class="ab-lbl">DATABASE</div></div>
+          <div class="arr" style="animation-delay:.6s">→</div>
+          <div class="anim-box" style="border-color:rgba(0,255,136,.3)"><div class="ab-ico">💀</div><div class="ab-lbl" style="color:var(--green)">DATA LEAKED!</div></div>
+        </div>
+      </div>
+
+      <div class="sec-title" style="font-size:18px;margin-bottom:14px;">3 Types of SQL Injection</div>
+      <div class="atgrid">
+        <div class="atcard">
+          <div class="atcard-hd"><div class="atdot" style="background:var(--red)"></div><span class="atname">Error-Based SQLi</span></div>
+          <div class="atdesc">Attacker injects <strong>malformed input</strong> that causes the database to throw an error message. That error <strong>leaks the database structure</strong> — table names, column names, DB version. Fast to exploit but requires error messages to be visible.</div>
+        </div>
+        <div class="atcard">
+          <div class="atcard-hd"><div class="atdot" style="background:var(--cyan)"></div><span class="atname">Union-Based SQLi</span></div>
+          <div class="atdesc">Uses the <strong>UNION operator</strong> to combine two SELECT queries. Works when both queries have the <strong>same number of columns</strong> — letting attackers pull data from other tables like <code>users</code> or <code>passwords</code>.</div>
+        </div>
+        <div class="atcard">
+          <div class="atcard-hd"><div class="atdot" style="background:var(--orange)"></div><span class="atname">Blind SQLi</span></div>
+          <div class="atdesc">No query results are shown. Attacker infers data from <strong>behavior changes</strong> (Boolean-Based: page differs for true/false) or <strong>response time</strong> (Time-Based: SLEEP() delays the page). Slower but equally dangerous.</div>
+        </div>
+        <div class="atcard">
+          <div class="atcard-hd"><div class="atdot" style="background:var(--yellow)"></div><span class="atname">Security Level: Low</span></div>
+          <div class="atdesc">Input goes directly into the SQL query with <strong>no filtering</strong>. Entering <code>'</code> breaks the query. Entering <code>1' OR '1'='1</code> returns all rows. <code>UNION SELECT</code> can pull hidden data.</div>
+        </div>
+        <div class="atcard">
+          <div class="atcard-hd"><div class="atdot" style="background:var(--purple)"></div><span class="atname">Security Level: Medium</span></div>
+          <div class="atdesc"><code>addslashes()</code> escapes the <code>'</code> quote, blocking basic attacks. But <strong>numeric injection</strong> still works — <code>1 OR 1=1</code> (no quotes needed) still returns all records.</div>
+        </div>
+        <div class="atcard" style="background:rgba(0,245,255,0.03);border-color:rgba(0,245,255,0.15)">
+          <div class="atcard-hd"><div class="atdot" style="background:var(--green)"></div><span class="atname" style="color:var(--green)">Security Level: High ✓</span></div>
+          <div class="atdesc" style="color:var(--text2)"><strong style="color:var(--green)">Prepared statements (parameterized queries)</strong> safely handle user input. All inputs are treated as <strong>data — not SQL code</strong>. Injection attempts like <code>' OR 1=1</code> simply fail.</div>
+        </div>
+      </div>
+
+      <div class="rw-box">
+        <div class="rw-hd"><span class="rw-tag">REAL WORLD</span><span class="rw-title">2019 Capital One Breach — 100 Million Customers Exposed</span></div>
+        <div class="callout danger" style="margin-bottom:14px;">A <strong>misconfigured web application</strong> allowed an attacker to exploit a SQL injection vulnerability, leaking the personal data of over <strong>100 million customers</strong> — names, addresses, credit scores, and Social Security Numbers.</div>
+        <div class="rw-steps">
+          <div class="rw-step"><div class="rw-num">1</div><span><strong>Target:</strong> Capital One's cloud-hosted banking application with a vulnerable input endpoint.</span></div>
+          <div class="rw-step"><div class="rw-num">2</div><span><strong>Probe:</strong> Attacker sent a single-quote <code>'</code> to find input fields not sanitizing user data.</span></div>
+          <div class="rw-step"><div class="rw-num">3</div><span><strong>Inject:</strong> Used UNION-based injection to chain queries and pull customer records from internal tables.</span></div>
+          <div class="rw-step"><div class="rw-num">4</div><span><strong>Exfiltrate:</strong> Over 100 million records extracted including SSNs, bank account numbers, and credit scores.</span></div>
+          <div class="rw-step"><div class="rw-num">5</div><span><strong>Result:</strong> $80 million regulatory fine, massive reputational damage, class-action lawsuits.</span></div>
+        </div>
+      </div>
+
+      <div class="sec-title" style="font-size:18px;margin-bottom:14px;">How SQL Injection Works — Step by Step</div>
+      <div class="flow">
+        <div class="flow-step"><div class="flow-ico">🎯</div><div class="flow-lbl">Find Input</div><div class="flow-dtl">Form, URL param</div></div>
+        <div class="flow-arr">→</div>
+        <div class="flow-step"><div class="flow-ico">🔍</div><div class="flow-lbl">Test with <code>'</code></div><div class="flow-dtl">Trigger error</div></div>
+        <div class="flow-arr">→</div>
+        <div class="flow-step"><div class="flow-ico">🛠️</div><div class="flow-lbl">Choose Type</div><div class="flow-dtl">Error/Union/Blind</div></div>
+        <div class="flow-arr">→</div>
+        <div class="flow-step"><div class="flow-ico">📋</div><div class="flow-lbl">Craft Payload</div><div class="flow-dtl">OR 1=1, UNION…</div></div>
+        <div class="flow-arr">→</div>
+        <div class="flow-step"><div class="flow-ico">⚡</div><div class="flow-lbl">Execute</div><div class="flow-dtl">DB runs SQL</div></div>
+        <div class="flow-arr">→</div>
+        <div class="flow-step"><div class="flow-ico">💀</div><div class="flow-lbl">Data Stolen</div><div class="flow-dtl">Passwords, PII</div></div>
+      </div>
+
+      <div class="callout warn"><strong>⚠️ Impact of SQL Injection</strong><br/>Unauthorized data access &nbsp;|&nbsp; Data corruption or deletion &nbsp;|&nbsp; Authentication bypass &nbsp;|&nbsp; Privilege escalation &nbsp;|&nbsp; Full server takeover &nbsp;|&nbsp; Reputation damage &amp; regulatory fines. <strong>SQLi consistently ranks #1 in OWASP Top 10 vulnerabilities.</strong></div>
+
+      <div class="part-nav">
+        <button class="btn-back-sm" onclick="goTo('page-sqilevels')">← Back to Levels</button>
+        <button class="btn-next-sm" onclick="sqlGoPart(2)">NEXT: Quiz ▶</button>
+      </div>
+    </div>
+
+    <!-- PART 2: MCQ -->
+    <div class="part" id="sqlpart2">
+      <div class="sec-title">Part 2 — <span>Knowledge Check</span></div>
+      <div class="sec-sub">5 questions based on what you just learned. Read carefully!</div>
+      <div class="quiz-hdr">📋 MULTIPLE CHOICE — SELECT THE BEST ANSWER</div>
+
+      <div class="q-card">
+        <div class="q-num">QUESTION 01 / 05</div>
+        <div class="q-text">What is SQL Injection?</div>
+        <div class="q-opts" id="sq1">
+          <div class="q-opt" onclick="sqlAnsQ('sq1',0)"><div class="q-radio"></div>A virus that deletes database files from the server</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq1',1)"><div class="q-radio"></div>Inserting malicious SQL code into user input fields to manipulate database queries</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq1',2)"><div class="q-radio"></div>A network attack that intercepts database connections between servers</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq1',3)"><div class="q-radio"></div>Brute-forcing a database administrator's password to gain access</div>
+        </div>
+        <div class="q-fb" id="sq1fb"></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-num">QUESTION 02 / 05</div>
+        <div class="q-text">Which SQL Injection type uses the UNION operator to extract data from other database tables?</div>
+        <div class="q-opts" id="sq2">
+          <div class="q-opt" onclick="sqlAnsQ('sq2',0)"><div class="q-radio"></div>Error-Based SQL Injection</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq2',1)"><div class="q-radio"></div>Blind SQL Injection</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq2',2)"><div class="q-radio"></div>Union-Based SQL Injection</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq2',3)"><div class="q-radio"></div>Time-Based SQL Injection</div>
+        </div>
+        <div class="q-fb" id="sq2fb"></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-num">QUESTION 03 / 05</div>
+        <div class="q-text">In Blind SQL Injection, how does the attacker extract information without seeing query results?</div>
+        <div class="q-opts" id="sq3">
+          <div class="q-opt" onclick="sqlAnsQ('sq3',0)"><div class="q-radio"></div>By observing page behavior changes or response times to infer true/false conditions</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq3',1)"><div class="q-radio"></div>By reading detailed error messages from the server</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq3',2)"><div class="q-radio"></div>By using the UNION operator to combine hidden query results</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq3',3)"><div class="q-radio"></div>By accessing the database admin panel with stolen credentials</div>
+        </div>
+        <div class="q-fb" id="sq3fb"></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-num">QUESTION 04 / 05</div>
+        <div class="q-text">Which prevention method is MOST effective at stopping SQL Injection?</div>
+        <div class="q-opts" id="sq4">
+          <div class="q-opt" onclick="sqlAnsQ('sq4',0)"><div class="q-radio"></div>Using addslashes() to escape single quotes in user input</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq4',1)"><div class="q-radio"></div>Hiding database error messages from users</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq4',2)"><div class="q-radio"></div>Using prepared statements (parameterized queries) that treat input as data</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq4',3)"><div class="q-radio"></div>Requiring users to log in before accessing any database form</div>
+        </div>
+        <div class="q-fb" id="sq4fb"></div>
+      </div>
+
+      <div class="q-card">
+        <div class="q-num">QUESTION 05 / 05</div>
+        <div class="q-text">In the 2019 Capital One breach caused by SQL Injection, what was the scale of the damage?</div>
+        <div class="q-opts" id="sq5">
+          <div class="q-opt" onclick="sqlAnsQ('sq5',0)"><div class="q-radio"></div>500 customer records were exposed over a period of 5 years</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq5',1)"><div class="q-radio"></div>Only internal employee data was leaked — no customers were affected</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq5',2)"><div class="q-radio"></div>Over 100 million customers had personal data exposed including SSNs and credit scores</div>
+          <div class="q-opt" onclick="sqlAnsQ('sq5',3)"><div class="q-radio"></div>The breach only exposed encrypted data that couldn't be decrypted</div>
+        </div>
+        <div class="q-fb" id="sq5fb"></div>
+      </div>
+
+      <div class="score-box" id="sqlMcqScore"><div class="score-val" id="sqlMcqSV"></div><div class="score-lbl">Quiz complete — great work, Defender!</div></div>
+      <div class="part-nav">
+        <button class="btn-back-sm" onclick="sqlGoPart(1)">← Back to Theory</button>
+        <button class="btn-next-sm" id="sqlBtnP3" onclick="sqlGoPart(3)" disabled>NEXT: Fill Blanks ▶</button>
+      </div>
+    </div>
+
+    <!-- PART 3: FILL BLANKS -->
+    <div class="part" id="sqlpart3">
+      <div class="sec-title">Part 3 — <span>Fill in the Blanks</span></div>
+      <div class="sec-sub">Complete each sentence. Spelling matters — use the word bank below!</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:10px;">📦 WORD BANK</div>
+      <div class="word-bank">
+        <span class="wb-tag">sql injection</span><span class="wb-tag">union</span><span class="wb-tag">blind</span>
+        <span class="wb-tag">prepared statements</span><span class="wb-tag">error-based</span><span class="wb-tag">capital one</span>
+        <span class="wb-tag">UNION</span><span class="wb-tag">parameterized</span><span class="wb-tag">SLEEP</span>
+      </div>
+
+      <div class="fitb-card">
+        <div class="q-num">BLANK 01 / 06</div>
+        <div class="fitb-sent"><input class="blank" id="sb1" placeholder="______"/> is a vulnerability where malicious SQL code is inserted into user input fields to manipulate a web application's database queries.</div>
+        <div class="fitb-hint">💡 The name of the whole attack category we are studying 🗄️</div>
+        <div class="fitb-fb" id="sb1fb"></div>
+        <button class="btn-chk" onclick="sqlChkB('sb1','sql injection','sb1fb')">CHECK ↵</button>
+      </div>
+
+      <div class="fitb-card">
+        <div class="q-num">BLANK 02 / 06</div>
+        <div class="fitb-sent">In <input class="blank" id="sb2" placeholder="______"/>-based SQL injection, the attacker uses the UNION operator to combine results of two SELECT statements — both must have the same number of columns.</div>
+        <div class="fitb-hint">💡 Think of combining or joining two things together 🔗</div>
+        <div class="fitb-fb" id="sb2fb"></div>
+        <button class="btn-chk" onclick="sqlChkB('sb2','union','sb2fb')">CHECK ↵</button>
+      </div>
+
+      <div class="fitb-card">
+        <div class="q-num">BLANK 03 / 06</div>
+        <div class="fitb-sent"><input class="blank" id="sb3" placeholder="______"/> SQL injection occurs when the attacker cannot see query results directly — instead inferring data from changes in page behavior or response times.</div>
+        <div class="fitb-hint">💡 The attacker works in the dark — they can't see results 🌑</div>
+        <div class="fitb-fb" id="sb3fb"></div>
+        <button class="btn-chk" onclick="sqlChkB('sb3','blind','sb3fb')">CHECK ↵</button>
+      </div>
+
+      <div class="fitb-card">
+        <div class="q-num">BLANK 04 / 06</div>
+        <div class="fitb-sent"><input class="blank" id="sb4" placeholder="______"/> (also called parameterized queries) are the gold-standard defense against SQL injection — they treat all user input as data, never as executable SQL code.</div>
+        <div class="fitb-hint">💡 You "prepare" the query in advance so nothing can be injected 🛡️</div>
+        <div class="fitb-fb" id="sb4fb"></div>
+        <button class="btn-chk" onclick="sqlChkB('sb4','prepared statements','sb4fb')">CHECK ↵</button>
+      </div>
+
+      <div class="fitb-card">
+        <div class="q-num">BLANK 05 / 06</div>
+        <div class="fitb-sent">In <input class="blank" id="sb5" placeholder="______"/> SQL injection, the attacker sends malformed input that causes the database to throw a detailed error — revealing the database structure, version, and table names.</div>
+        <div class="fitb-hint">💡 The database makes a mistake and complains loudly ❌</div>
+        <div class="fitb-fb" id="sb5fb"></div>
+        <button class="btn-chk" onclick="sqlChkB('sb5','error-based','sb5fb')">CHECK ↵</button>
+      </div>
+
+      <div class="fitb-card">
+        <div class="q-num">BLANK 06 / 06</div>
+        <div class="fitb-sent">The 2019 <input class="blank" id="sb6" placeholder="______"/> Data Breach exposed over 100 million customers' personal data — including Social Security Numbers and credit scores — due to a SQL injection vulnerability.</div>
+        <div class="fitb-hint">💡 A major US bank — think of a very important one 🏦</div>
+        <div class="fitb-fb" id="sb6fb"></div>
+        <button class="btn-chk" onclick="sqlChkB('sb6','capital one','sb6fb')">CHECK ↵</button>
+      </div>
+
+      <div class="score-box" id="sqlFitbScore" style="margin-top:20px;">
+        <div class="score-val" id="sqlFitbSV"></div>
+        <div class="score-lbl">Fill-in-the-Blank Score — Level 1 Complete! 🎉<br/><span style="font-size:13px;color:var(--text2)">Level 2 unlocked!</span></div>
+      </div>
+      <div class="part-nav">
+        <button class="btn-back-sm" onclick="sqlGoPart(2)">← Back to Quiz</button>
+        <button class="btn-next-sm" id="sqlBtnFinish" onclick="finishSqlL1()" disabled>✓ COMPLETE LEVEL 1</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
