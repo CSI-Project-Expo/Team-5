@@ -29,7 +29,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Rajdhani', sans-serif;
-  font-size: 17px;
+  font-size: 14px;
   overflow: hidden;
 }
 
@@ -80,7 +80,7 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 48px;
+  padding: 13px 44px;
   background: rgba(4, 13, 26, 0.94);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border2);
@@ -99,35 +99,35 @@ body::after {
 }
 
 .nav-logo-icon {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   background: linear-gradient(135deg, var(--cyan), var(--cyan2));
-  border-radius: 7px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Orbitron', sans-serif;
   font-weight: 900;
-  font-size: 17px;
+  font-size: 14px;
   color: #040d1a;
   box-shadow: var(--glow);
 }
 
 .nav-logo-text {
   font-family: 'Orbitron', sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
 }
 
 .nav-links {
   display: flex;
-  gap: 28px;
+  gap: 24px;
 }
 
 .nav-links a {
   color: var(--text2);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -142,13 +142,13 @@ body::after {
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 #navUser {
   font-family: 'Share Tech Mono', monospace;
   color: var(--cyan);
-  font-size: 15px;
+  font-size: 13px;
   display: none;
 }
 
@@ -160,9 +160,9 @@ body::after {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text2);
-  padding: 8px 16px;
+  padding: 6px 13px;
   font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 1px;
   cursor: pointer;
   border-radius: 4px;
@@ -188,22 +188,22 @@ body::after {
   z-index: 500;
   background: rgba(4, 13, 26, 0.96);
   border-top: 1px solid var(--border2);
-  padding: 9px 48px;
+  padding: 7px 44px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text2);
 }
 
 .sdot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--green);
   display: inline-block;
-  margin-right: 8px;
+  margin-right: 6px;
   animation: gp 2s infinite;
 }
 
@@ -239,13 +239,13 @@ body::after {
 /* HELPERS */
 .btn-primary {
   width: 100%;
-  padding: 17px;
+  padding: 13px;
   background: linear-gradient(135deg, var(--cyan), var(--cyan2));
   border: none;
   border-radius: 8px;
   color: #040d1a;
   font-family: 'Orbitron', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 2px;
   cursor: pointer;
@@ -260,19 +260,19 @@ body::after {
 
 .errmsg {
   color: var(--red);
-  font-size: 14px;
+  font-size: 12px;
   font-family: 'Share Tech Mono', monospace;
   min-height: 18px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 28px;
+  gap: 8px;
+  margin-bottom: 24px;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 15px;
+  font-size: 12px;
   color: var(--text2);
 }
 
@@ -291,10 +291,10 @@ body::after {
 
 .sec-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(22px, 3vw, 38px);
+  font-size: clamp(17px, 2.3vw, 26px);
   font-weight: 900;
   color: #fff;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .sec-title span {
@@ -303,8 +303,8 @@ body::after {
 
 .sec-sub {
   color: var(--text2);
-  font-size: 18px;
-  margin-bottom: 30px;
+  font-size: 14px;
+  margin-bottom: 24px;
 }
 
 /* LOGIN PAGE */
@@ -319,15 +319,15 @@ body::after {
 .login-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 70px;
-  max-width: 1100px;
+  gap: 60px;
+  max-width: 1000px;
   width: 100%;
   align-items: center;
 }
 
 .login-hero h1 {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(32px, 4.5vw, 64px);
+  font-size: clamp(26px, 3.8vw, 50px);
   font-weight: 900;
   line-height: 1.1;
   color: var(--cyan);
@@ -335,27 +335,27 @@ body::after {
 }
 
 .login-hero p {
-  margin: 20px 0 30px;
+  margin: 16px 0 24px;
   color: var(--text2);
-  font-size: 18px;
-  line-height: 1.75;
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 .feat-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .feat-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: 10px;
+  padding: 11px 16px;
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 8px;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -367,36 +367,36 @@ body::after {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 42px;
+  padding: 34px;
   box-shadow: 0 0 60px rgba(0, 245, 255, 0.07);
 }
 
 .login-card h2 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .login-sub {
   color: var(--text2);
-  font-size: 14px;
+  font-size: 11px;
   font-family: 'Share Tech Mono', monospace;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .fgroup {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .fgroup label {
   display: block;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--text2);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-family: 'Orbitron', sans-serif;
 }
 
@@ -405,10 +405,10 @@ body::after {
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 15px 18px;
+  padding: 11px 14px;
   color: #fff;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 15px;
+  font-size: 13px;
   outline: none;
   transition: all .2s;
 }
@@ -427,29 +427,29 @@ body::after {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .form-foot label {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 12px;
   color: var(--text2);
   cursor: pointer;
 }
 
 .form-foot a {
   color: var(--cyan);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
 
 .login-alt {
   text-align: center;
-  margin-top: 16px;
-  font-size: 15px;
+  margin-top: 14px;
+  font-size: 12px;
   color: var(--text2);
 }
 
@@ -460,25 +460,25 @@ body::after {
 }
 
 .reg-section {
-  margin-top: 22px;
+  margin-top: 18px;
   border-top: 1px solid var(--border2);
-  padding-top: 22px;
+  padding-top: 18px;
   display: none;
 }
 
 /* SCENARIOS PAGE */
 #page-scenarios .pinner {
-  padding: 90px 40px 80px;
+  padding: 86px 40px 76px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .sc-header h1 {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(28px, 4vw, 52px);
+  font-size: clamp(20px, 2.8vw, 36px);
   font-weight: 900;
   color: #fff;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .sc-header h1 span {
@@ -488,28 +488,28 @@ body::after {
 
 .sc-header p {
   color: var(--text2);
-  font-size: 18px;
-  margin-bottom: 36px;
+  font-size: 14px;
+  margin-bottom: 26px;
 }
 
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
 .stat-box {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 12px;
-  padding: 30px;
+  padding: 20px;
   text-align: center;
 }
 
 .stat-val {
   font-family: 'Orbitron', sans-serif;
-  font-size: 46px;
+  font-size: 32px;
   font-weight: 900;
   color: var(--cyan);
   text-shadow: var(--glow);
@@ -517,16 +517,16 @@ body::after {
 
 .stat-lbl {
   color: var(--text2);
-  font-size: 13px;
+  font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .sc-layout {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 24px;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
   align-items: start;
 }
 
@@ -546,7 +546,7 @@ body::after {
 }
 
 .bf-visual {
-  height: 340px;
+  height: 260px;
   position: relative;
   overflow: hidden;
   background: radial-gradient(ellipse at 50% 60%, rgba(0, 30, 50, 0.95) 0%, #040d1a 70%);
@@ -568,7 +568,7 @@ body::after {
   left: 0;
   right: 0;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 13px;
+  font-size: 11px;
   color: rgba(0, 245, 255, 0.18);
   padding: 10px 14px;
   line-height: 1.7;
@@ -627,20 +627,20 @@ body::after {
 }
 
 .r1 {
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   animation: rp2 2.5s ease-in-out infinite;
 }
 
 .r2 {
-  width: 200px;
-  height: 200px;
+  width: 170px;
+  height: 170px;
   animation: rp2 2.5s ease-in-out infinite .5s;
 }
 
 .r3 {
-  width: 260px;
-  height: 260px;
+  width: 220px;
+  height: 220px;
   animation: rp2 2.5s ease-in-out infinite 1s;
 }
 
@@ -659,38 +659,38 @@ body::after {
 }
 
 .bf-info {
-  padding: 30px 32px;
+  padding: 22px 24px;
 }
 
 .bf-info h2 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 26px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--cyan);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .bf-sub {
   color: var(--text2);
-  font-size: 17px;
-  margin-bottom: 20px;
+  font-size: 13px;
+  margin-bottom: 16px;
 }
 
 .prog-lbl {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 11px;
   color: var(--text2);
   font-family: 'Share Tech Mono', monospace;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .prog-track {
   background: var(--bg2);
   border-radius: 4px;
-  height: 8px;
+  height: 6px;
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .prog-fill {
@@ -702,12 +702,12 @@ body::after {
 
 .btn-start {
   width: 100%;
-  padding: 16px;
+  padding: 12px;
   background: linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(0, 188, 212, 0.12));
   border: 1px solid var(--cyan);
   color: var(--cyan);
   font-family: 'Orbitron', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   letter-spacing: 2px;
   cursor: pointer;
   border-radius: 8px;
@@ -722,12 +722,12 @@ body::after {
 .sc-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .sidebar-hdr {
   font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   letter-spacing: 3px;
   color: var(--text2);
 }
@@ -736,21 +736,21 @@ body::after {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 12px;
-  padding: 22px 24px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .sc-side-icon {
-  font-size: 34px;
+  font-size: 26px;
   flex-shrink: 0;
   opacity: .45;
 }
 
 .sc-side-info h3 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 15px;
+  font-size: 12px;
   color: var(--text2);
 }
 
@@ -760,11 +760,11 @@ body::after {
   border: 1px solid var(--orange);
   color: var(--orange);
   font-family: 'Orbitron', sans-serif;
-  font-size: 10px;
+  font-size: 8px;
   letter-spacing: 1px;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 3px;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .sc-side-card-link {
@@ -778,38 +778,33 @@ body::after {
   transform: translateY(-2px);
 }
 
-/* BF LEVELS PAGE */
-#page-bflevels .pinner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 90px 40px 80px;
-}
-
+/* BF / SQL LEVELS PAGE */
+#page-bflevels .pinner,
 #page-sqilevels .pinner {
-  max-width: 1100px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 90px 40px 80px;
+  padding: 86px 40px 76px;
 }
 
 .pg-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(26px, 3.5vw, 48px);
+  font-size: clamp(18px, 2.5vw, 30px);
   font-weight: 900;
   color: var(--cyan);
   text-shadow: var(--glow);
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .pg-sub {
   color: var(--text2);
-  font-size: 18px;
-  margin-bottom: 40px;
+  font-size: 14px;
+  margin-bottom: 30px;
 }
 
 .levels-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
+  gap: 16px;
 }
 
 .lv-card {
@@ -824,7 +819,7 @@ body::after {
 .lv-card:hover:not(.lv-locked) {
   border-color: var(--cyan);
   box-shadow: 0 0 28px rgba(0, 245, 255, 0.13);
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 }
 
 .lv-locked {
@@ -833,43 +828,43 @@ body::after {
 }
 
 .lv-top {
-  padding: 36px 30px;
+  padding: 24px 20px;
   text-align: center;
   position: relative;
 }
 
 .lv-bgn {
   font-family: 'Orbitron', sans-serif;
-  font-size: 90px;
+  font-size: 68px;
   font-weight: 900;
   color: rgba(0, 245, 255, 0.06);
   position: absolute;
   top: 8px;
-  right: 14px;
+  right: 10px;
   line-height: 1;
 }
 
 .lv-icon {
-  font-size: 62px;
-  margin-bottom: 16px;
+  font-size: 38px;
+  margin-bottom: 10px;
 }
 
 .lv-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--cyan);
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .lv-desc {
-  font-size: 15px;
+  font-size: 12px;
   color: var(--text2);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .lv-foot {
-  padding: 18px 24px;
+  padding: 12px 16px;
   border-top: 1px solid var(--border2);
   display: flex;
   justify-content: space-between;
@@ -877,16 +872,16 @@ body::after {
 }
 
 .lv-parts {
-  font-size: 13px;
+  font-size: 10px;
   color: var(--text2);
   font-family: 'Share Tech Mono', monospace;
 }
 
 .lv-badge {
   font-family: 'Orbitron', sans-serif;
-  font-size: 10px;
+  font-size: 8px;
   letter-spacing: 1px;
-  padding: 5px 14px;
+  padding: 4px 10px;
   border-radius: 4px;
 }
 
@@ -911,34 +906,34 @@ body::after {
 /* LEVEL CONTENT PAGE */
 #page-l1 .pinner,
 #page-sql1 .pinner {
-  max-width: 1000px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 90px 40px 80px;
+  padding: 86px 40px 76px;
 }
 
 .stepper {
   display: flex;
   align-items: center;
-  margin-bottom: 44px;
+  margin-bottom: 36px;
 }
 
 .stp {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
 }
 
 .stp-circle {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   border: 2px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Orbitron', sans-serif;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text2);
   transition: all .3s;
@@ -960,7 +955,7 @@ body::after {
 
 .stp-lbl {
   font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   letter-spacing: 1px;
   color: var(--text2);
 }
@@ -977,7 +972,7 @@ body::after {
   flex: 1;
   height: 2px;
   background: var(--border2);
-  margin: 0 12px;
+  margin: 0 8px;
   transition: background .4s;
 }
 
@@ -998,10 +993,10 @@ body::after {
   border: 1px solid rgba(0, 245, 255, 0.2);
   border-left: 3px solid var(--cyan);
   border-radius: 8px;
-  padding: 20px 24px;
-  margin-bottom: 24px;
-  font-size: 16px;
-  line-height: 1.8;
+  padding: 15px 18px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  line-height: 1.7;
   color: var(--text2);
 }
 
@@ -1033,24 +1028,24 @@ body::after {
   background: var(--bg2);
   border: 1px solid var(--border2);
   border-radius: 12px;
-  padding: 28px;
-  margin-bottom: 28px;
+  padding: 22px;
+  margin-bottom: 22px;
   text-align: center;
 }
 
 .anim-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   letter-spacing: 2px;
   color: var(--text2);
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .anim-scene {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -1058,32 +1053,32 @@ body::after {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 10px;
-  padding: 18px 22px;
+  padding: 12px 16px;
   text-align: center;
-  min-width: 110px;
+  min-width: 90px;
 }
 
 .ab-ico {
-  font-size: 34px;
+  font-size: 26px;
 }
 
 .ab-lbl {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 12px;
+  font-size: 10px;
   color: var(--text2);
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .pw-stream {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .pw-try {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 14px;
-  padding: 4px 10px;
+  font-size: 12px;
+  padding: 3px 8px;
   border-radius: 3px;
 }
 
@@ -1131,7 +1126,7 @@ body::after {
 }
 
 .arr {
-  font-size: 24px;
+  font-size: 18px;
   color: var(--red);
   animation: ab 1.2s ease-in-out infinite;
 }
@@ -1151,57 +1146,57 @@ body::after {
 .atgrid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .atcard {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 10px;
-  padding: 20px;
+  padding: 14px;
 }
 
 .atcard-hd {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 9px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .atdot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .atname {
   font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text);
 }
 
 .atdesc {
-  font-size: 15px;
+  font-size: 12px;
   color: var(--text2);
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .rw-box {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 12px;
-  padding: 26px;
-  margin-bottom: 24px;
+  padding: 20px;
+  margin-bottom: 18px;
 }
 
 .rw-hd {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .rw-tag {
@@ -1209,15 +1204,15 @@ body::after {
   border: 1px solid var(--purple);
   color: var(--purple);
   font-family: 'Orbitron', sans-serif;
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: 1px;
-  padding: 4px 11px;
+  padding: 3px 8px;
   border-radius: 3px;
 }
 
 .rw-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: #fff;
 }
@@ -1225,25 +1220,25 @@ body::after {
 .rw-steps {
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 8px;
 }
 
 .rw-step {
   display: flex;
-  gap: 13px;
-  font-size: 16px;
+  gap: 10px;
+  font-size: 13px;
   color: var(--text2);
 }
 
 .rw-num {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: rgba(0, 245, 255, .08);
   border: 1px solid var(--cyan);
   color: var(--cyan);
   font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
+  font-size: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1252,7 +1247,7 @@ body::after {
 }
 
 .rw-step span {
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
 .rw-step strong {
@@ -1262,8 +1257,8 @@ body::after {
 .flow {
   display: flex;
   overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 28px;
+  padding-bottom: 6px;
+  margin-bottom: 20px;
   align-items: center;
 }
 
@@ -1271,33 +1266,33 @@ body::after {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 10px;
-  padding: 16px 18px;
-  min-width: 140px;
+  padding: 12px 14px;
+  min-width: 110px;
   text-align: center;
   flex-shrink: 0;
 }
 
 .flow-ico {
-  font-size: 26px;
-  margin-bottom: 6px;
-}
-
-.flow-lbl {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
+  font-size: 20px;
   margin-bottom: 4px;
 }
 
-.flow-dtl {
+.flow-lbl {
   font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.flow-dtl {
+  font-size: 10px;
   color: var(--text2);
 }
 
 .flow-arr {
   color: var(--cyan);
-  font-size: 20px;
-  padding: 0 6px;
+  font-size: 15px;
+  padding: 0 4px;
   flex-shrink: 0;
 }
 
@@ -1305,16 +1300,16 @@ body::after {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 40px;
+  margin-top: 32px;
 }
 
 .btn-back-sm {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text2);
-  padding: 13px 28px;
+  padding: 10px 22px;
   font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 1px;
   cursor: pointer;
   border-radius: 8px;
@@ -1327,13 +1322,13 @@ body::after {
 }
 
 .btn-next-sm {
-  padding: 13px 32px;
+  padding: 10px 26px;
   background: linear-gradient(135deg, var(--cyan), var(--cyan2));
   border: none;
   border-radius: 8px;
   color: #040d1a;
   font-family: 'Orbitron', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 2px;
   cursor: pointer;
@@ -1355,53 +1350,53 @@ body::after {
 /* MCQ */
 .quiz-hdr {
   font-family: 'Orbitron', sans-serif;
-  font-size: 13px;
+  font-size: 11px;
   letter-spacing: 2px;
   color: var(--text2);
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .q-card {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 12px;
-  padding: 26px;
-  margin-bottom: 16px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
 }
 
 .q-num {
   color: var(--cyan);
   font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   letter-spacing: 1px;
-  margin-bottom: 7px;
+  margin-bottom: 4px;
 }
 
 .q-text {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 18px;
-  line-height: 1.55;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
 .q-opts {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
 }
 
 .q-opt {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 14px 18px;
+  gap: 10px;
+  padding: 10px 14px;
   background: var(--bg2);
   border: 1px solid var(--border2);
   border-radius: 8px;
   cursor: pointer;
   transition: all .2s;
-  font-size: 16px;
+  font-size: 13px;
 }
 
 .q-opt:hover:not(.q-dis) {
@@ -1426,8 +1421,8 @@ body::after {
 }
 
 .q-radio {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   border: 2px solid var(--border);
   flex-shrink: 0;
@@ -1445,11 +1440,11 @@ body::after {
 }
 
 .q-fb {
-  font-size: 14px;
+  font-size: 12px;
   font-family: 'Share Tech Mono', monospace;
-  margin-top: 12px;
+  margin-top: 8px;
   display: none;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .q-fb.show {
@@ -1468,10 +1463,10 @@ body::after {
   background: var(--card);
   border: 2px solid var(--green);
   border-radius: 14px;
-  padding: 32px;
+  padding: 24px;
   text-align: center;
   display: none;
-  margin-top: 20px;
+  margin-top: 14px;
 }
 
 .score-box.show {
@@ -1480,24 +1475,24 @@ body::after {
 
 .score-val {
   font-family: 'Orbitron', sans-serif;
-  font-size: 64px;
+  font-size: 52px;
   font-weight: 900;
   text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
 }
 
 .score-lbl {
   color: var(--text2);
-  font-size: 16px;
-  margin-top: 8px;
+  font-size: 13px;
+  margin-top: 5px;
 }
 
 /* FITB */
 .word-bank {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 26px;
-  padding: 18px;
+  gap: 7px;
+  margin-bottom: 20px;
+  padding: 14px;
   background: var(--bg2);
   border-radius: 10px;
   border: 1px solid var(--border2);
@@ -1508,8 +1503,8 @@ body::after {
   border: 1px solid rgba(0, 245, 255, 0.25);
   color: var(--cyan);
   font-family: 'Share Tech Mono', monospace;
-  font-size: 14px;
-  padding: 5px 14px;
+  font-size: 12px;
+  padding: 3px 10px;
   border-radius: 4px;
 }
 
@@ -1517,15 +1512,15 @@ body::after {
   background: var(--card);
   border: 1px solid var(--border2);
   border-radius: 12px;
-  padding: 24px 28px;
-  margin-bottom: 14px;
+  padding: 18px 20px;
+  margin-bottom: 10px;
 }
 
 .fitb-sent {
-  font-size: 18px;
-  line-height: 2.4;
+  font-size: 14px;
+  line-height: 2.2;
   color: var(--text);
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .blank {
@@ -1535,9 +1530,9 @@ body::after {
   border-bottom: 2px solid var(--cyan);
   color: var(--cyan);
   font-family: 'Share Tech Mono', monospace;
-  font-size: 16px;
-  padding: 3px 8px;
-  width: 160px;
+  font-size: 13px;
+  padding: 2px 6px;
+  width: 120px;
   outline: none;
   border-radius: 2px;
   transition: all .2s;
@@ -1558,14 +1553,14 @@ body::after {
 }
 
 .fitb-hint {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text2);
   font-family: 'Share Tech Mono', monospace;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .fitb-fb {
-  font-size: 14px;
+  font-size: 12px;
   font-family: 'Share Tech Mono', monospace;
   display: none;
 }
@@ -1586,14 +1581,14 @@ body::after {
   background: transparent;
   border: 1px solid var(--cyan);
   color: var(--cyan);
-  padding: 9px 22px;
+  padding: 7px 16px;
   font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 1px;
   cursor: pointer;
   border-radius: 6px;
   transition: all .2s;
-  margin-top: 10px;
+  margin-top: 7px;
 }
 
 .btn-chk:hover {
@@ -1601,7 +1596,7 @@ body::after {
   color: #040d1a;
 }
 
-@media(max-width:860px) {
+@media(max-width: 860px) {
 
   .login-grid,
   .sc-layout {
@@ -1614,15 +1609,15 @@ body::after {
   }
 
   #nav {
-    padding: 12px 20px;
+    padding: 10px 18px;
   }
 
   #statusbar {
-    padding: 7px 20px;
+    padding: 6px 18px;
   }
 }
 
-@media(max-width:600px) {
+@media(max-width: 600px) {
   .levels-grid {
     grid-template-columns: 1fr;
   }
