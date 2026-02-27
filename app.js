@@ -121,7 +121,14 @@ function checkLevelUnlocks() {
   const sqBadge = document.getElementById('sqll2badge');
   if (sq1done && sqCard) { sqCard.classList.remove('lv-locked'); if (sqBadge) { sqBadge.textContent = 'AVAILABLE'; sqBadge.className = 'lv-badge open'; } }
   const sq2 = user.progress?.sqli?.level2 || {};
-  if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3 && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
+  const sq2done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3;
+  if (sq2done && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
+  // SQL Level 3 unlock
+  const sqll3card = document.getElementById('sqll3card');
+  const sqll3badge = document.getElementById('sqll3badge');
+  if (sq2done && sqll3card) { sqll3card.classList.remove('lv-locked'); if (sqll3badge) { sqll3badge.textContent = 'AVAILABLE'; sqll3badge.className = 'lv-badge open'; } }
+  const sq3 = user.progress?.sqli?.level3 || {};
+  if ([sq3.p1, sq3.p2, sq3.p3].filter(Boolean).length === 3 && sqll3badge) { sqll3badge.textContent = 'COMPLETE'; sqll3badge.className = 'lv-badge done'; }
   // SQL Level 1 badge complete state
   const sql1badge = document.getElementById('sql1badge');
   if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
@@ -131,6 +138,25 @@ function startSqlL2() {
   const sq1 = user.progress?.sqli?.level1 || {};
   if ([sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length < 3) return;
   window.location.href = 'sql-injection-level2.html';
+}
+
+function startBF3() {
+  const l2 = user.progress?.bruteforce?.level2 || {};
+  if ([l2.p1, l2.p2, l2.p3].filter(Boolean).length < 3) {
+    setSt(true, 'Access Denied — Complete Brute Force Level 2 first');
+    return;
+  }
+  window.location.href = 'brute-force-level3.html';
+}
+
+function startSqlL3() {
+  const sq2 = user.progress?.sqli?.level2 || {};
+  if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length < 3) {
+    setSt(true, 'Access Denied — Complete SQL Injection Level 2 first');
+    return;
+  }
+  sessionStorage.setItem('ss_goto', 'page-sqlilevels');
+  window.location.href = 'sql-injection-level3.html';
 }
 
 function goPart(n) {

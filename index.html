@@ -2360,7 +2360,14 @@
       const sqBadge = document.getElementById('sqll2badge');
       if (sq1done && sqCard) { sqCard.classList.remove('lv-locked'); sqBadge.textContent = 'AVAILABLE'; sqBadge.className = 'lv-badge open'; }
       const sq2 = user.progress?.sqli?.level2 || {};
-      if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3 && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
+      const sq2done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3;
+      if (sq2done && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
+      // SQL Level 3 unlock
+      const sqll3card = document.getElementById('sqll3card');
+      const sqll3badge = document.getElementById('sqll3badge');
+      if (sq2done && sqll3card) { sqll3card.classList.remove('lv-locked'); if (sqll3badge) { sqll3badge.textContent = 'AVAILABLE'; sqll3badge.className = 'lv-badge open'; } }
+      const sq3 = user.progress?.sqli?.level3 || {};
+      if ([sq3.p1, sq3.p2, sq3.p3].filter(Boolean).length === 3 && sqll3badge) { sqll3badge.textContent = 'COMPLETE'; sqll3badge.className = 'lv-badge done'; }
       // Mark SQL Level 1 badge as complete if done
       const sql1badge = document.getElementById('sql1badge');
       if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
@@ -2371,6 +2378,15 @@
       const sq2 = user.progress?.sqli?.level2 || {};
       if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3) { goTo('page-sqilevels'); return; }
       window.location.href = 'sql-injection-level2.html';
+    }
+    function startSqlL3() {
+      const sq2 = user.progress?.sqli?.level2 || {};
+      if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length < 3) {
+        setSt(true, 'Access Denied — Complete SQL Injection Level 2 first');
+        return;
+      }
+      sessionStorage.setItem('ss_goto', 'page-sqilevels');
+      window.location.href = 'sql-injection-level3.html';
     }
     function goPart(n) { curPart = n; renderStepper(); showPart(n); document.getElementById('page-l1').scrollTo({ top: 0, behavior: 'smooth' }); }
     function showPart(n) { for (let i = 1; i <= 3; i++) { const e = document.getElementById('part' + i); e.className = 'part' + (i === n ? ' part-on' : ''); } }
@@ -2607,7 +2623,7 @@
           <div class="lv-foot"><span class="lv-parts">3 phases · Hands-on Lab</span><span class="lv-badge locked"
               id="sqll2badge">🔒 LOCKED</span></div>
         </div>
-        <div class="lv-card lv-locked">
+        <div class="lv-card lv-locked" id="sqll3card" onclick="startSqlL3()">
           <div class="lv-top">
             <div class="lv-bgn">3</div>
             <div class="lv-icon">🛡️</div>
@@ -2615,8 +2631,8 @@
             <div class="lv-desc">Prepared statements, input validation, WAF rules, ORM frameworks — stop SQLi before it
               starts.</div>
           </div>
-          <div class="lv-foot"><span class="lv-parts">3 parts · Blue Team Ops</span><span class="lv-badge locked">🔒
-              LOCKED</span></div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Blue Team Ops</span><span class="lv-badge locked"
+              id="sqll3badge">🔒 LOCKED</span></div>
         </div>
       </div>
     </div>
