@@ -1,608 +1,1404 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ShieldSimulation — Level 2: Offensive Operations</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="styles.css"/>
-<style>
-/* ── Level 2 specific styles ── */
-@keyframes glitch {
-  0%,100%{clip-path:inset(0 0 98% 0);transform:translate(-2px,0);}
-  20%{clip-path:inset(30% 0 50% 0);transform:translate(2px,0);}
-  40%{clip-path:inset(60% 0 20% 0);transform:translate(-1px,0);}
-  60%{clip-path:inset(80% 0 5% 0);transform:translate(1px,0);}
-  80%{clip-path:inset(10% 0 80% 0);transform:translate(-2px,0);}
-}
-.glitch-wrap{position:relative;display:inline-block;}
-.glitch-wrap::before,.glitch-wrap::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
-.glitch-wrap::before{color:var(--red);animation:glitch 3s infinite linear;opacity:.7;}
-.glitch-wrap::after{color:var(--cyan);animation:glitch 3s infinite linear reverse;opacity:.7;animation-delay:.15s;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>ShieldSimulation — Level 2: Offensive Operations</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Level 2 specific styles ── */
+    @keyframes glitch {
 
-.ops-layout{display:grid;grid-template-columns:380px 1fr;gap:22px;align-items:start;}
+      0%,
+      100% {
+        clip-path: inset(0 0 98% 0);
+        transform: translate(-2px, 0);
+      }
 
-/* Bio card */
-.bio-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;position:sticky;top:90px;}
-.bio-header{background:linear-gradient(135deg,rgba(255,51,102,0.12),rgba(168,85,247,0.08));border-bottom:1px solid var(--border2);padding:18px 22px;display:flex;align-items:center;gap:12px;}
-.bio-status{width:9px;height:9px;border-radius:50%;background:var(--red);animation:rp 1s infinite;flex-shrink:0;}
-.bio-header-text{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;color:var(--red);}
-.bio-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#1a2a3a,#0a1628);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;margin:22px auto 14px;}
-.bio-name{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px;}
-.bio-role{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);text-align:center;margin-bottom:22px;}
-.bio-rows{padding:0 22px 22px;}
-.bio-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);}
-.bio-row:last-child{border-bottom:none;}
-.bio-key{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);}
-.bio-val{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cyan);}
-.intel-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.3);color:var(--red);font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;padding:3px 9px;border-radius:3px;margin-top:14px;}
+      20% {
+        clip-path: inset(30% 0 50% 0);
+        transform: translate(2px, 0);
+      }
 
-/* Step cards */
-.ops-panel{display:flex;flex-direction:column;gap:18px;}
-.step-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;transition:border-color .3s;}
-.step-card.s-active{border-color:rgba(0,245,255,0.4);box-shadow:0 0 30px rgba(0,245,255,0.07);}
-.step-card.s-done{border-color:rgba(0,255,136,0.35);}
-.step-card.s-locked{opacity:.45;pointer-events:none;}
-.step-hdr{padding:18px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border2);}
-.step-num{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;transition:all .3s;}
-.s-active .step-num{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,255,0.1);box-shadow:0 0 12px rgba(0,245,255,0.3);}
-.s-done .step-num{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.1);}
-.step-meta{flex:1;}
-.step-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;}
-.step-sub{font-size:12px;color:var(--text2);}
-.step-badge{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:4px;}
-.badge-active{background:rgba(0,245,255,.1);border:1px solid var(--cyan);color:var(--cyan);}
-.badge-done{background:rgba(0,255,136,.1);border:1px solid var(--green);color:var(--green);}
-.badge-locked{background:rgba(122,154,184,.08);border:1px solid var(--border);color:var(--text2);}
-.step-body{padding:22px;}
+      40% {
+        clip-path: inset(60% 0 20% 0);
+        transform: translate(-1px, 0);
+      }
 
-/* 2.1 Guess */
-.guess-form{display:flex;gap:10px;margin-bottom:14px;}
-.guess-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:14px;outline:none;transition:all .2s;letter-spacing:1px;}
-.guess-input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,245,255,0.07);}
-.guess-input.g-win{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,255,136,0.1);}
-.guess-input.g-fail{border-color:var(--red);animation:shake .35s ease;}
-@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
-.btn-guess{padding:12px 22px;background:linear-gradient(135deg,rgba(255,51,102,0.15),rgba(168,85,247,0.1));border:1px solid var(--red);color:var(--red);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1.5px;cursor:pointer;border-radius:8px;transition:all .2s;white-space:nowrap;}
-.btn-guess:hover{background:var(--red);color:#fff;}
-.guess-hint{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text2);margin-bottom:14px;}
-.hint-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
-.hint-tag{background:rgba(0,245,255,0.06);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;transition:all .2s;}
-.hint-tag:hover{border-color:var(--cyan);color:var(--cyan);}
-.guess-fb{min-height:28px;font-family:'Share Tech Mono',monospace;font-size:13px;}
-.guess-attempts{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:10px;}
-.guess-attempts span{color:var(--yellow);}
+      60% {
+        clip-path: inset(80% 0 5% 0);
+        transform: translate(1px, 0);
+      }
 
-/* Vulnerability popup */
-.vuln-popup{display:none;background:linear-gradient(135deg,rgba(0,255,136,0.07),rgba(0,245,255,0.04));border:1px solid rgba(0,255,136,0.35);border-radius:12px;padding:20px;margin-top:16px;}
-.vuln-popup.show{display:block;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
-@keyframes popIn{0%{opacity:0;transform:scale(.9) translateY(8px);}100%{opacity:1;transform:scale(1) translateY(0);}}
-.vuln-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-.vuln-body{font-size:13px;color:var(--text2);line-height:1.65;}
-.vuln-body strong{color:var(--cyan);}
-
-/* 2.2 Terminal */
-.terminal{background:#020a14;border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:14px;}
-.terminal-bar{background:#0a1628;border-bottom:1px solid var(--border2);padding:9px 14px;display:flex;align-items:center;gap:8px;}
-.t-dot{width:10px;height:10px;border-radius:50%;}
-.t-red{background:#ff5f57;}.t-yellow{background:#ffbd2e;}.t-green-dot{background:#28c840;}
-.terminal-title{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-left:auto;}
-.terminal-body{padding:16px;height:220px;overflow-y:auto;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.7;}
-.terminal-body::-webkit-scrollbar{width:4px;}
-.terminal-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.t-line{margin-bottom:2px;}
-.t-prompt{color:var(--text2);}
-.t-cmd{color:var(--cyan);}
-.t-fail{color:rgba(255,51,102,0.7);}
-.t-warn{color:var(--yellow);}
-.t-ok{color:var(--green);font-weight:bold;}
-.t-dim{color:rgba(122,154,184,0.5);}
-.btn-launch{width:100%;padding:13px;background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,51,102,0.1));border:1px solid var(--orange);color:var(--orange);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:8px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;}
-.btn-launch:hover:not(:disabled){background:var(--orange);color:#040d1a;}
-.btn-launch:disabled{opacity:.4;cursor:not-allowed;}
-.dict-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
-.dstat{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center;}
-.dstat-val{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);}
-.dstat-lbl{font-size:10px;color:var(--text2);letter-spacing:1px;margin-top:3px;}
-
-/* 2.3 Slot machine */
-.slot-machine{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:16px;text-align:center;}
-.slot-label{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:16px;}
-.slot-display{display:flex;justify-content:center;gap:6px;margin-bottom:16px;}
-.slot-reel{width:48px;height:60px;background:#020a14;border:1px solid var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:22px;font-weight:700;color:var(--cyan);overflow:hidden;position:relative;}
-.slot-reel.spinning{animation:spin-reel .08s infinite linear;}
-.slot-reel.s-locked-reel{color:var(--green);border-color:var(--green);animation:none;}
-@keyframes spin-reel{0%{transform:translateY(0);}50%{transform:translateY(-3px);}100%{transform:translateY(0);}}
-.slot-sep{font-family:'Share Tech Mono',monospace;font-size:22px;color:var(--border);line-height:60px;}
-.speed-bar-wrap{margin-bottom:12px;}
-.speed-bar-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);font-family:'Share Tech Mono',monospace;margin-bottom:5px;}
-.speed-track{background:var(--bg);border-radius:3px;height:5px;overflow:hidden;}
-.speed-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--red));border-radius:3px;width:0%;transition:width .3s;}
-.gpu-stats{display:flex;justify-content:center;gap:20px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);}
-.gpu-stats span{color:var(--yellow);}
-.btn-brute{width:100%;padding:13px;background:linear-gradient(135deg,rgba(255,51,102,0.18),rgba(168,85,247,0.12));border:1px solid var(--red);color:var(--red);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:8px;transition:all .2s;}
-.btn-brute:hover:not(:disabled){background:var(--red);color:#fff;box-shadow:0 0 28px rgba(255,51,102,0.4);}
-.btn-brute:disabled{opacity:.4;cursor:not-allowed;}
-.breach-alert{display:none;background:linear-gradient(135deg,rgba(255,51,102,0.12),rgba(168,85,247,0.07));border:2px solid var(--red);border-radius:12px;padding:22px;text-align:center;margin-top:14px;}
-.breach-alert.show{display:block;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
-.breach-ico{font-size:44px;margin-bottom:10px;}
-.breach-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--red);text-shadow:0 0 20px rgba(255,51,102,0.5);margin-bottom:6px;}
-.breach-sub{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:16px;}
-.breach-sub strong{color:var(--cyan);}
-.btn-complete{padding:13px 36px;background:linear-gradient(135deg,var(--green),#00cc66);border:none;border-radius:8px;color:#040d1a;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;box-shadow:0 0 28px rgba(0,255,136,0.3);}
-.btn-complete:hover{transform:translateY(-2px);box-shadow:0 0 44px rgba(0,255,136,0.5);}
-
-/* Progress bar */
-.l2-progress{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:16px 22px;margin-bottom:22px;display:flex;align-items:center;gap:18px;}
-.l2-prog-label{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);white-space:nowrap;}
-.l2-prog-track{flex:1;background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;}
-.l2-prog-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple),var(--cyan));border-radius:4px;transition:width .8s ease;width:0%;}
-.l2-prog-pct{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--cyan);min-width:36px;text-align:right;}
-
-@media(max-width:860px){
-  .ops-layout{grid-template-columns:1fr;}
-  .bio-card{position:static;}
-  .dict-stats{grid-template-columns:1fr 1fr;}
-}
-</style>
-</head>
-<body>
-<div id="gridbg"></div>
-
-<nav id="nav">
-  <div class="nav-logo">
-    <div class="nav-logo-icon">S</div>
-    <span class="nav-logo-text">ShieldSimulation</span>
-  </div>
-  <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
-  <div class="nav-right">
-    <span id="navUser"></span>
-    <button id="navLogout" onclick="logout()">LOGOUT</button>
-  </div>
-</nav>
-
-<div id="statusbar">
-  <div><span class="sdot red" id="sdot"></span><span id="stext">⚠ OFFENSIVE MODE ACTIVE — Training Environment Only</span></div>
-  <span>© 2024 ShieldSimulation | Secure Training Platform</span>
-</div>
-
-<div style="position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;z-index:1;padding:90px 40px 80px;">
-<div style="max-width:1200px;margin:0 auto;">
-
-  <!-- Breadcrumb -->
-  <div class="breadcrumb">
-    <span class="bc-link" onclick="window.location.href='index.html'">Home</span>
-    <span class="bc-sep">›</span>
-    <span class="bc-link" onclick="window.location.href='index.html'">Brute Force</span>
-    <span class="bc-sep">›</span>
-    <span style="color:var(--red)">Level 2: Offensive Ops</span>
-  </div>
-
-  <!-- Title -->
-  <div style="margin-bottom:28px;">
-    <div class="glitch-wrap" data-text="OFFENSIVE OPERATIONS" style="font-family:'Orbitron',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:900;color:var(--red);text-shadow:0 0 30px rgba(255,51,102,0.5);margin-bottom:6px;">OFFENSIVE OPERATIONS</div>
-    <div style="color:var(--text2);font-size:15px;">You are now thinking like an attacker. Use every tool available to breach the target. 🎯</div>
-  </div>
-
-  <!-- Level progress -->
-  <div class="l2-progress">
-    <div class="l2-prog-label">LEVEL 2 PROGRESS</div>
-    <div class="l2-prog-track"><div class="l2-prog-fill" id="l2progFill"></div></div>
-    <div class="l2-prog-pct" id="l2progPct">0%</div>
-  </div>
-
-  <!-- Layout -->
-  <div class="ops-layout">
-
-    <!-- Bio card -->
-    <div class="bio-card">
-      <div class="bio-header">
-        <div class="bio-status"></div>
-        <span class="bio-header-text">◈ OSINT INTELLIGENCE DOSSIER</span>
-      </div>
-      <div class="bio-avatar">👤</div>
-      <div class="bio-name">Alex Chen</div>
-      <div class="bio-role">// TARGET ACQUIRED — PROFILE LOADED</div>
-      <div class="bio-rows">
-        <div class="bio-row"><span class="bio-key">FULL NAME</span><span class="bio-val">Alex Chen</span></div>
-        <div class="bio-row"><span class="bio-key">BIRTH YEAR</span><span class="bio-val">1995</span></div>
-        <div class="bio-row"><span class="bio-key">PET NAME</span><span class="bio-val">Buddy</span></div>
-        <div class="bio-row"><span class="bio-key">FAV FOOD</span><span class="bio-val">Sushi</span></div>
-        <div class="bio-row"><span class="bio-key">CITY</span><span class="bio-val">Austin, TX</span></div>
-        <div class="bio-row"><span class="bio-key">PLATFORM</span><span class="bio-val">corp-portal.net</span></div>
-        <div style="text-align:center;margin-top:6px;"><span class="intel-tag">⚠ INTEL GATHERED VIA OSINT</span></div>
-      </div>
-    </div>
-
-    <!-- Operations panel -->
-    <div class="ops-panel">
-
-      <!-- 2.1 Manual Guess -->
-      <div class="step-card s-active" id="sc1">
-        <div class="step-hdr">
-          <div class="step-num" id="sn1">1</div>
-          <div class="step-meta">
-            <div class="step-title">Phase 2.1 — Social Engineering Attack</div>
-            <div class="step-sub">Use the target's personal data to guess their password</div>
-          </div>
-          <span class="step-badge badge-active" id="sb1">ACTIVE</span>
-        </div>
-        <div class="step-body">
-          <div class="callout" style="margin-bottom:18px;">
-            <strong>🧠 Attacker Mindset:</strong> Most people build passwords from things they love — pets, birthdays, hobbies. Study the dossier carefully. What would <em>you</em> use as a password if you were Alex?
-          </div>
-          <div class="guess-attempts">Attempts: <span id="guessCount">0</span> &nbsp;|&nbsp; Try: <code style="color:var(--cyan)">Name+Year</code>, <code style="color:var(--cyan)">Pet+Year</code>, <code style="color:var(--cyan)">Food+Pet</code></div>
-          <div class="guess-form">
-            <input class="guess-input" id="guessInput" type="text" placeholder="Type your password guess…" autocomplete="off"/>
-            <button class="btn-guess" onclick="tryGuess()">▶ ATTEMPT</button>
-          </div>
-          <div class="guess-hint">
-            💡 Hint — click a pattern to auto-fill:
-            <div class="hint-tags">
-              <span class="hint-tag" onclick="setGuess('Buddy1995')">Buddy1995</span>
-              <span class="hint-tag" onclick="setGuess('SushiBuddy95')">SushiBuddy95</span>
-              <span class="hint-tag" onclick="setGuess('alex1995')">alex1995</span>
-              <span class="hint-tag" onclick="setGuess('buddy95')">buddy95</span>
-            </div>
-          </div>
-          <div class="guess-fb" id="guessFb"></div>
-          <div class="vuln-popup" id="vulnPopup">
-            <div class="vuln-title">✅ VULNERABILITY IDENTIFIED</div>
-            <div class="vuln-body">
-              <strong>Rule: Never use personal information in passwords.</strong><br/>
-              Alex's password was cracked using <strong>publicly available OSINT data</strong> — their pet's name and birth year. This pattern is in every attacker's playbook because it works on the majority of users.<br/><br/>
-              <strong>Human predictability is the #1 attack surface.</strong> No GPU required.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2.2 Dictionary Attack -->
-      <div class="step-card s-locked" id="sc2">
-        <div class="step-hdr">
-          <div class="step-num" id="sn2">2</div>
-          <div class="step-meta">
-            <div class="step-title">Phase 2.2 — Automated Dictionary Attack</div>
-            <div class="step-sub">Deploy a wordlist tool against the target portal</div>
-          </div>
-          <span class="step-badge badge-locked" id="sb2">🔒 LOCKED</span>
-        </div>
-        <div class="step-body">
-          <div class="callout warn" style="margin-bottom:16px;">
-            <strong>⚙️ Tool Loaded:</strong> Simplified Hydra v9.4 — HTTP-POST module<br/>
-            Wordlist: <code>rockyou.txt</code> (14.3M entries) → Demo: 500 entries sampled
-          </div>
-          <div class="terminal" id="dictTerminal">
-            <div class="terminal-bar">
-              <div class="t-dot t-red"></div>
-              <div class="t-dot t-yellow"></div>
-              <div class="t-dot t-green-dot"></div>
-              <div class="terminal-title">HYDRA TERMINAL — corp-portal.net:443/login</div>
-            </div>
-            <div class="terminal-body" id="dictLog">
-              <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">./hydra -l alex.chen@corp.net -P rockyou.txt https://corp-portal.net/login</span></div>
-              <div class="t-line t-dim">Hydra v9.4 — (c) 2023 van Hauser/THC</div>
-              <div class="t-line t-dim">────────────────────────────────────────────</div>
-              <div class="t-line t-warn">[READY] Awaiting operator command…</div>
-            </div>
-          </div>
-          <button class="btn-launch" id="launchBtn" onclick="launchDictionary()">
-            <span>⚡</span> EXECUTE DICTIONARY ATTACK
-          </button>
-          <div class="dict-stats">
-            <div class="dstat"><div class="dstat-val" id="dsTried">0</div><div class="dstat-lbl">TRIED</div></div>
-            <div class="dstat"><div class="dstat-val" id="dsRate">0/s</div><div class="dstat-lbl">RATE</div></div>
-            <div class="dstat"><div class="dstat-val" id="dsStatus">—</div><div class="dstat-lbl">STATUS</div></div>
-          </div>
-          <div class="vuln-popup" id="dictVuln" style="margin-top:14px;">
-            <div class="vuln-title">✅ LESSON: The Power of Wordlists</div>
-            <div class="vuln-body">
-              The real <strong>rockyou.txt</strong> contains 14.3 million real passwords from breached databases. Tools like Hydra can fire hundreds of requests per second. A weak password on an unprotected endpoint is cracked in <strong>seconds — not hours.</strong><br/><br/>
-              <strong>Defence:</strong> Rate limiting + account lockout after 5 failed attempts stops this cold.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2.3 Brute Force Slot Machine -->
-      <div class="step-card s-locked" id="sc3">
-        <div class="step-hdr">
-          <div class="step-num" id="sn3">3</div>
-          <div class="step-meta">
-            <div class="step-title">Phase 2.3 — Raw Brute Force (GPU Simulation)</div>
-            <div class="step-sub">Watch every character combination attempted at machine speed</div>
-          </div>
-          <span class="step-badge badge-locked" id="sb3">🔒 LOCKED</span>
-        </div>
-        <div class="step-body">
-          <div class="callout danger" style="margin-bottom:16px;">
-            <strong>🔥 Simulating:</strong> RTX 4090 GPU — 100 billion MD5 hashes/sec<br/>
-            Target: 4-character PIN on encrypted vault. Charset: <code>[a-z][0-9]</code>
-          </div>
-          <div class="slot-machine">
-            <div class="slot-label">◈ REAL-TIME CHARACTER COMBINATION ATTACK</div>
-            <div class="slot-display">
-              <div class="slot-reel" id="r0">a</div>
-              <div class="slot-reel" id="r1">a</div>
-              <div class="slot-sep">:</div>
-              <div class="slot-reel" id="r2">a</div>
-              <div class="slot-reel" id="r3">a</div>
-            </div>
-            <div class="speed-bar-wrap">
-              <div class="speed-bar-lbl"><span>ATTACK SPEED</span><span id="speedLbl">0 MH/s</span></div>
-              <div class="speed-track"><div class="speed-fill" id="speedFill"></div></div>
-            </div>
-            <div class="gpu-stats">
-              <div>Combinations: <span id="comboCount">0</span></div>
-              <div>Elapsed: <span id="elapsedTime">0.0s</span></div>
-              <div>Real ETA: <span id="etaReal">~3 min</span></div>
-            </div>
-          </div>
-          <button class="btn-brute" id="bruteBtn" onclick="launchBrute()">
-            ☢ INITIATE BRUTE FORCE ATTACK
-          </button>
-          <div class="breach-alert" id="breachAlert">
-            <div class="breach-ico">💀</div>
-            <div class="breach-title">SYSTEM BREACHED</div>
-            <div class="breach-sub">
-              Password <code style="color:var(--red);font-size:15px;">"k9mQ"</code> cracked in simulated <strong>0.003 seconds</strong>.<br/><br/>
-              A real RTX 4090 tests <strong>100 billion MD5 hashes/second</strong>. A 4-character alphanumeric password has only ~1.7 million combinations — cracked nearly <strong>instantly</strong>.<br/><br/>
-              Every character added multiplies difficulty <em>exponentially</em>. 12+ characters with mixed symbols = <strong>years of GPU time.</strong>
-            </div>
-            <button class="btn-complete" onclick="completeLevel()">✓ COMPLETE LEVEL 2 — DEBRIEF</button>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /ops-panel -->
-  </div><!-- /ops-layout -->
-</div>
-</div>
-
-<script src="app.js"></script>
-<script>
-/* ── Level 2 State ── */
-const CORRECT_PASSWORDS = ['buddy1995','sushi1995','sushibuddy95','alex1995','buddy95','alexbuddy','sushibuddy','1995buddy','chen1995','buddychen'];
-let guessAttempts = 0;
-let l2p1 = false, l2p2 = false, l2p3 = false;
-let dictRunning = false, bruteRunning = false;
-
-/* ── Guard: require login ── */
-window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('ss_user');
-  if (!saved) { window.location.href = 'index.html'; return; }
-  const u = JSON.parse(saved);
-  document.getElementById('navUser').textContent = u.username;
-  document.getElementById('navUser').classList.add('show');
-  document.getElementById('navLogout').classList.add('show');
-  restoreProgress(u);
-});
-
-function restoreProgress(u) {
-  const l2 = u.progress?.bruteforce?.level2 || {};
-  if (l2.p1) { l2p1 = true; markDone(1); unlockStep(2); }
-  if (l2.p2) { l2p2 = true; markDone(2); unlockStep(3); }
-  if (l2.p3) { l2p3 = true; markDone(3); }
-  updateL2Bar();
-}
-
-function updateL2Bar() {
-  const done = [l2p1, l2p2, l2p3].filter(Boolean).length;
-  const pct = Math.round((done / 3) * 100);
-  document.getElementById('l2progFill').style.width = pct + '%';
-  document.getElementById('l2progPct').textContent = pct + '%';
-}
-
-function markDone(n) {
-  document.getElementById('sc' + n).className = 'step-card s-done';
-  const num = document.getElementById('sn' + n);
-  num.style.cssText = 'border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.1);';
-  num.textContent = '✓';
-  const badge = document.getElementById('sb' + n);
-  badge.textContent = 'COMPLETE';
-  badge.className = 'step-badge badge-done';
-}
-
-function unlockStep(n) {
-  document.getElementById('sc' + n).className = 'step-card s-active';
-  const badge = document.getElementById('sb' + n);
-  badge.textContent = 'ACTIVE';
-  badge.className = 'step-badge badge-active';
-}
-
-/* ── 2.1 Manual Guess ── */
-function setGuess(val) {
-  document.getElementById('guessInput').value = val;
-  document.getElementById('guessInput').focus();
-}
-
-function tryGuess() {
-  if (l2p1) return;
-  const inp = document.getElementById('guessInput');
-  const val = inp.value.trim().toLowerCase();
-  const fb = document.getElementById('guessFb');
-  if (!val) return;
-
-  guessAttempts++;
-  document.getElementById('guessCount').textContent = guessAttempts;
-
-  if (CORRECT_PASSWORDS.includes(val)) {
-    inp.classList.add('g-win');
-    inp.disabled = true;
-    fb.innerHTML = `<span style="color:var(--green)">✅ BREACH SUCCESSFUL — Password matched: "${inp.value.trim()}"</span>`;
-    document.getElementById('vulnPopup').classList.add('show');
-    l2p1 = true;
-    saveP('p1', 'level2');
-    updateL2Bar();
-    setTimeout(() => { markDone(1); unlockStep(2); }, 800);
-  } else {
-    inp.classList.remove('g-fail');
-    void inp.offsetWidth;
-    inp.classList.add('g-fail');
-    const taunts = [
-      `❌ "${inp.value.trim()}" — DENIED. Think more personally.`,
-      `❌ Wrong. Combine the clues differently.`,
-      `❌ Not quite. Try mixing the pet name with the birth year.`,
-      `❌ Nope. Hackers use name + year patterns constantly.`,
-      `❌ Keep trying. Look at the dossier again.`
-    ];
-    fb.innerHTML = `<span style="color:var(--red)">${taunts[Math.min(guessAttempts - 1, taunts.length - 1)]}</span>`;
-    setTimeout(() => { inp.classList.remove('g-fail'); inp.value = ''; }, 400);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('guessInput');
-  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') tryGuess(); });
-});
-
-/* ── 2.2 Dictionary Attack ── */
-const WORDLIST = [
-  '123456','password','123456789','12345678','12345','qwerty','abc123','111111',
-  'password1','letmein','dragon','baseball','iloveyou','master','sunshine',
-  'monkey','batman','trustno1','hello','charlie','welcome','admin','login',
-  'princess','qwerty123','1234','test','123','buddy','sushi','chen','alex1995',
-  'buddychen','sushi95','alexchen'
-];
-
-let dictInterval = null, dictIdx = 0, dictStartTime = null;
-
-function launchDictionary() {
-  if (dictRunning || l2p2) return;
-  dictRunning = true;
-  document.getElementById('launchBtn').disabled = true;
-  dictStartTime = Date.now();
-  dictIdx = 0;
-
-  addTermLine('t-dim', '────────────────────────────────────────────');
-  addTermLine('t-cmd', '[HYDRA] Starting attack on corp-portal.net:443');
-  addTermLine('t-warn', '[INFO] Wordlist: rockyou.txt | User: alex.chen@corp.net');
-  addTermLine('t-dim', '────────────────────────────────────────────');
-
-  dictInterval = setInterval(() => {
-    if (dictIdx < 10) {
-      const word = WORDLIST[dictIdx] || `attempt${dictIdx}`;
-      document.getElementById('dsTried').textContent = dictIdx + 1;
-      const elapsed = ((Date.now() - dictStartTime) / 1000).toFixed(1);
-      const rate = Math.round((dictIdx + 1) / Math.max(parseFloat(elapsed), 0.1));
-      document.getElementById('dsRate').textContent = rate + '/s';
-      document.getElementById('dsStatus').textContent = 'RUNNING';
-      document.getElementById('dsStatus').style.color = 'var(--yellow)';
-      addTermLine('t-fail', `[TRYING] ${word.padEnd(20)} ... FAIL [${dictIdx + 1}/500]`);
-      dictIdx++;
-    } else {
-      clearInterval(dictInterval);
-      addTermLine('t-dim', '');
-      addTermLine('t-warn', '[HYDRA] Escalating to personalised hybrid wordlist…');
-      setTimeout(() => {
-        addTermLine('t-ok', `[SUCCESS] Login successful!`);
-        addTermLine('t-ok', `[FOUND]   USERNAME: alex.chen@corp.net`);
-        addTermLine('t-ok', `[FOUND]   PASSWORD: buddy1995`);
-        addTermLine('t-dim', `[HYDRA] 1 valid password found. Session complete.`);
-        document.getElementById('dsTried').textContent = '11';
-        document.getElementById('dsStatus').textContent = 'BREACHED';
-        document.getElementById('dsStatus').style.color = 'var(--green)';
-        document.getElementById('dictVuln').classList.add('show');
-        dictRunning = false;
-        l2p2 = true;
-        saveP('p2', 'level2');
-        updateL2Bar();
-        setTimeout(() => { markDone(2); unlockStep(3); }, 800);
-      }, 600);
-    }
-  }, 280);
-}
-
-function addTermLine(cls, text) {
-  const log = document.getElementById('dictLog');
-  const div = document.createElement('div');
-  div.className = 't-line ' + cls;
-  div.textContent = text;
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
-}
-
-/* ── 2.3 Slot Machine Brute Force ── */
-const CHARSET = 'abcdefghijklmnopqrstuvwxyz0123456789';
-const TARGET = ['k', '9', 'm', 'Q'];
-let slotInterval = null, bruteStartTime = null, combos = 0, lockedReels = 0;
-
-function launchBrute() {
-  if (bruteRunning || l2p3) return;
-  bruteRunning = true;
-  document.getElementById('bruteBtn').disabled = true;
-  bruteStartTime = Date.now();
-  combos = 0; lockedReels = 0;
-
-  for (let i = 0; i < 4; i++) document.getElementById('r' + i).classList.add('spinning');
-
-  // Ramp speed bar
-  let sp = 0;
-  const spInterval = setInterval(() => {
-    sp = Math.min(sp + 3, 100);
-    document.getElementById('speedFill').style.width = sp + '%';
-    document.getElementById('speedLbl').textContent = Math.round(sp * 1.2) + ' MH/s';
-    if (sp >= 100) clearInterval(spInterval);
-  }, 60);
-
-  // Lock reels one by one
-  [1800, 3200, 4600, 5800].forEach((delay, idx) => {
-    setTimeout(() => {
-      const reel = document.getElementById('r' + idx);
-      reel.classList.remove('spinning');
-      reel.classList.add('s-locked-reel');
-      reel.textContent = TARGET[idx];
-      lockedReels++;
-    }, delay);
-  });
-
-  // Animation loop
-  slotInterval = setInterval(() => {
-    combos += Math.floor(Math.random() * 8000 + 4000);
-    document.getElementById('comboCount').textContent = combos.toLocaleString();
-    document.getElementById('elapsedTime').textContent = ((Date.now() - bruteStartTime) / 1000).toFixed(1) + 's';
-
-    for (let i = lockedReels; i < 4; i++) {
-      const ri = document.getElementById('r' + i);
-      if (!ri.classList.contains('s-locked-reel')) {
-        ri.textContent = CHARSET[Math.floor(Math.random() * CHARSET.length)];
+      80% {
+        clip-path: inset(10% 0 80% 0);
+        transform: translate(-2px, 0);
       }
     }
 
-    if (lockedReels >= 4) {
-      clearInterval(slotInterval);
-      document.getElementById('speedFill').style.width = '0%';
-      document.getElementById('speedLbl').textContent = '0 MH/s';
-      setTimeout(() => {
-        document.getElementById('breachAlert').classList.add('show');
-        bruteRunning = false;
-        l2p3 = true;
-        saveP('p3', 'level2');
-        updateL2Bar();
-        markDone(3);
-      }, 400);
+    .glitch-wrap {
+      position: relative;
+      display: inline-block;
     }
-  }, 60);
-}
 
-/* ── Complete Level ── */
-function completeLevel() {
-  const saved = localStorage.getItem('ss_user');
-  if (saved) {
-    const u = JSON.parse(saved);
-    if (!u.progress) u.progress = {};
-    if (!u.progress.bruteforce) u.progress.bruteforce = {};
-    u.progress.bruteforce.level2 = { p1: true, p2: true, p3: true, complete: true };
-    localStorage.setItem('ss_user', JSON.stringify(u));
-  }
-  window.location.href = 'index.html';
-}
+    .glitch-wrap::before,
+    .glitch-wrap::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
-/* ── Logout ── */
-function logout() {
-  localStorage.removeItem('ss_user');
-  window.location.href = 'index.html';
-}
-</script>
+    .glitch-wrap::before {
+      color: var(--red);
+      animation: glitch 3s infinite linear;
+      opacity: .7;
+    }
+
+    .glitch-wrap::after {
+      color: var(--cyan);
+      animation: glitch 3s infinite linear reverse;
+      opacity: .7;
+      animation-delay: .15s;
+    }
+
+    .ops-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* Bio card */
+    .bio-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      position: sticky;
+      top: 90px;
+    }
+
+    .bio-header {
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.12), rgba(168, 85, 247, 0.08));
+      border-bottom: 1px solid var(--border2);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bio-status {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: rp 1s infinite;
+      flex-shrink: 0;
+    }
+
+    .bio-header-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--red);
+    }
+
+    .bio-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a2a3a, #0a1628);
+      border: 2px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 22px auto 14px;
+    }
+
+    .bio-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .bio-role {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .bio-rows {
+      padding: 0 22px 22px;
+    }
+
+    .bio-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .bio-row:last-child {
+      border-bottom: none;
+    }
+
+    .bio-key {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text2);
+    }
+
+    .bio-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--cyan);
+    }
+
+    .intel-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 51, 102, 0.1);
+      border: 1px solid rgba(255, 51, 102, 0.3);
+      color: var(--red);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 3px 9px;
+      border-radius: 3px;
+      margin-top: 14px;
+    }
+
+    /* Step cards */
+    .ops-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+
+    .step-card.s-active {
+      border-color: rgba(0, 245, 255, 0.4);
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.07);
+    }
+
+    .step-card.s-done {
+      border-color: rgba(0, 255, 136, 0.35);
+    }
+
+    .step-card.s-locked {
+      opacity: .45;
+      pointer-events: none;
+    }
+
+    .step-hdr {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      flex-shrink: 0;
+      transition: all .3s;
+    }
+
+    .s-active .step-num {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 245, 255, 0.1);
+      box-shadow: 0 0 12px rgba(0, 245, 255, 0.3);
+    }
+
+    .s-done .step-num {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .step-meta {
+      flex: 1;
+    }
+
+    .step-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .step-sub {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .step-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .badge-active {
+      background: rgba(0, 245, 255, .1);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+    }
+
+    .badge-done {
+      background: rgba(0, 255, 136, .1);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+
+    .badge-locked {
+      background: rgba(122, 154, 184, .08);
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+
+    .step-body {
+      padding: 22px;
+    }
+
+    /* 2.1 Guess */
+    .guess-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .guess-input {
+      flex: 1;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #fff;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: all .2s;
+      letter-spacing: 1px;
+    }
+
+    .guess-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.07);
+    }
+
+    .guess-input.g-win {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+    }
+
+    .guess-input.g-fail {
+      border-color: var(--red);
+      animation: shake .35s ease;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-6px);
+      }
+
+      40% {
+        transform: translateX(6px);
+      }
+
+      60% {
+        transform: translateX(-4px);
+      }
+
+      80% {
+        transform: translateX(4px);
+      }
+    }
+
+    .btn-guess {
+      padding: 12px 22px;
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.15), rgba(168, 85, 247, 0.1));
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .btn-guess:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .guess-hint {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 14px;
+    }
+
+    .hint-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .hint-tag {
+      background: rgba(0, 245, 255, 0.06);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .hint-tag:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .guess-fb {
+      min-height: 28px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+    }
+
+    .guess-attempts {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      margin-bottom: 10px;
+    }
+
+    .guess-attempts span {
+      color: var(--yellow);
+    }
+
+    /* Vulnerability popup */
+    .vuln-popup {
+      display: none;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.07), rgba(0, 245, 255, 0.04));
+      border: 1px solid rgba(0, 255, 136, 0.35);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+
+    .vuln-popup.show {
+      display: block;
+      animation: popIn .4s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(.9) translateY(8px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .vuln-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vuln-body {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.65;
+    }
+
+    .vuln-body strong {
+      color: var(--cyan);
+    }
+
+    /* 2.2 Terminal */
+    .terminal {
+      background: #020a14;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .terminal-bar {
+      background: #0a1628;
+      border-bottom: 1px solid var(--border2);
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .t-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .t-red {
+      background: #ff5f57;
+    }
+
+    .t-yellow {
+      background: #ffbd2e;
+    }
+
+    .t-green-dot {
+      background: #28c840;
+    }
+
+    .terminal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-left: auto;
+    }
+
+    .terminal-body {
+      padding: 16px;
+      height: 220px;
+      overflow-y: auto;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .terminal-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 2px;
+    }
+
+    .t-line {
+      margin-bottom: 2px;
+    }
+
+    .t-prompt {
+      color: var(--text2);
+    }
+
+    .t-cmd {
+      color: var(--cyan);
+    }
+
+    .t-fail {
+      color: rgba(255, 51, 102, 0.7);
+    }
+
+    .t-warn {
+      color: var(--yellow);
+    }
+
+    .t-ok {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .t-dim {
+      color: rgba(122, 154, 184, 0.5);
+    }
+
+    .btn-launch {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 51, 102, 0.1));
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-launch:hover:not(:disabled) {
+      background: var(--orange);
+      color: #040d1a;
+    }
+
+    .btn-launch:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .dict-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .dstat {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .dstat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .dstat-lbl {
+      font-size: 10px;
+      color: var(--text2);
+      letter-spacing: 1px;
+      margin-top: 3px;
+    }
+
+    /* 2.3 Slot machine */
+    .slot-machine {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .slot-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-bottom: 16px;
+    }
+
+    .slot-display {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .slot-reel {
+      width: 48px;
+      height: 60px;
+      background: #020a14;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--cyan);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slot-reel.spinning {
+      animation: spin-reel .08s infinite linear;
+    }
+
+    .slot-reel.s-locked-reel {
+      color: var(--green);
+      border-color: var(--green);
+      animation: none;
+    }
+
+    @keyframes spin-reel {
+      0% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-3px);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    .slot-sep {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 22px;
+      color: var(--border);
+      line-height: 60px;
+    }
+
+    .speed-bar-wrap {
+      margin-bottom: 12px;
+    }
+
+    .speed-bar-lbl {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      margin-bottom: 5px;
+    }
+
+    .speed-track {
+      background: var(--bg);
+      border-radius: 3px;
+      height: 5px;
+      overflow: hidden;
+    }
+
+    .speed-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--red));
+      border-radius: 3px;
+      width: 0%;
+      transition: width .3s;
+    }
+
+    .gpu-stats {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .gpu-stats span {
+      color: var(--yellow);
+    }
+
+    .btn-brute {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.18), rgba(168, 85, 247, 0.12));
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+    }
+
+    .btn-brute:hover:not(:disabled) {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 0 28px rgba(255, 51, 102, 0.4);
+    }
+
+    .btn-brute:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .breach-alert {
+      display: none;
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.12), rgba(168, 85, 247, 0.07));
+      border: 2px solid var(--red);
+      border-radius: 12px;
+      padding: 22px;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    .breach-alert.show {
+      display: block;
+      animation: popIn .5s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    .breach-ico {
+      font-size: 44px;
+      margin-bottom: 10px;
+    }
+
+    .breach-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--red);
+      text-shadow: 0 0 20px rgba(255, 51, 102, 0.5);
+      margin-bottom: 6px;
+    }
+
+    .breach-sub {
+      color: var(--text2);
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .breach-sub strong {
+      color: var(--cyan);
+    }
+
+    .btn-complete {
+      padding: 13px 36px;
+      background: linear-gradient(135deg, var(--green), #00cc66);
+      border: none;
+      border-radius: 8px;
+      color: #040d1a;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: 0 0 28px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn-complete:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 44px rgba(0, 255, 136, 0.5);
+    }
+
+    /* Progress bar */
+    .l2-progress {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 16px 22px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .l2-prog-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      white-space: nowrap;
+    }
+
+    .l2-prog-track {
+      flex: 1;
+      background: var(--bg2);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .l2-prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), var(--purple), var(--cyan));
+      border-radius: 4px;
+      transition: width .8s ease;
+      width: 0%;
+    }
+
+    .l2-prog-pct {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    @media(max-width:860px) {
+      .ops-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .bio-card {
+        position: static;
+      }
+
+      .dict-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="gridbg"></div>
+
+  <nav id="nav">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">S</div>
+      <span class="nav-logo-text">ShieldSimulation</span>
+    </div>
+    <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+    <div class="nav-right">
+      <span id="navUser"></span>
+      <button id="navLogout" onclick="logout()">LOGOUT</button>
+    </div>
+  </nav>
+
+  <div id="statusbar">
+    <div><span class="sdot red" id="sdot"></span><span id="stext">⚠ OFFENSIVE MODE ACTIVE — Training Environment
+        Only</span></div>
+    <span>© 2024 ShieldSimulation | Secure Training Platform</span>
+  </div>
+
+  <div style="position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;z-index:1;padding:90px 40px 80px;">
+    <div style="max-width:1200px;margin:0 auto;">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="window.location.href='index.html'">Home</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-link" onclick="window.location.href='index.html'">Brute Force</span>
+        <span class="bc-sep">›</span>
+        <span style="color:var(--red)">Level 2: Offensive Ops</span>
+      </div>
+
+      <!-- Title -->
+      <div style="margin-bottom:28px;">
+        <div class="glitch-wrap" data-text="OFFENSIVE OPERATIONS"
+          style="font-family:'Orbitron',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:900;color:var(--red);text-shadow:0 0 30px rgba(255,51,102,0.5);margin-bottom:6px;">
+          OFFENSIVE OPERATIONS</div>
+        <div style="color:var(--text2);font-size:15px;">You are now thinking like an attacker. Use every tool available
+          to breach the target. 🎯</div>
+      </div>
+
+      <!-- Level progress -->
+      <div class="l2-progress">
+        <div class="l2-prog-label">LEVEL 2 PROGRESS</div>
+        <div class="l2-prog-track">
+          <div class="l2-prog-fill" id="l2progFill"></div>
+        </div>
+        <div class="l2-prog-pct" id="l2progPct">0%</div>
+      </div>
+
+      <!-- Layout -->
+      <div class="ops-layout">
+
+        <!-- Bio card -->
+        <div class="bio-card">
+          <div class="bio-header">
+            <div class="bio-status"></div>
+            <span class="bio-header-text">◈ OSINT INTELLIGENCE DOSSIER</span>
+          </div>
+          <div class="bio-avatar">👤</div>
+          <div class="bio-name">Alex Chen</div>
+          <div class="bio-role">// TARGET ACQUIRED — PROFILE LOADED</div>
+          <div class="bio-rows">
+            <div class="bio-row"><span class="bio-key">FULL NAME</span><span class="bio-val">Alex Chen</span></div>
+            <div class="bio-row"><span class="bio-key">BIRTH YEAR</span><span class="bio-val">1995</span></div>
+            <div class="bio-row"><span class="bio-key">PET NAME</span><span class="bio-val">Buddy</span></div>
+            <div class="bio-row"><span class="bio-key">FAV FOOD</span><span class="bio-val">Sushi</span></div>
+            <div class="bio-row"><span class="bio-key">CITY</span><span class="bio-val">Austin, TX</span></div>
+            <div class="bio-row"><span class="bio-key">PLATFORM</span><span class="bio-val">corp-portal.net</span></div>
+            <div style="text-align:center;margin-top:6px;"><span class="intel-tag">⚠ INTEL GATHERED VIA OSINT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operations panel -->
+        <div class="ops-panel">
+
+          <!-- 2.1 Manual Guess -->
+          <div class="step-card s-active" id="sc1">
+            <div class="step-hdr">
+              <div class="step-num" id="sn1">1</div>
+              <div class="step-meta">
+                <div class="step-title">Phase 2.1 — Social Engineering Attack</div>
+                <div class="step-sub">Use the target's personal data to guess their password</div>
+              </div>
+              <span class="step-badge badge-active" id="sb1">ACTIVE</span>
+            </div>
+            <div class="step-body">
+              <div class="callout" style="margin-bottom:18px;">
+                <strong>🧠 Attacker Mindset:</strong> Most people build passwords from things they love — pets,
+                birthdays, hobbies. Study the dossier carefully. What would <em>you</em> use as a password if you were
+                Alex?
+              </div>
+              <div class="guess-attempts">Attempts: <span id="guessCount">0</span> &nbsp;|&nbsp; Try: <code
+                  style="color:var(--cyan)">Name+Year</code>, <code style="color:var(--cyan)">Pet+Year</code>, <code
+                  style="color:var(--cyan)">Food+Pet</code></div>
+              <div class="guess-form">
+                <input class="guess-input" id="guessInput" type="text" placeholder="Type your password guess…"
+                  autocomplete="off" />
+                <button class="btn-guess" onclick="tryGuess()">▶ ATTEMPT</button>
+              </div>
+              <div class="guess-hint">
+                💡 Hint — click a pattern to auto-fill:
+                <div class="hint-tags">
+                  <span class="hint-tag" onclick="setGuess('Buddy1995')">Buddy1995</span>
+                  <span class="hint-tag" onclick="setGuess('SushiBuddy95')">SushiBuddy95</span>
+                  <span class="hint-tag" onclick="setGuess('alex1995')">alex1995</span>
+                  <span class="hint-tag" onclick="setGuess('buddy95')">buddy95</span>
+                </div>
+              </div>
+              <div class="guess-fb" id="guessFb"></div>
+              <div class="vuln-popup" id="vulnPopup">
+                <div class="vuln-title">✅ VULNERABILITY IDENTIFIED</div>
+                <div class="vuln-body">
+                  <strong>Rule: Never use personal information in passwords.</strong><br />
+                  Alex's password was cracked using <strong>publicly available OSINT data</strong> — their pet's name
+                  and birth year. This pattern is in every attacker's playbook because it works on the majority of
+                  users.<br /><br />
+                  <strong>Human predictability is the #1 attack surface.</strong> No GPU required.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2.2 Dictionary Attack -->
+          <div class="step-card s-locked" id="sc2">
+            <div class="step-hdr">
+              <div class="step-num" id="sn2">2</div>
+              <div class="step-meta">
+                <div class="step-title">Phase 2.2 — Automated Dictionary Attack</div>
+                <div class="step-sub">Deploy a wordlist tool against the target portal</div>
+              </div>
+              <span class="step-badge badge-locked" id="sb2">🔒 LOCKED</span>
+            </div>
+            <div class="step-body">
+              <div class="callout warn" style="margin-bottom:16px;">
+                <strong>⚙️ Tool Loaded:</strong> Simplified Hydra v9.4 — HTTP-POST module<br />
+                Wordlist: <code>rockyou.txt</code> (14.3M entries) → Demo: 500 entries sampled
+              </div>
+              <div class="terminal" id="dictTerminal">
+                <div class="terminal-bar">
+                  <div class="t-dot t-red"></div>
+                  <div class="t-dot t-yellow"></div>
+                  <div class="t-dot t-green-dot"></div>
+                  <div class="terminal-title">HYDRA TERMINAL — corp-portal.net:443/login</div>
+                </div>
+                <div class="terminal-body" id="dictLog">
+                  <div class="t-line"><span class="t-prompt">$</span> <span class="t-cmd">./hydra -l alex.chen@corp.net
+                      -P rockyou.txt https://corp-portal.net/login</span></div>
+                  <div class="t-line t-dim">Hydra v9.4 — (c) 2023 van Hauser/THC</div>
+                  <div class="t-line t-dim">────────────────────────────────────────────</div>
+                  <div class="t-line t-warn">[READY] Awaiting operator command…</div>
+                </div>
+              </div>
+              <button class="btn-launch" id="launchBtn" onclick="launchDictionary()">
+                <span>⚡</span> EXECUTE DICTIONARY ATTACK
+              </button>
+              <div class="dict-stats">
+                <div class="dstat">
+                  <div class="dstat-val" id="dsTried">0</div>
+                  <div class="dstat-lbl">TRIED</div>
+                </div>
+                <div class="dstat">
+                  <div class="dstat-val" id="dsRate">0/s</div>
+                  <div class="dstat-lbl">RATE</div>
+                </div>
+                <div class="dstat">
+                  <div class="dstat-val" id="dsStatus">—</div>
+                  <div class="dstat-lbl">STATUS</div>
+                </div>
+              </div>
+              <div class="vuln-popup" id="dictVuln" style="margin-top:14px;">
+                <div class="vuln-title">✅ LESSON: The Power of Wordlists</div>
+                <div class="vuln-body">
+                  The real <strong>rockyou.txt</strong> contains 14.3 million real passwords from breached databases.
+                  Tools like Hydra can fire hundreds of requests per second. A weak password on an unprotected endpoint
+                  is cracked in <strong>seconds — not hours.</strong><br /><br />
+                  <strong>Defence:</strong> Rate limiting + account lockout after 5 failed attempts stops this cold.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2.3 Brute Force Slot Machine -->
+          <div class="step-card s-locked" id="sc3">
+            <div class="step-hdr">
+              <div class="step-num" id="sn3">3</div>
+              <div class="step-meta">
+                <div class="step-title">Phase 2.3 — Raw Brute Force (GPU Simulation)</div>
+                <div class="step-sub">Watch every character combination attempted at machine speed</div>
+              </div>
+              <span class="step-badge badge-locked" id="sb3">🔒 LOCKED</span>
+            </div>
+            <div class="step-body">
+              <div class="callout danger" style="margin-bottom:16px;">
+                <strong>🔥 Simulating:</strong> RTX 4090 GPU — 100 billion MD5 hashes/sec<br />
+                Target: 4-character PIN on encrypted vault. Charset: <code>[a-z][0-9]</code>
+              </div>
+              <div class="slot-machine">
+                <div class="slot-label">◈ REAL-TIME CHARACTER COMBINATION ATTACK</div>
+                <div class="slot-display">
+                  <div class="slot-reel" id="r0">a</div>
+                  <div class="slot-reel" id="r1">a</div>
+                  <div class="slot-sep">:</div>
+                  <div class="slot-reel" id="r2">a</div>
+                  <div class="slot-reel" id="r3">a</div>
+                </div>
+                <div class="speed-bar-wrap">
+                  <div class="speed-bar-lbl"><span>ATTACK SPEED</span><span id="speedLbl">0 MH/s</span></div>
+                  <div class="speed-track">
+                    <div class="speed-fill" id="speedFill"></div>
+                  </div>
+                </div>
+                <div class="gpu-stats">
+                  <div>Combinations: <span id="comboCount">0</span></div>
+                  <div>Elapsed: <span id="elapsedTime">0.0s</span></div>
+                  <div>Real ETA: <span id="etaReal">~3 min</span></div>
+                </div>
+              </div>
+              <button class="btn-brute" id="bruteBtn" onclick="launchBrute()">
+                ☢ INITIATE BRUTE FORCE ATTACK
+              </button>
+              <div class="breach-alert" id="breachAlert">
+                <div class="breach-ico">💀</div>
+                <div class="breach-title">SYSTEM BREACHED</div>
+                <div class="breach-sub">
+                  Password <code style="color:var(--red);font-size:15px;">"k9mQ"</code> cracked in simulated
+                  <strong>0.003 seconds</strong>.<br /><br />
+                  A real RTX 4090 tests <strong>100 billion MD5 hashes/second</strong>. A 4-character alphanumeric
+                  password has only ~1.7 million combinations — cracked nearly <strong>instantly</strong>.<br /><br />
+                  Every character added multiplies difficulty <em>exponentially</em>. 12+ characters with mixed symbols
+                  = <strong>years of GPU time.</strong>
+                </div>
+                <button class="btn-complete" onclick="completeLevel()">✓ COMPLETE LEVEL 2 — DEBRIEF</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /ops-panel -->
+      </div><!-- /ops-layout -->
+    </div>
+  </div>
+
+  <script>
+    /* ── Standalone helpers (replaces app.js for this page) ── */
+    const API = window.location.origin;
+    let user = null;
+    const _saved = localStorage.getItem('ss_user');
+    if (_saved) { user = JSON.parse(_saved); }
+
+    async function saveP(part, level) {
+      level = level || 'level1';
+      if (!user) return;
+      if (!user.progress) user.progress = {};
+      if (!user.progress.bruteforce) user.progress.bruteforce = {};
+      if (!user.progress.bruteforce[level]) user.progress.bruteforce[level] = {};
+      user.progress.bruteforce[level][part] = true;
+      localStorage.setItem('ss_user', JSON.stringify(user));
+      try {
+        await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'bruteforce', level, mode: part, completed: true }) });
+      } catch { }
+    }
+
+    function logout() {
+      localStorage.removeItem('ss_user');
+      window.location.href = 'index.html';
+    }
+  </script>
+  <script>
+    /* ── Level 2 State ── */
+    const CORRECT_PASSWORDS = ['buddy1995', 'sushi1995', 'sushibuddy95', 'alex1995', 'buddy95', 'alexbuddy', 'sushibuddy', '1995buddy', 'chen1995', 'buddychen'];
+    let guessAttempts = 0;
+    let l2p1 = false, l2p2 = false, l2p3 = false;
+    let dictRunning = false, bruteRunning = false;
+
+    /* ── Guard: require login + BF Level 1 complete ── */
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('ss_user');
+      if (!saved) { window.location.href = 'index.html'; return; }
+      const u = JSON.parse(saved);
+      const l1 = u.progress?.bruteforce?.level1 || {};
+      if ([l1.p1, l1.p2, l1.p3].filter(Boolean).length < 3) {
+        sessionStorage.setItem('ss_goto', 'page-bflevels');
+        window.location.href = 'index.html'; return;
+      }
+      document.getElementById('navUser').textContent = u.username;
+      document.getElementById('navUser').classList.add('show');
+      document.getElementById('navLogout').classList.add('show');
+      restoreProgress(u);
+    });
+
+    function restoreProgress(u) {
+      const l2 = u.progress?.bruteforce?.level2 || {};
+      if (l2.p1) { l2p1 = true; markDone(1); unlockStep(2); }
+      if (l2.p2) { l2p2 = true; markDone(2); unlockStep(3); }
+      if (l2.p3) { l2p3 = true; markDone(3); }
+      updateL2Bar();
+    }
+
+    function updateL2Bar() {
+      const done = [l2p1, l2p2, l2p3].filter(Boolean).length;
+      const pct = Math.round((done / 3) * 100);
+      document.getElementById('l2progFill').style.width = pct + '%';
+      document.getElementById('l2progPct').textContent = pct + '%';
+    }
+
+    function markDone(n) {
+      document.getElementById('sc' + n).className = 'step-card s-done';
+      const num = document.getElementById('sn' + n);
+      num.style.cssText = 'border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.1);';
+      num.textContent = '✓';
+      const badge = document.getElementById('sb' + n);
+      badge.textContent = 'COMPLETE';
+      badge.className = 'step-badge badge-done';
+    }
+
+    function unlockStep(n) {
+      document.getElementById('sc' + n).className = 'step-card s-active';
+      const badge = document.getElementById('sb' + n);
+      badge.textContent = 'ACTIVE';
+      badge.className = 'step-badge badge-active';
+    }
+
+    /* ── 2.1 Manual Guess ── */
+    function setGuess(val) {
+      document.getElementById('guessInput').value = val;
+      document.getElementById('guessInput').focus();
+    }
+
+    function tryGuess() {
+      if (l2p1) return;
+      const inp = document.getElementById('guessInput');
+      const val = inp.value.trim().toLowerCase();
+      const fb = document.getElementById('guessFb');
+      if (!val) return;
+
+      guessAttempts++;
+      document.getElementById('guessCount').textContent = guessAttempts;
+
+      if (CORRECT_PASSWORDS.includes(val)) {
+        inp.classList.add('g-win');
+        inp.disabled = true;
+        fb.innerHTML = `<span style="color:var(--green)">✅ BREACH SUCCESSFUL — Password matched: "${inp.value.trim()}"</span>`;
+        document.getElementById('vulnPopup').classList.add('show');
+        l2p1 = true;
+        saveP('p1', 'level2');
+        updateL2Bar();
+        setTimeout(() => { markDone(1); unlockStep(2); }, 800);
+      } else {
+        inp.classList.remove('g-fail');
+        void inp.offsetWidth;
+        inp.classList.add('g-fail');
+        const taunts = [
+          `❌ "${inp.value.trim()}" — DENIED. Think more personally.`,
+          `❌ Wrong. Combine the clues differently.`,
+          `❌ Not quite. Try mixing the pet name with the birth year.`,
+          `❌ Nope. Hackers use name + year patterns constantly.`,
+          `❌ Keep trying. Look at the dossier again.`
+        ];
+        fb.innerHTML = `<span style="color:var(--red)">${taunts[Math.min(guessAttempts - 1, taunts.length - 1)]}</span>`;
+        setTimeout(() => { inp.classList.remove('g-fail'); inp.value = ''; }, 400);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const inp = document.getElementById('guessInput');
+      if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') tryGuess(); });
+    });
+
+    /* ── 2.2 Dictionary Attack ── */
+    const WORDLIST = [
+      '123456', 'password', '123456789', '12345678', '12345', 'qwerty', 'abc123', '111111',
+      'password1', 'letmein', 'dragon', 'baseball', 'iloveyou', 'master', 'sunshine',
+      'monkey', 'batman', 'trustno1', 'hello', 'charlie', 'welcome', 'admin', 'login',
+      'princess', 'qwerty123', '1234', 'test', '123', 'buddy', 'sushi', 'chen', 'alex1995',
+      'buddychen', 'sushi95', 'alexchen'
+    ];
+
+    let dictInterval = null, dictIdx = 0, dictStartTime = null;
+
+    function launchDictionary() {
+      if (dictRunning || l2p2) return;
+      dictRunning = true;
+      document.getElementById('launchBtn').disabled = true;
+      dictStartTime = Date.now();
+      dictIdx = 0;
+
+      addTermLine('t-dim', '────────────────────────────────────────────');
+      addTermLine('t-cmd', '[HYDRA] Starting attack on corp-portal.net:443');
+      addTermLine('t-warn', '[INFO] Wordlist: rockyou.txt | User: alex.chen@corp.net');
+      addTermLine('t-dim', '────────────────────────────────────────────');
+
+      dictInterval = setInterval(() => {
+        if (dictIdx < 10) {
+          const word = WORDLIST[dictIdx] || `attempt${dictIdx}`;
+          document.getElementById('dsTried').textContent = dictIdx + 1;
+          const elapsed = ((Date.now() - dictStartTime) / 1000).toFixed(1);
+          const rate = Math.round((dictIdx + 1) / Math.max(parseFloat(elapsed), 0.1));
+          document.getElementById('dsRate').textContent = rate + '/s';
+          document.getElementById('dsStatus').textContent = 'RUNNING';
+          document.getElementById('dsStatus').style.color = 'var(--yellow)';
+          addTermLine('t-fail', `[TRYING] ${word.padEnd(20)} ... FAIL [${dictIdx + 1}/500]`);
+          dictIdx++;
+        } else {
+          clearInterval(dictInterval);
+          addTermLine('t-dim', '');
+          addTermLine('t-warn', '[HYDRA] Escalating to personalised hybrid wordlist…');
+          setTimeout(() => {
+            addTermLine('t-ok', `[SUCCESS] Login successful!`);
+            addTermLine('t-ok', `[FOUND]   USERNAME: alex.chen@corp.net`);
+            addTermLine('t-ok', `[FOUND]   PASSWORD: buddy1995`);
+            addTermLine('t-dim', `[HYDRA] 1 valid password found. Session complete.`);
+            document.getElementById('dsTried').textContent = '11';
+            document.getElementById('dsStatus').textContent = 'BREACHED';
+            document.getElementById('dsStatus').style.color = 'var(--green)';
+            document.getElementById('dictVuln').classList.add('show');
+            dictRunning = false;
+            l2p2 = true;
+            saveP('p2', 'level2');
+            updateL2Bar();
+            setTimeout(() => { markDone(2); unlockStep(3); }, 800);
+          }, 600);
+        }
+      }, 280);
+    }
+
+    function addTermLine(cls, text) {
+      const log = document.getElementById('dictLog');
+      const div = document.createElement('div');
+      div.className = 't-line ' + cls;
+      div.textContent = text;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    /* ── 2.3 Slot Machine Brute Force ── */
+    const CHARSET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const TARGET = ['k', '9', 'm', 'Q'];
+    let slotInterval = null, bruteStartTime = null, combos = 0, lockedReels = 0;
+
+    function launchBrute() {
+      if (bruteRunning || l2p3) return;
+      bruteRunning = true;
+      document.getElementById('bruteBtn').disabled = true;
+      bruteStartTime = Date.now();
+      combos = 0; lockedReels = 0;
+
+      for (let i = 0; i < 4; i++) document.getElementById('r' + i).classList.add('spinning');
+
+      // Ramp speed bar
+      let sp = 0;
+      const spInterval = setInterval(() => {
+        sp = Math.min(sp + 3, 100);
+        document.getElementById('speedFill').style.width = sp + '%';
+        document.getElementById('speedLbl').textContent = Math.round(sp * 1.2) + ' MH/s';
+        if (sp >= 100) clearInterval(spInterval);
+      }, 60);
+
+      // Lock reels one by one
+      [1800, 3200, 4600, 5800].forEach((delay, idx) => {
+        setTimeout(() => {
+          const reel = document.getElementById('r' + idx);
+          reel.classList.remove('spinning');
+          reel.classList.add('s-locked-reel');
+          reel.textContent = TARGET[idx];
+          lockedReels++;
+        }, delay);
+      });
+
+      // Animation loop
+      slotInterval = setInterval(() => {
+        combos += Math.floor(Math.random() * 8000 + 4000);
+        document.getElementById('comboCount').textContent = combos.toLocaleString();
+        document.getElementById('elapsedTime').textContent = ((Date.now() - bruteStartTime) / 1000).toFixed(1) + 's';
+
+        for (let i = lockedReels; i < 4; i++) {
+          const ri = document.getElementById('r' + i);
+          if (!ri.classList.contains('s-locked-reel')) {
+            ri.textContent = CHARSET[Math.floor(Math.random() * CHARSET.length)];
+          }
+        }
+
+        if (lockedReels >= 4) {
+          clearInterval(slotInterval);
+          document.getElementById('speedFill').style.width = '0%';
+          document.getElementById('speedLbl').textContent = '0 MH/s';
+          setTimeout(() => {
+            document.getElementById('breachAlert').classList.add('show');
+            bruteRunning = false;
+            l2p3 = true;
+            saveP('p3', 'level2');
+            updateL2Bar();
+            markDone(3);
+          }, 400);
+        }
+      }, 60);
+    }
+
+    /* ── Complete Level ── */
+    function completeLevel() {
+      const saved = localStorage.getItem('ss_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (!u.progress) u.progress = {};
+        if (!u.progress.bruteforce) u.progress.bruteforce = {};
+        u.progress.bruteforce.level2 = { p1: true, p2: true, p3: true, complete: true };
+        localStorage.setItem('ss_user', JSON.stringify(u));
+      }
+      sessionStorage.setItem('ss_goto', 'page-bflevels');
+      window.location.href = 'index.html';
+    }
+
+    /* ── Logout ── */
+    function logout() {
+      localStorage.removeItem('ss_user');
+      window.location.href = 'index.html';
+    }
+  </script>
 </body>
+
 </html>
