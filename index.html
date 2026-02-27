@@ -100,6 +100,12 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+
+    .nav-logo:hover {
+      opacity: 0.8;
     }
 
     .nav-logo-icon {
@@ -135,7 +141,7 @@
       font-weight: 500;
       letter-spacing: 1px;
       text-transform: uppercase;
-      cursor: default;
+      cursor: pointer;
       transition: color .2s;
     }
 
@@ -1613,6 +1619,139 @@
       transform: translateY(-2px);
     }
 
+    /* ═══ ABOUT & FEATURES ═══ */
+    #page-about .pinner,
+    #page-features .pinner {
+      padding: 90px 40px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(28px, 3.5vw, 48px);
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-subtitle {
+      color: var(--text2);
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 40px;
+      max-width: 900px;
+    }
+
+    .about-content {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 40px;
+      margin-bottom: 32px;
+      line-height: 1.8;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .about-content p {
+      margin-bottom: 18px;
+    }
+
+    .about-list {
+      background: rgba(0, 245, 255, 0.04);
+      border-left: 3px solid var(--cyan);
+      border-radius: 8px;
+      padding: 24px 28px;
+      margin: 20px 0;
+      list-style: none;
+    }
+
+    .about-list li {
+      margin-bottom: 12px;
+      padding-left: 30px;
+      position: relative;
+      color: var(--text);
+    }
+
+    .about-list li:before {
+      content: "\25B8";
+      position: absolute;
+      left: 0;
+      color: var(--cyan);
+      font-size: 18px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .feature-card {
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.06), rgba(0, 245, 255, 0.06));
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 28px 26px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(0, 245, 255, 0.08), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .feature-card:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.2);
+      transform: translateY(-4px);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      font-size: 36px;
+      margin-bottom: 14px;
+      display: inline-block;
+      filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.3));
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+      filter: drop-shadow(0 0 16px rgba(0, 245, 255, 0.6));
+      transform: scale(1.1);
+    }
+
+    .feature-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
     @media(max-width:860px) {
 
       .login-grid,
@@ -1621,7 +1760,8 @@
       }
 
       .levels-grid,
-      .atgrid {
+      .atgrid,
+      .features-grid {
         grid-template-columns: 1fr 1fr;
       }
 
@@ -1633,6 +1773,16 @@
         padding: 7px 20px;
       }
     }
+
+    @media(max-width:600px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .about-content {
+        padding: 24px 20px;
+      }
+    }
   </style>
 </head>
 
@@ -1640,11 +1790,16 @@
   <div id="gridbg"></div>
 
   <nav id="nav">
-    <div class="nav-logo">
+    <div class="nav-logo" onclick="goHome()">
       <div class="nav-logo-icon">S</div>
       <span class="nav-logo-text">ShieldSimulation</span>
     </div>
-    <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+    <div class="nav-links">
+      <a onclick="goHome()">Home</a>
+      <a onclick="goTo('page-about')">About</a>
+      <a onclick="goTo('page-features')">Features</a>
+      <a>Contact</a>
+    </div>
     <div class="nav-right">
       <span id="navUser"></span>
       <button id="navLogout" onclick="logout()">LOGOUT</button>
@@ -1694,6 +1849,102 @@
             <button class="btn-primary" onclick="doRegister()">CREATE ACCOUNT</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ PAGE: ABOUT ════════ -->
+  <div id="page-about" class="page">
+    <div class="pinner">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+        <div class="breadcrumb"><span class="bc-link" onclick="goHome()">Home</span><span
+            class="bc-sep">›</span><span>About ShieldSimulation</span></div>
+        <button class="btn-back-sm" onclick="goHome()">← Back to Home</button>
+      </div>
+      <h1 class="section-title">About ShieldSimulation</h1>
+      <div class="about-content">
+        <p>ShieldSimulation is an interactive cybersecurity training platform designed to help students and beginners
+          understand real-world cyber attacks through simulation-based learning.</p>
+        <p>Instead of passive theory, users actively experience attacks like Brute Force and SQL Injection inside
+          controlled environments. Each scenario combines visualization, guided explanations, and hands-on defense
+          strategies to bridge the gap between academic knowledge and practical security skills.</p>
+        <p style="font-weight:600;margin-top:28px;margin-bottom:16px;">The platform follows a progressive learning
+          model:</p>
+        <ul class="about-list">
+          <li><strong>Learn concepts</strong> — Understand core security principles and attack mechanics</li>
+          <li><strong>Observe attacks</strong> — Watch real-time attack simulations with visual feedback</li>
+          <li><strong>Perform simulations</strong> — Execute attacks in controlled lab environments</li>
+          <li><strong>Defend systems</strong> — Configure security controls and mitigations</li>
+          <li><strong>Validate understanding</strong> — Complete challenges and earn mastery badges</li>
+        </ul>
+        <p style="margin-top:22px;">ShieldSimulation focuses on <strong>Blue Team thinking</strong> — teaching users how
+          vulnerabilities occur and how modern defenses prevent them. Our curriculum emphasises cost-effective,
+          industry-standard security controls that work in real production environments.</p>
+      </div>
+      <div style="text-align:center;padding:40px 20px;color:var(--text2);font-size:14px;">
+        <p>Ready to master cybersecurity? <span style="color:var(--cyan);">Start your training mission and progress
+            through interactive scenarios.</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ PAGE: FEATURES ════════ -->
+  <div id="page-features" class="page">
+    <div class="pinner">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+        <div class="breadcrumb"><span class="bc-link" onclick="goHome()">Home</span><span
+            class="bc-sep">›</span><span>Platform Features</span></div>
+        <button class="btn-back-sm" onclick="goHome()">← Back to Home</button>
+      </div>
+      <h1 class="section-title">Platform Features</h1>
+      <p class="section-subtitle">Discover what makes ShieldSimulation a unique hands-on learning environment for
+        cybersecurity defense.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚔️</div>
+          <div class="feature-title">Interactive Attack Simulations</div>
+          <div class="feature-desc">Realistic cybersecurity scenarios that demonstrate how attacks actually occur in
+            live systems with real-time feedback.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-title">Progressive Learning Paths</div>
+          <div class="feature-desc">Multi-level missions unlocking step-by-step as users master each security concept
+            and complete prior challenges.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-title">Hands-On Defense Training</div>
+          <div class="feature-desc">Users actively configure protections such as prepared statements, validation layers,
+            and security controls in real-time.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-title">Real-Time Visual Feedback</div>
+          <div class="feature-desc">Live terminals, attack animations, and progress meters show system impact instantly,
+            making concepts tangible and memorable.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Persistent Progress Tracking</div>
+          <div class="feature-desc">User achievements and completed missions are saved across sessions, allowing
+            learners to track improvement and build credentials.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🧩</div>
+          <div class="feature-title">Blue Team Security Focus</div>
+          <div class="feature-desc">Emphasis on defence strategies aligned with modern cybersecurity practices and
+            industry-standard security controls.</div>
+        </div>
+      </div>
+      <div
+        style="margin-top:60px;padding:40px;background:var(--card);border:1px solid var(--border2);border-radius:14px;text-align:center;">
+        <p style="color:var(--text);font-size:15px;margin-bottom:16px;"><strong>Every feature is designed to bridge the
+            gap between theory and practice.</strong></p>
+        <p style="color:var(--text2);font-size:13px;line-height:1.7;">ShieldSimulation turns abstract security concepts
+          into concrete, hands-on experience. By simulating real attacks and requiring active defence strategies,
+          learners develop intuition that textbooks cannot teach — preparing them for careers in cybersecurity,
+          penetration testing, and systems defence.</p>
       </div>
     </div>
   </div>
@@ -2241,6 +2492,10 @@
       pg.classList.add('active');
       pg.scrollTo({ top: 0, behavior: 'instant' });
     }
+    function goHome() {
+      if (user) goTo('page-scenarios');
+      else goTo('page-login');
+    }
     function showNav(on) {
       document.getElementById('navUser').classList.toggle('show', on);
       document.getElementById('navLogout').classList.toggle('show', on);
@@ -2299,23 +2554,27 @@
       const sq1Done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length;
       const sq2 = user.progress?.sqli?.level2 || {};
       const sq2Done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length;
-      const sqlDone = sq1Done + sq2Done;
+      const sq3 = user.progress?.sqli?.level3 || {};
+      const sq3Done = [sq3.p1, sq3.p2, sq3.p3].filter(Boolean).length;
+      const sqlDone = sq1Done + sq2Done + sq3Done;
       const totalDone = bfDone + sqlDone;
-      const pct = Math.round((totalDone / 15) * 100);
+      const pct = Math.round((totalDone / 18) * 100);
       document.getElementById('stM').textContent = pct + '%';
-      document.getElementById('stD').textContent = totalDone + '/15';
+      document.getElementById('stD').textContent = totalDone + '/18';
       document.getElementById('bfPct').textContent = Math.round((bfDone / 9) * 100) + '%';
       document.getElementById('bfBar').style.width = Math.round((bfDone / 9) * 100) + '%';
-      const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'ELITE', 'MASTER', 'VETERAN', 'LEGEND', 'ELITE', 'ELITE'];
+      const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'ELITE', 'MASTER', 'VETERAN', 'LEGEND', 'ELITE', 'ELITE', 'MASTER', 'LEGEND', 'ELITE'];
       document.getElementById('stR').textContent = ranks[totalDone] || 'ELITE';
     }
     function updateSqlStats() {
       const p1 = user.progress?.sqli?.level1 || {};
       const p2 = user.progress?.sqli?.level2 || {};
+      const p3 = user.progress?.sqli?.level3 || {};
       const done1 = [p1.p1, p1.p2, p1.p3].filter(Boolean).length;
       const done2 = [p2.p1, p2.p2, p2.p3].filter(Boolean).length;
-      const totalDone = done1 + done2;
-      const pct = Math.round((totalDone / 6) * 100);
+      const done3 = [p3.p1, p3.p2, p3.p3].filter(Boolean).length;
+      const totalDone = done1 + done2 + done3;
+      const pct = Math.round((totalDone / 9) * 100);
       const pctEl = document.getElementById('sqiPct');
       const barEl = document.getElementById('sqiBar');
       if (pctEl) pctEl.textContent = pct + '%';
@@ -2337,40 +2596,45 @@
       window.location.href = 'brute-force-level3.html';
     }
     function checkLevelUnlocks() {
-      // BF Level 2 unlock
+      // BF Level 2
       const l1 = user.progress?.bruteforce?.level1 || {};
       const l1done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length === 3;
       const card = document.getElementById('l2card');
       const badge = document.getElementById('l2badge');
       if (l1done && card) { card.classList.remove('lv-locked'); badge.textContent = 'AVAILABLE'; badge.className = 'lv-badge open'; }
+      else if (card && badge) { card.classList.add('lv-locked'); badge.textContent = '\uD83D\uDD12 LOCKED'; badge.className = 'lv-badge locked'; }
       const l2 = user.progress?.bruteforce?.level2 || {};
       const l2done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length === 3;
       if (l2done && badge) { badge.textContent = 'COMPLETE'; badge.className = 'lv-badge done'; }
-      // BF Level 3 unlock
+      // BF Level 3
       const l3card = document.getElementById('l3card');
       const l3badge = document.getElementById('l3badge');
       if (l2done && l3card) { l3card.classList.remove('lv-locked'); if (l3badge) { l3badge.textContent = 'AVAILABLE'; l3badge.className = 'lv-badge open'; } }
+      else if (l3card && l3badge) { l3card.classList.add('lv-locked'); l3badge.textContent = '\uD83D\uDD12 LOCKED'; l3badge.className = 'lv-badge locked'; }
       const l3 = user.progress?.bruteforce?.level3 || {};
       const l3done = [l3.p1, l3.p2, l3.p3].filter(Boolean).length === 3;
       if (l3done && l3badge) { l3badge.textContent = 'COMPLETE'; l3badge.className = 'lv-badge done'; }
-      // SQL unlock
+      // SQL Level 1 badge
       const sq1 = user.progress?.sqli?.level1 || {};
       const sq1done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length === 3;
+      const sql1badge = document.getElementById('sql1badge');
+      if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
+      // SQL Level 2
       const sqCard = document.getElementById('sqll2card');
       const sqBadge = document.getElementById('sqll2badge');
       if (sq1done && sqCard) { sqCard.classList.remove('lv-locked'); sqBadge.textContent = 'AVAILABLE'; sqBadge.className = 'lv-badge open'; }
+      else if (sqCard && sqBadge) { sqCard.classList.add('lv-locked'); sqBadge.textContent = '\uD83D\uDD12 LOCKED'; sqBadge.className = 'lv-badge locked'; }
       const sq2 = user.progress?.sqli?.level2 || {};
       const sq2done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3;
       if (sq2done && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
-      // SQL Level 3 unlock
+      // SQL Level 3
       const sqll3card = document.getElementById('sqll3card');
       const sqll3badge = document.getElementById('sqll3badge');
       if (sq2done && sqll3card) { sqll3card.classList.remove('lv-locked'); if (sqll3badge) { sqll3badge.textContent = 'AVAILABLE'; sqll3badge.className = 'lv-badge open'; } }
+      else if (sqll3card && sqll3badge) { sqll3card.classList.add('lv-locked'); sqll3badge.textContent = '\uD83D\uDD12 LOCKED'; sqll3badge.className = 'lv-badge locked'; }
       const sq3 = user.progress?.sqli?.level3 || {};
-      if ([sq3.p1, sq3.p2, sq3.p3].filter(Boolean).length === 3 && sqll3badge) { sqll3badge.textContent = 'COMPLETE'; sqll3badge.className = 'lv-badge done'; }
-      // Mark SQL Level 1 badge as complete if done
-      const sql1badge = document.getElementById('sql1badge');
-      if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
+      const sq3done = [sq3.p1, sq3.p2, sq3.p3].filter(Boolean).length === 3;
+      if (sq3done && sqll3badge) { sqll3badge.textContent = 'COMPLETE'; sqll3badge.className = 'lv-badge done'; }
     }
     function startSqlL2() {
       const sq1 = user.progress?.sqli?.level1 || {};
@@ -2385,6 +2649,8 @@
         setSt(true, 'Access Denied — Complete SQL Injection Level 2 first');
         return;
       }
+      const sq3 = user.progress?.sqli?.level3 || {};
+      if ([sq3.p1, sq3.p2, sq3.p3].filter(Boolean).length === 3) { goTo('page-sqilevels'); return; }
       sessionStorage.setItem('ss_goto', 'page-sqilevels');
       window.location.href = 'sql-injection-level3.html';
     }
@@ -2455,7 +2721,8 @@
       document.getElementById('l1badge').textContent = 'COMPLETE';
       document.getElementById('l1badge').className = 'lv-badge done';
       updateStats();
-      goTo('page-bflevels');
+      checkLevelUnlocks();
+      startL2();
     }
     async function saveP(part) {
       if (!user.progress) user.progress = { bruteforce: { level1: {} } };
@@ -2562,7 +2829,8 @@
       document.getElementById('sql1badge').textContent = 'COMPLETE';
       document.getElementById('sql1badge').className = 'lv-badge done';
       updateSqlStats();
-      goTo('page-sqilevels');
+      checkLevelUnlocks();
+      startSqlL2();
     }
 
     async function sqlSaveP(part) {
