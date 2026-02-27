@@ -2,10 +2,6 @@
 
 > **"Train like you fight. Defend like you know the enemy."**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Client--Side-blue.svg)]()
-[![UI Theme](https://img.shields.io/badge/UI-Neon%20Cyberpunk-blueviolet.svg)]()
-[![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen.svg)]()
 
 ---
 
@@ -18,10 +14,11 @@ The platform bridges the gap between academic theory and practical security skil
 ---
 
 ## 👥 Team Members
-
-| Name | Role |
-|------|------|
-| **Thanush J** | Developer & Designer |
+Name 
+**Thanush J**  (Team Leader)
+****
+****
+****
 
 ---
 
