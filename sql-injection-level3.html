@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ShieldSimulation — SQL Injection Level 3: Defense &amp; Prevention</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        :root {
+            --bg: #040d1a;
+            --bg2: #061020;
+            --card: #0a1628;
+            --border: #1a3a5c;
+            --border2: #0f2744;
+            --cyan: #00f5ff;
+            --cyan2: #00bcd4;
+            --green: #00ff88;
+            --red: #ff3366;
+            --yellow: #ffd700;
+            --orange: #ff6b35;
+            --purple: #a855f7;
+            --text: #c8dff0;
+            --text2: #7a9ab8;
+            --glow: 0 0 20px rgba(0, 245, 255, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%; height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+        }
+
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
+            pointer-events: none; z-index: 9998;
+        }
+
+        #gridbg {
+            position: fixed; inset: 0;
+            background-image: linear-gradient(rgba(0,245,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,245,255,0.025) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none; z-index: 0;
+        }
+
+        #nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 48px;
+            background: rgba(4,13,26,0.94);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border2);
+        }
+
+        .nav-logo { display: flex; align-items: center; gap: 10px; }
+
+        .nav-logo-icon {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 15px; color: #040d1a;
+        }
+
+        .nav-logo-text { font-family: 'Orbitron', sans-serif; font-size: 17px; font-weight: 700; color: #fff; }
+
+        .nav-links { display: flex; gap: 28px; }
+        .nav-links a { color: var(--text2); font-size: 13px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; cursor: default; transition: color .2s; }
+        .nav-links a:hover { color: var(--cyan); }
+
+        .nav-right { display: flex; align-items: center; gap: 14px; }
+
+        #navUser { font-family: 'Share Tech Mono', monospace; color: var(--cyan); font-size: 13px; display: none; }
+        #navUser.show { display: block; }
+
+        #navLogout {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text2); padding: 6px 14px;
+            font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 1px;
+            cursor: pointer; border-radius: 4px; transition: all .2s; display: none;
+        }
+        #navLogout.show { display: block; }
+        #navLogout:hover { border-color: var(--red); color: var(--red); }
+
+        #statusbar {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+            background: rgba(4,13,26,0.96);
+            border-top: 1px solid var(--border2);
+            padding: 7px 48px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text2);
+        }
+
+        .sdot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green); display: inline-block; margin-right: 7px;
+            animation: gp 2s infinite;
+        }
+        .sdot.red { background: var(--red); animation: rp 1s infinite; }
+
+        @keyframes gp { 0%,100%{box-shadow:0 0 5px var(--green);}50%{box-shadow:0 0 12px var(--green);} }
+        @keyframes rp { 0%,100%{box-shadow:0 0 5px var(--red);}50%{box-shadow:0 0 14px var(--red);} }
+
+        .breadcrumb {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 28px;
+            font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--text2);
+        }
+        .bc-link { color: var(--cyan); cursor: pointer; }
+        .bc-link:hover { text-decoration: underline; }
+        .bc-sep { color: var(--border); }
+
+        .callout {
+            background: rgba(0,245,255,0.05); border: 1px solid rgba(0,245,255,0.2);
+            border-left: 3px solid var(--cyan); border-radius: 8px;
+            padding: 18px 20px; margin-bottom: 22px;
+            font-size: 14px; line-height: 1.7; color: var(--text2);
+        }
+        .callout strong { color: var(--cyan); }
+        .callout.warn { background: rgba(255,215,0,0.04); border-color: rgba(255,215,0,0.2); border-left-color: var(--yellow); }
+        .callout.warn strong { color: var(--yellow); }
+        .callout.danger { background: rgba(255,51,102,0.04); border-color: rgba(255,51,102,0.2); border-left-color: var(--red); }
+        .callout.danger strong { color: var(--red); }
+
+        .main-scroll {
+            position: fixed; inset: 0; overflow-y: auto; overflow-x: hidden;
+            z-index: 1; padding: 90px 40px 80px;
+        }
+
+        .inner { max-width: 1200px; margin: 0 auto; }
+
+        /* Progress bar */
+        .l2-progress {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 26px;
+        }
+        .l2-prog-label { font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 2px; color: var(--text2); white-space: nowrap; }
+        .l2-prog-track { flex: 1; background: var(--bg2); border-radius: 4px; height: 6px; overflow: hidden; }
+        .l2-prog-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--purple), var(--cyan)); transition: width .5s; width: 0%; }
+        .l2-prog-pct { font-family: 'Orbitron', sans-serif; font-size: 11px; color: var(--cyan); min-width: 36px; text-align: right; }
+
+        /* Glitch */
+        @keyframes glitch {
+            0%,100%{clip-path:inset(0 0 98% 0);transform:translate(-2px,0);}
+            20%{clip-path:inset(30% 0 50% 0);transform:translate(2px,0);}
+            40%{clip-path:inset(60% 0 20% 0);transform:translate(-1px,0);}
+            60%{clip-path:inset(80% 0 5% 0);transform:translate(1px,0);}
+            80%{clip-path:inset(10% 0 80% 0);transform:translate(-2px,0);}
+        }
+        .glitch-wrap { position: relative; display: inline-block; }
+        .glitch-wrap::before, .glitch-wrap::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .glitch-wrap::before { color: var(--purple); animation: glitch 3s infinite linear; opacity: .6; }
+        .glitch-wrap::after { color: var(--cyan); animation: glitch 3s infinite linear reverse; opacity: .6; animation-delay: .15s; }
+
+        /* Layout */
+        .ops-layout {
+            display: grid; grid-template-columns: 360px 1fr; gap: 22px; align-items: start;
+        }
+
+        .bio-card {
+            background: var(--card); border: 1px solid var(--border2);
+            border-radius: 14px; overflow: hidden; position: sticky; top: 0;
+        }
+
+        .bio-header {
+            background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(0,245,255,0.06));
+            border-bottom: 1px solid var(--border2);
+            padding: 18px 22px; display: flex; align-items: center; gap: 12px;
+        }
+
+        .bio-status { width: 9px; height: 9px; border-radius: 50%; animation: gp 2s infinite; flex-shrink: 0; }
+
+        .bio-header-text { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 2px; color: var(--purple); }
+
+        .ops-panel { display: flex; flex-direction: column; gap: 18px; }
+
+        .step-card {
+            background: var(--card); border: 1px solid var(--border2);
+            border-radius: 14px; overflow: hidden; transition: border-color .3s;
+        }
+        .step-card.s-active { border-color: rgba(168,85,247,0.45); box-shadow: 0 0 30px rgba(168,85,247,0.07); }
+        .step-card.s-done { border-color: rgba(0,255,136,0.35); }
+        .step-card.s-locked { opacity: .45; pointer-events: none; }
+
+        .step-hdr {
+            padding: 18px 22px; display: flex; align-items: center; gap: 14px;
+            border-bottom: 1px solid var(--border2);
+        }
+
+        .step-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700;
+            color: var(--text2); flex-shrink: 0; transition: all .3s;
+        }
+        .s-active .step-num { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.12); box-shadow: 0 0 12px rgba(168,85,247,0.3); }
+        .s-done .step-num { border-color: var(--green); color: var(--green); background: rgba(0,255,136,0.1); }
+
+        .step-meta { flex: 1; }
+        .step-title { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+        .step-sub { font-size: 12px; color: var(--text2); }
+
+        .step-badge { font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 1px; padding: 4px 10px; border-radius: 4px; }
+        .badge-active { background: rgba(168,85,247,.1); border: 1px solid var(--purple); color: var(--purple); }
+        .badge-done { background: rgba(0,255,136,.1); border: 1px solid var(--green); color: var(--green); }
+        .badge-locked { background: rgba(122,154,184,.07); border: 1px solid var(--border); color: var(--text2); }
+
+        .step-body { padding: 22px; }
+
+        /* Engineering Lab grid */
+        .eng-lab {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        }
+
+        .toolbox { display: flex; flex-direction: column; gap: 8px; }
+        .toolbox-lbl {
+            font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 2px;
+            color: var(--text2); margin-bottom: 4px;
+        }
+
+        .module-card {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg2); border: 1px solid var(--border2);
+            border-radius: 8px; padding: 10px 12px;
+            cursor: grab; transition: all .2s; user-select: none;
+        }
+        .module-card:hover { border-color: var(--purple); background: rgba(168,85,247,0.04); }
+        .module-card:active { cursor: grabbing; }
+        .module-card.mod-installed { opacity: .25; cursor: not-allowed; pointer-events: none; }
+
+        .mod-icon { font-size: 22px; flex-shrink: 0; }
+        .mod-name { font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+        .mod-desc { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+        .mod-costs { display: flex; gap: 8px; }
+        .mc-c { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--yellow); }
+        .mc-l { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--orange); }
+
+        .portal-area { display: flex; flex-direction: column; gap: 12px; }
+
+        .portal-window {
+            background: #020a14; border: 1px solid var(--border2); border-radius: 10px; overflow: hidden;
+        }
+
+        .portal-bar {
+            background: #0a1628; border-bottom: 1px solid var(--border2);
+            padding: 9px 14px; display: flex; align-items: center; gap: 8px;
+        }
+
+        .t-dot-sm { width: 9px; height: 9px; border-radius: 50%; }
+        .portal-url { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text2); margin-left: auto; }
+
+        .portal-body { padding: 14px; min-height: 180px; }
+
+        .drop-zone {
+            background: rgba(168,85,247,0.02); border: 2px dashed var(--border2);
+            border-radius: 8px; padding: 14px; min-height: 160px; transition: all .2s;
+        }
+        .drop-zone.drag-over { border-color: var(--purple); background: rgba(168,85,247,0.06); }
+
+        .drop-placeholder { text-align: center; padding: 20px 0; color: var(--border); }
+        .drop-placeholder-ico { font-size: 28px; margin-bottom: 6px; }
+        .drop-placeholder-txt { font-family: 'Share Tech Mono', monospace; font-size: 11px; }
+
+        .installed-item {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--card); border: 1px solid var(--border2);
+            border-radius: 6px; padding: 8px 10px; margin-bottom: 6px;
+            animation: popIn .3s ease;
+        }
+
+        @keyframes popIn { 0%{opacity:0;transform:translateY(-4px);}100%{opacity:1;transform:translateY(0);} }
+
+        .inst-remove {
+            background: none; border: none; color: var(--text2); cursor: pointer;
+            font-size: 14px; padding: 2px 6px; border-radius: 3px; transition: color .2s; line-height: 1;
+        }
+        .inst-remove:hover { color: var(--red); }
+
+        .mod-count {
+            display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
+        }
+        .mod-count-lbl { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text2); }
+        .mod-count-val { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; color: var(--purple); }
+        .over-budget { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--red); }
+
+        /* Meters */
+        .meter-section { padding: 16px 22px; border-bottom: 1px solid var(--border2); }
+        .meter-lbl { font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 2px; color: var(--text2); margin-bottom: 10px; }
+        .meter-vals { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+        .meter-big { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: var(--purple); }
+        .meter-of { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--text2); }
+        .meter-bar-wrap { background: var(--bg2); border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 5px; }
+        .meter-bar { height: 100%; border-radius: 4px; transition: width .4s, background .4s; }
+        .meter-msg { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--text2); }
+
+        /* Console sidebar */
+        .console-installed { padding: 16px 22px; }
+        .console-mod-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border2); }
+        .console-mod-row:last-child { border-bottom: none; }
+        .console-mod-name { font-family: 'Orbitron', sans-serif; font-size: 9px; flex: 1; }
+        .console-mod-cost { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--text2); }
+
+        .readiness {
+            padding: 12px 22px; background: rgba(0,0,0,0.18);
+            border-top: 1px solid var(--border2); display: flex; align-items: center; gap: 8px;
+        }
+        .readiness-txt { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text2); }
+
+        /* Deploy button */
+        .btn-deploy {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(0,245,255,0.08));
+            border: 1px solid var(--purple); color: var(--purple);
+            font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 2px;
+            cursor: pointer; border-radius: 8px; transition: all .2s; margin-top: 14px;
+        }
+        .btn-deploy:hover:not(:disabled) { background: var(--purple); color: #040d1a; }
+        .btn-deploy:disabled { opacity: .4; cursor: not-allowed; }
+
+        /* Terminal */
+        .terminal {
+            background: #020a14; border: 1px solid var(--border2);
+            border-radius: 10px; overflow: hidden; margin-bottom: 14px;
+        }
+        .terminal-bar {
+            background: #0a1628; border-bottom: 1px solid var(--border2);
+            padding: 9px 14px; display: flex; align-items: center; gap: 8px;
+        }
+        .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .t-red { background: #ff5f57; }
+        .t-yellow { background: #ffbd2e; }
+        .t-green-dot { background: #28c840; }
+        .terminal-title { font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 2px; color: var(--text2); margin-left: auto; }
+
+        .terminal-body {
+            padding: 16px; height: 300px; overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace; font-size: 12px; line-height: 1.7;
+        }
+        .terminal-body::-webkit-scrollbar { width: 4px; }
+        .terminal-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+        .t-line { margin-bottom: 2px; }
+        .t-cmd { color: var(--purple); }
+        .t-fail { color: rgba(255,51,102,0.7); }
+        .t-warn { color: var(--yellow); }
+        .t-ok { color: var(--green); font-weight: bold; }
+        .t-dim { color: rgba(122,154,184,0.5); }
+        .t-danger { color: var(--red); font-weight: bold; }
+        .t-inject { color: var(--orange); }
+
+        /* Analysis table */
+        .analysis-tbl {
+            width: 100%; border-collapse: collapse;
+            font-family: 'Share Tech Mono', monospace; font-size: 12px; margin-bottom: 14px;
+        }
+        .analysis-tbl th {
+            background: rgba(168,85,247,0.08); border: 1px solid var(--border2);
+            padding: 8px 10px; color: var(--purple);
+            font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 1px; text-align: left;
+        }
+        .analysis-tbl td { border: 1px solid var(--border2); padding: 8px 10px; color: var(--text2); }
+        .analysis-tbl tr.total td { color: var(--text); font-weight: bold; background: rgba(168,85,247,0.03); }
+
+        /* Verdict */
+        .verdict-box { border-radius: 12px; padding: 20px; text-align: center; margin-top: 14px; }
+        .verdict-safe { background: linear-gradient(135deg,rgba(0,255,136,0.1),rgba(168,85,247,0.05)); border: 2px solid var(--green); }
+        .verdict-breach { background: linear-gradient(135deg,rgba(255,51,102,0.1),rgba(168,85,247,0.06)); border: 2px solid var(--red); }
+        .verdict-ico { font-size: 44px; margin-bottom: 10px; }
+        .verdict-title { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900; margin-bottom: 6px; }
+        .verdict-safe .verdict-title { color: var(--green); }
+        .verdict-breach .verdict-title { color: var(--red); }
+        .verdict-body { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
+        .verdict-body strong { color: var(--cyan); }
+
+        .btn-complete {
+            padding: 13px 36px;
+            background: linear-gradient(135deg, var(--green), #00cc66);
+            border: none; border-radius: 8px; color: #040d1a;
+            font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700;
+            letter-spacing: 2px; cursor: pointer; transition: all .2s;
+        }
+        .btn-complete:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(0,255,136,0.5); }
+
+        /* Timer */
+        .timer-wrap { margin-bottom: 14px; }
+        .timer-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); font-family: 'Share Tech Mono', monospace; margin-bottom: 5px; }
+        .timer-track { background: var(--bg); border-radius: 3px; height: 5px; overflow: hidden; }
+        .timer-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--cyan)); border-radius: 3px; width: 0%; transition: width .5s; }
+
+        /* SQL highlight badge */
+        .sql-badge {
+            display: inline-block; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4);
+            border-radius: 4px; padding: 1px 7px; font-family: 'Share Tech Mono', monospace;
+            font-size: 11px; color: var(--purple);
+        }
+
+        @media(max-width:860px) {
+            .ops-layout { grid-template-columns: 1fr; }
+            .bio-card { position: static; }
+            .eng-lab { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gridbg"></div>
+
+    <nav id="nav">
+        <div class="nav-logo">
+            <div class="nav-logo-icon">S</div>
+            <span class="nav-logo-text">ShieldSimulation</span>
+        </div>
+        <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+        <div class="nav-right">
+            <span id="navUser"></span>
+            <button id="navLogout" onclick="logout()">LOGOUT</button>
+        </div>
+    </nav>
+
+    <div id="statusbar">
+        <div><span class="sdot" id="sdot"></span><span id="stext">🗄️ DATABASE DEFENSE MODE — Blue Team Operations</span></div>
+        <span>© 2024 ShieldSimulation | Secure Training Platform</span>
+    </div>
+
+    <div class="main-scroll">
+        <div class="inner">
+
+            <div class="breadcrumb">
+                <span class="bc-link" onclick="window.location.href='index.html'">Home</span>
+                <span class="bc-sep">›</span>
+                <span class="bc-link" onclick="goSQLLevels()">SQL Injection</span>
+                <span class="bc-sep">›</span>
+                <span style="color:var(--purple)">Level 3: Defense &amp; Prevention</span>
+            </div>
+
+            <div style="margin-bottom:28px;">
+                <div class="glitch-wrap" data-text="QUERY HARDENING"
+                    style="font-family:'Orbitron',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:900;color:var(--purple);text-shadow:0 0 30px rgba(168,85,247,0.5);margin-bottom:6px;">
+                    QUERY HARDENING</div>
+                <div style="color:var(--text2);font-size:15px;">You are now the database defender. Patch your query pipeline, manage
+                    resources, and run a live injection simulation against your stack. 🗄️</div>
+            </div>
+
+            <div class="l2-progress">
+                <div class="l2-prog-label">LEVEL 3 PROGRESS</div>
+                <div class="l2-prog-track">
+                    <div class="l2-prog-fill" id="l3progFill"></div>
+                </div>
+                <div class="l2-prog-pct" id="l3progPct">0%</div>
+            </div>
+
+            <div class="ops-layout">
+
+                <!-- LEFT: Status Console -->
+                <div class="bio-card">
+                    <div class="bio-header">
+                        <div class="bio-status" style="background:var(--purple);"></div>
+                        <span class="bio-header-text">◈ DATABASE SECURITY CONSOLE</span>
+                    </div>
+
+                    <!-- Budget Meter -->
+                    <div class="meter-section">
+                        <div class="meter-lbl">BUDGET ALLOCATION</div>
+                        <div class="meter-vals">
+                            <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);">Credits Used</span>
+                            <span><span class="meter-big" id="budgetUsed">0</span><span class="meter-of"> / 100</span></span>
+                        </div>
+                        <div class="meter-bar-wrap">
+                            <div class="meter-bar" id="budgetBar" style="width:0%;background:linear-gradient(90deg,var(--purple),var(--cyan));"></div>
+                        </div>
+                        <div class="meter-msg" id="budgetMsg">100 credits remaining</div>
+                    </div>
+
+                    <!-- Latency Meter -->
+                    <div class="meter-section">
+                        <div class="meter-lbl">QUERY OVERHEAD IMPACT</div>
+                        <div class="meter-vals">
+                            <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);">Added Overhead</span>
+                            <span class="meter-big" id="latencyPct">0%</span>
+                        </div>
+                        <div class="meter-bar-wrap">
+                            <div class="meter-bar" id="latencyBar" style="width:0%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));"></div>
+                        </div>
+                        <div class="meter-msg" id="latencyMsg">No performance impact</div>
+                    </div>
+
+                    <!-- Installed list -->
+                    <div class="console-installed">
+                        <div style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:10px;">INSTALLED PATCHES</div>
+                        <div id="sidebarList">
+                            <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--border);text-align:center;padding:10px 0;">[ NONE ]</div>
+                        </div>
+                    </div>
+
+                    <!-- Readiness -->
+                    <div class="readiness" id="readinessRow">
+                        <span style="font-size:15px;">⚪</span>
+                        <span class="readiness-txt" id="readinessTxt">Install patches to begin</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Step Cards -->
+                <div class="ops-panel">
+
+                    <!-- 3.1: Query Security Lab -->
+                    <div class="step-card s-active" id="sc1">
+                        <div class="step-hdr">
+                            <div class="step-num" id="sn1">1</div>
+                            <div class="step-meta">
+                                <div class="step-title">Phase 3.1 — Query Security Lab</div>
+                                <div class="step-sub">Drag security patches into the database API endpoint to harden your query pipeline</div>
+                            </div>
+                            <span class="step-badge badge-active" id="sb1">ACTIVE</span>
+                        </div>
+                        <div class="step-body">
+                            <div class="callout" style="margin-bottom:18px;">
+                                <strong>🧠 Blue Team Mindset:</strong> SQL injection exploits <em>unsanitized query strings</em>. You have
+                                <strong>100 credits</strong> to spend on database hardening patches. Each adds cost and query overhead —
+                                but blocks injection vectors. Not all four fit within budget. Choose wisely.
+                            </div>
+
+                            <div class="eng-lab">
+                                <!-- Toolbox -->
+                                <div class="toolbox">
+                                    <div class="toolbox-lbl">🛠️ SECURITY PATCH TOOLBOX</div>
+
+                                    <div class="module-card" draggable="true" id="mod-prepared" data-id="prepared"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">🔧</div>
+                                        <div>
+                                            <div class="mod-name">Prepared Statements</div>
+                                            <div class="mod-desc">Parameterize all DB queries</div>
+                                            <div class="mod-costs"><span class="mc-c">35c</span><span class="mc-l">+12% overhead</span></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="module-card" draggable="true" id="mod-waf" data-id="waf"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">🧱</div>
+                                        <div>
+                                            <div class="mod-name">Web App Firewall</div>
+                                            <div class="mod-desc">Block malicious SQL patterns</div>
+                                            <div class="mod-costs"><span class="mc-c">40c</span><span class="mc-l">+28% overhead</span></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="module-card" draggable="true" id="mod-sanitizer" data-id="sanitizer"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">🧹</div>
+                                        <div>
+                                            <div class="mod-name">Input Sanitizer</div>
+                                            <div class="mod-desc">Strip &amp; escape dangerous chars</div>
+                                            <div class="mod-costs"><span class="mc-c">20c</span><span class="mc-l">+8% overhead</span></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="module-card" draggable="true" id="mod-errormask" data-id="errormask"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">🕶️</div>
+                                        <div>
+                                            <div class="mod-name">Error Masking</div>
+                                            <div class="mod-desc">Hide DB errors from responses</div>
+                                            <div class="mod-costs"><span class="mc-c">10c</span><span class="mc-l">+3% overhead</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- DB API Portal -->
+                                <div class="portal-area">
+                                    <div class="portal-window">
+                                        <div class="portal-bar">
+                                            <div class="t-dot-sm" style="background:#ff5f57;"></div>
+                                            <div class="t-dot-sm" style="background:#ffbd2e;"></div>
+                                            <div class="t-dot-sm" style="background:#28c840;"></div>
+                                            <div class="portal-url">⚠️ corp-app.net/api/search?q=</div>
+                                        </div>
+                                        <div class="portal-body">
+                                            <div class="drop-zone" id="dropZone"
+                                                ondragover="onDragOver(event)"
+                                                ondrop="onDrop(event)"
+                                                ondragleave="onDragLeave(event)">
+                                                <div class="drop-placeholder" id="dropPh">
+                                                    <div class="drop-placeholder-ico">⬇️</div>
+                                                    <div class="drop-placeholder-txt">Drop security patches here</div>
+                                                </div>
+                                                <div id="dropList"></div>
+                                            </div>
+                                            <div class="mod-count" style="margin-top:10px;">
+                                                <span class="mod-count-lbl">Patches Installed: <span class="mod-count-val" id="moduleCount">0</span>/4</span>
+                                                <span class="over-budget" id="overBudgetTag" style="display:none;">⚠ OVER BUDGET</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn-deploy" id="lockInBtn" onclick="lockInConfig()" disabled>🔧 LOCK IN CONFIGURATION</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3.2: Patch Analysis -->
+                    <div class="step-card s-locked" id="sc2">
+                        <div class="step-hdr">
+                            <div class="step-num" id="sn2">2</div>
+                            <div class="step-meta">
+                                <div class="step-title">Phase 3.2 — Patch Coverage Analysis</div>
+                                <div class="step-sub">Review what injection vectors your stack covers and what remains exposed</div>
+                            </div>
+                            <span class="step-badge badge-locked" id="sb2">🔒 LOCKED</span>
+                        </div>
+                        <div class="step-body">
+                            <div id="analysisContent"></div>
+                            <button class="btn-deploy" id="deployBtn" onclick="launchProbe()" disabled
+                                style="border-color:var(--orange);color:var(--orange);background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,51,102,0.1));">⚡ DEPLOY &amp; RUN INJECTION PROBE</button>
+                        </div>
+                    </div>
+
+                    <!-- 3.3: Injection Simulation -->
+                    <div class="step-card s-locked" id="sc3">
+                        <div class="step-hdr">
+                            <div class="step-num" id="sn3">3</div>
+                            <div class="step-meta">
+                                <div class="step-title">Phase 3.3 — Live Injection Simulation</div>
+                                <div class="step-sub">Watch an automated SQL injection scanner probe your hardened endpoint in real-time</div>
+                            </div>
+                            <span class="step-badge badge-locked" id="sb3">🔒 LOCKED</span>
+                        </div>
+                        <div class="step-body">
+                            <div class="callout danger" style="margin-bottom:16px;">
+                                <strong>🔥 Simulating:</strong> Automated SQL injection scan targeting <span class="sql-badge">?q=</span> parameter<br />
+                                Tool: <code>sqlmap</code> — Union, Boolean-blind &amp; Error-based injection modes
+                            </div>
+                            <div class="terminal">
+                                <div class="terminal-bar">
+                                    <div class="t-dot t-red"></div>
+                                    <div class="t-dot t-yellow"></div>
+                                    <div class="t-dot t-green-dot"></div>
+                                    <div class="terminal-title">INJECTION PROBE — corp-app.net/api/search</div>
+                                </div>
+                                <div class="terminal-body" id="stressLog">
+                                    <div class="t-line t-dim">Awaiting deployment command...</div>
+                                </div>
+                            </div>
+                            <div class="timer-wrap">
+                                <div class="timer-labels"><span>SIMULATION PROGRESS</span><span id="timerLbl">0s / 60s</span></div>
+                                <div class="timer-track">
+                                    <div class="timer-fill" id="timerFill"></div>
+                                </div>
+                            </div>
+                            <div id="stressVerdict" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                </div><!-- /ops-panel -->
+            </div><!-- /ops-layout -->
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        let user = null;
+
+        // ── Auth ───────────────────────────────────────────────
+        window.addEventListener('DOMContentLoaded', () => {
+            const raw = localStorage.getItem('ss_user');
+            if (raw) {
+                try {
+                    user = JSON.parse(raw);
+                    document.getElementById('navUser').textContent = user.username;
+                    document.getElementById('navUser').classList.add('show');
+                    document.getElementById('navLogout').classList.add('show');
+                } catch { }
+            }
+        });
+
+        async function saveP(part) {
+            if (!user) return;
+            if (!user.progress) user.progress = {};
+            if (!user.progress.sqli) user.progress.sqli = {};
+            if (!user.progress.sqli.level3) user.progress.sqli.level3 = {};
+            user.progress.sqli.level3[part] = true;
+            localStorage.setItem('ss_user', JSON.stringify(user));
+            try {
+                await fetch(`${API}/api/progress/${user.username}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ game: 'sqli', level: 'level3', mode: part, completed: true })
+                });
+            } catch { }
+        }
+
+        function logout() { localStorage.removeItem('ss_user'); window.location.href = 'index.html'; }
+        function goSQLLevels() { sessionStorage.setItem('ss_goto', 'page-sqlilevels'); window.location.href = 'index.html'; }
+
+        // ── Module definitions ─────────────────────────────────
+        const MODS = {
+            prepared:  { name: 'Prepared Statements', icon: '🔧', cost: 35, lag: 12, color: 'var(--purple)',  coverage: 'Query Parameterization' },
+            waf:       { name: 'Web App Firewall',     icon: '🧱', cost: 40, lag: 28, color: 'var(--cyan)',   coverage: 'Pattern Blocking Layer'  },
+            sanitizer: { name: 'Input Sanitizer',      icon: '🧹', cost: 20, lag: 8,  color: 'var(--green)',  coverage: 'Character Escaping Layer' },
+            errormask: { name: 'Error Masking',        icon: '🕶️', cost: 10, lag: 3,  color: 'var(--yellow)', coverage: 'Response Hardening'       }
+        };
+
+        let installed = {};
+        let configLocked = false;
+        let l3p1 = false, l3p2 = false, l3p3 = false;
+        let probeTimer = null;
+
+        // ── Progress bar ───────────────────────────────────────
+        function updateL3Bar() {
+            const done = [l3p1, l3p2, l3p3].filter(Boolean).length;
+            const pct = Math.round((done / 3) * 100);
+            document.getElementById('l3progFill').style.width = pct + '%';
+            document.getElementById('l3progPct').textContent = pct + '%';
+        }
+
+        function markDone(n) {
+            document.getElementById('sc' + n).className = 'step-card s-done';
+            const num = document.getElementById('sn' + n);
+            num.style.cssText = 'width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--green);color:var(--green);background:rgba(0,255,136,0.1);font-family:Orbitron,sans-serif;font-size:11px;font-weight:700;flex-shrink:0;';
+            num.textContent = '✓';
+            const b = document.getElementById('sb' + n);
+            b.textContent = 'COMPLETE'; b.className = 'step-badge badge-done';
+        }
+
+        function unlockStep(n) {
+            document.getElementById('sc' + n).className = 'step-card s-active';
+            const b = document.getElementById('sb' + n);
+            b.textContent = 'ACTIVE'; b.className = 'step-badge badge-active';
+        }
+
+        // ── Drag & Drop ────────────────────────────────────────
+        function onDragStart(e) {
+            if (configLocked) { e.preventDefault(); return; }
+            const id = e.currentTarget.dataset.id;
+            if (installed[id]) { e.preventDefault(); return; }
+            e.dataTransfer.setData('text/plain', id);
+            setTimeout(() => e.currentTarget.style.opacity = '0.3', 0);
+        }
+        function onDragEnd(e) { e.currentTarget.style.opacity = ''; }
+        function onDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+        function onDragLeave(e) { document.getElementById('dropZone').classList.remove('drag-over'); }
+        function onDrop(e) {
+            e.preventDefault();
+            document.getElementById('dropZone').classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            if (!id || installed[id] || !MODS[id]) return;
+            installModule(id);
+        }
+
+        function installModule(id) {
+            const mod = MODS[id];
+            installed[id] = true;
+            document.getElementById('mod-' + id).classList.add('mod-installed');
+            document.getElementById('dropPh').style.display = 'none';
+            const el = document.createElement('div');
+            el.className = 'installed-item'; el.id = 'inst-' + id;
+            el.innerHTML = `<span style="font-size:20px;">${mod.icon}</span>
+              <div style="flex:1;">
+                <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:${mod.color};">${mod.name}</div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);">${mod.cost}c · +${mod.lag}% overhead</div>
+              </div>
+              <button class="inst-remove" onclick="removeModule('${id}')">✕</button>`;
+            document.getElementById('dropList').appendChild(el);
+            refreshStats();
+        }
+
+        function removeModule(id) {
+            if (configLocked) return;
+            delete installed[id];
+            document.getElementById('mod-' + id).classList.remove('mod-installed');
+            const el = document.getElementById('inst-' + id);
+            if (el) el.remove();
+            if (Object.keys(installed).length === 0) document.getElementById('dropPh').style.display = '';
+            refreshStats();
+        }
+
+        function refreshStats() {
+            const keys = Object.keys(installed);
+            let cost = 0, lag = 0;
+            keys.forEach(k => { cost += MODS[k].cost; lag += MODS[k].lag; });
+
+            document.getElementById('moduleCount').textContent = keys.length;
+
+            // Budget
+            const bPct = Math.min((cost / 100) * 100, 100);
+            document.getElementById('budgetUsed').style.color = cost > 100 ? 'var(--red)' : 'var(--purple)';
+            document.getElementById('budgetUsed').textContent = cost;
+            document.getElementById('budgetBar').style.width = bPct + '%';
+            document.getElementById('budgetBar').style.background = cost > 100
+                ? 'linear-gradient(90deg,var(--red),var(--orange))'
+                : 'linear-gradient(90deg,var(--purple),var(--cyan))';
+            const rem = 100 - cost;
+            document.getElementById('budgetMsg').textContent = rem >= 0 ? `${rem} credits remaining` : `⚠ ${-rem} credits OVER BUDGET`;
+            document.getElementById('budgetMsg').style.color = rem >= 0 ? 'var(--text2)' : 'var(--red)';
+            document.getElementById('overBudgetTag').style.display = cost > 100 ? 'block' : 'none';
+
+            // Overhead
+            document.getElementById('latencyPct').textContent = lag + '%';
+            document.getElementById('latencyBar').style.width = Math.min(lag + 5, 100) + '%';
+            const latOver = lag > 100;
+            if (latOver) {
+                document.getElementById('sdot').className = 'sdot red';
+                document.getElementById('stext').textContent = '⚠ OVERHEAD CRITICAL — Deploy blocked';
+                document.getElementById('latencyMsg').textContent = '⚠ CRITICAL: >100% — deploy blocked';
+                document.getElementById('latencyMsg').style.color = 'var(--red)';
+            } else {
+                document.getElementById('sdot').className = 'sdot';
+                document.getElementById('stext').textContent = '🗄️ DATABASE DEFENSE MODE — Blue Team Operations';
+                const lvl = lag > 60 ? '⚠ HIGH' : lag > 25 ? 'MODERATE' : lag > 0 ? 'LOW' : 'None';
+                document.getElementById('latencyMsg').textContent = lvl + ' query overhead';
+                document.getElementById('latencyMsg').style.color = lag > 60 ? 'var(--yellow)' : 'var(--text2)';
+            }
+
+            // Sidebar installed list
+            const sl = document.getElementById('sidebarList');
+            if (keys.length === 0) {
+                sl.innerHTML = '<div style="font-family:\'Share Tech Mono\',monospace;font-size:11px;color:var(--border);text-align:center;padding:10px 0;">[ NONE ]</div>';
+            } else {
+                sl.innerHTML = keys.map(k => {
+                    const m = MODS[k];
+                    return `<div class="console-mod-row">
+                      <span style="font-size:14px;">${m.icon}</span>
+                      <span class="console-mod-name" style="color:${m.color};">${m.name}</span>
+                      <span class="console-mod-cost">${m.cost}c·+${m.lag}%</span>
+                    </div>`;
+                }).join('') + `<div style="margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);">Total: ${cost}c · ${lag}% overhead</div>`;
+            }
+
+            // Readiness
+            const ok = keys.length > 0 && cost <= 100 && !latOver;
+            const btn = document.getElementById('lockInBtn');
+            if (keys.length === 0) {
+                document.getElementById('readinessRow').innerHTML = '<span style="font-size:15px;">⚪</span><span class="readiness-txt">Install patches to begin</span>';
+                btn.disabled = true;
+            } else if (cost > 100) {
+                document.getElementById('readinessRow').innerHTML = '<span style="font-size:15px;">🔴</span><span class="readiness-txt" style="color:var(--red);">Over budget — remove a patch</span>';
+                btn.disabled = true;
+            } else if (latOver) {
+                document.getElementById('readinessRow').innerHTML = '<span style="font-size:15px;">🔴</span><span class="readiness-txt" style="color:var(--red);">Overhead critical — reduce patches</span>';
+                btn.disabled = true;
+            } else {
+                document.getElementById('readinessRow').innerHTML = '<span style="font-size:15px;">🟢</span><span class="readiness-txt" style="color:var(--green);">Ready — lock in your configuration</span>';
+                btn.disabled = false;
+            }
+        }
+
+        // ── Phase 3.1 Complete ─────────────────────────────────
+        function lockInConfig() {
+            if (l3p1) return;
+            configLocked = true;
+            document.getElementById('lockInBtn').disabled = true;
+            document.getElementById('lockInBtn').textContent = '🔒 CONFIGURATION LOCKED';
+            document.querySelectorAll('.module-card').forEach(el => {
+                el.setAttribute('draggable', 'false'); el.style.opacity = '0.4'; el.style.cursor = 'default';
+            });
+            document.querySelectorAll('.inst-remove').forEach(el => el.style.display = 'none');
+            l3p1 = true; saveP('p1'); updateL3Bar();
+            setTimeout(() => { markDone(1); unlockStep(2); buildAnalysis(); }, 700);
+        }
+
+        // ── Phase 3.2: Coverage Analysis ──────────────────────
+        function buildAnalysis() {
+            const keys = Object.keys(installed);
+            let cost = 0, lag = 0;
+            keys.forEach(k => { cost += MODS[k].cost; lag += MODS[k].lag; });
+            const hasPrepared  = !!installed.prepared;
+            const hasWAF       = !!installed.waf;
+            const hasSanitizer = !!installed.sanitizer;
+            const hasErrMask   = !!installed.errormask;
+
+            const rows = keys.map(k => {
+                const m = MODS[k];
+                return `<tr><td style="color:${m.color};">${m.icon} ${m.name}</td><td style="color:var(--yellow);text-align:right;">${m.cost}c</td><td style="text-align:right;">+${m.lag}%</td><td style="color:var(--text2);">${m.coverage}</td></tr>`;
+            }).join('');
+
+            // Calculate a coverage % based on what's installed
+            let coveragePts = 0;
+            if (hasPrepared)  coveragePts += 50;
+            if (hasWAF)       coveragePts += 25;
+            if (hasSanitizer) coveragePts += 15;
+            if (hasErrMask)   coveragePts += 10;
+
+            const coverageColor = coveragePts >= 75 ? 'var(--green)' : coveragePts >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+            document.getElementById('analysisContent').innerHTML = `
+              <table class="analysis-tbl" style="margin-bottom:14px;">
+                <thead><tr><th>PATCH</th><th style="text-align:right;">COST</th><th style="text-align:right;">OVERHEAD</th><th>COVERAGE</th></tr></thead>
+                <tbody>
+                  ${rows}
+                  <tr class="total">
+                    <td>TOTAL</td>
+                    <td style="color:var(--yellow);text-align:right;">${cost} / 100c</td>
+                    <td style="text-align:right;">${lag}%</td>
+                    <td style="color:${coverageColor};">${coveragePts}% injection surface covered</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="callout ${hasPrepared ? '' : 'warn'}" style="margin-bottom:0;">
+                ${hasPrepared
+                    ? '<strong>✅ Prepared Statements detected.</strong> Your queries are fully parameterized — user input is treated as data, never as SQL code. This neutralizes all classic injection payloads.'
+                    : '<strong>⚠️ No Prepared Statements!</strong> Your endpoint still builds queries by concatenating raw user input. A scanner can inject arbitrary SQL — UNION attacks, data dumps, and table drops are all possible.'}
+              </div>`;
+
+            document.getElementById('deployBtn').disabled = false;
+            l3p2 = true; saveP('p2'); updateL3Bar();
+            setTimeout(() => markDone(2), 500);
+        }
+
+        // ── Phase 3.3: Injection Probe ─────────────────────────
+        function launchProbe() {
+            if (probeTimer) return;
+            document.getElementById('deployBtn').disabled = true;
+            unlockStep(3);
+
+            const hasPrepared  = !!installed.prepared;
+            const hasWAF       = !!installed.waf;
+            const hasSanitizer = !!installed.sanitizer;
+            const hasErrMask   = !!installed.errormask;
+
+            const log = document.getElementById('stressLog');
+            log.innerHTML = '';
+
+            // ── Secure sequence (prepared statements installed) ──
+            const secureSeq = [
+                { t: 0,  cls: 't-cmd',    txt: "$ sqlmap -u 'https://corp-app.net/api/search?q=test' --level=5 --risk=3 --dbs" },
+                { t: 1,  cls: 't-dim',    txt: '─────────────────────────────────────────────────────' },
+                { t: 2,  cls: 't-warn',   txt: "[*] Testing connection to target URL..." },
+                { t: 3,  cls: 't-warn',   txt: "[*] Checking if target is protected by a WAF/IPS..." },
+                ...(hasWAF ? [{ t: 4, cls: 't-warn', txt: "[!] WAF detected — switching to evasion techniques..." }] : []),
+                { t: 5,  cls: 't-inject', txt: "[PAYLOAD] q=test' OR '1'='1" },
+                { t: 7,  cls: 't-fail',   txt: "[RESULT]  No boolean difference detected — payload neutralized." },
+                { t: 9,  cls: 't-inject', txt: "[PAYLOAD] q=test'; SELECT * FROM users--" },
+                { t: 11, cls: 't-fail',   txt: "[RESULT]  Query treated as literal string — not executed." },
+                { t: 13, cls: 't-inject', txt: "[PAYLOAD] q=test' UNION SELECT null,username,password FROM users--" },
+                { t: 16, cls: 't-fail',   txt: "[RESULT]  UNION attack failed — parameterized query blocked injection." },
+                { t: 19, cls: 't-inject', txt: "[PAYLOAD] q=test'; DROP TABLE users;--" },
+                { t: 22, cls: 't-fail',   txt: "[RESULT]  Stacked query rejected by prepared statement engine." },
+                ...(hasSanitizer ? [{ t: 24, cls: 't-warn', txt: "[SANITIZER] Input stripped of quotes and semicolons before processing." }] : []),
+                { t: 28, cls: 't-warn',   txt: "[*] Attempting time-based blind injection..." },
+                { t: 31, cls: 't-inject', txt: "[PAYLOAD] q=test'; WAITFOR DELAY '0:0:5'--" },
+                { t: 35, cls: 't-fail',   txt: "[RESULT]  No delay detected — time-based attack ineffective." },
+                { t: 39, cls: 't-warn',   txt: "[*] Attempting error-based extraction..." },
+                { t: 42, cls: 't-inject', txt: "[PAYLOAD] q=test' AND EXTRACTVALUE(1,CONCAT(0x7e,version()))--" },
+                ...(hasErrMask
+                    ? [{ t: 45, cls: 't-fail', txt: "[ERROR MASKING] Generic 500 returned — no DB info leaked." }]
+                    : [{ t: 45, cls: 't-fail', txt: "[RESULT] Error returned but no exploitable output found — parameters protected." }]),
+                { t: 49, cls: 't-dim',    txt: "[*] All 12 injection vectors exhausted. No vulnerability found." },
+                { t: 54, cls: 't-ok',     txt: "[RESULT] Target is NOT injectable. Prepared statements are blocking all attacks." },
+                { t: 57, cls: 't-ok',     txt: "[SECURE] Database contents: PROTECTED." },
+                { t: 60, cls: 't-ok',     txt: "✅ DEFENSE HELD — Zero injection vectors exploited." }
+            ];
+
+            // ── Breach sequence (no prepared statements) ─────────
+            const breachSeq = [
+                { t: 0,  cls: 't-cmd',    txt: "$ sqlmap -u 'https://corp-app.net/api/search?q=test' --level=5 --risk=3 --dbs" },
+                { t: 1,  cls: 't-dim',    txt: '─────────────────────────────────────────────────────' },
+                { t: 2,  cls: 't-warn',   txt: "[*] Testing connection to target URL..." },
+                { t: 3,  cls: 't-warn',   txt: "[*] Target appears unprotected. Launching full scan..." },
+                { t: 5,  cls: 't-inject', txt: "[PAYLOAD] q=test' OR '1'='1" },
+                { t: 7,  cls: 't-warn',   txt: "[!] Boolean difference detected — target may be INJECTABLE." },
+                ...(hasWAF ? [{ t: 8, cls: 't-warn', txt: "[WAF] Pattern flagged — trying obfuscation bypass (/**/, URL encoding)..." }] : []),
+                ...(hasSanitizer ? [{ t: 9, cls: 't-warn', txt: "[SANITIZER] Some chars stripped — pivoting to hex-encoded payload..." }] : []),
+                { t: 11, cls: 't-inject', txt: "[PAYLOAD] q=test' UNION SELECT null,null,null--" },
+                { t: 13, cls: 't-danger', txt: "[HIT!] UNION-based injection confirmed. Column count: 3." },
+                { t: 15, cls: 't-inject', txt: "[PAYLOAD] q=test' UNION SELECT table_name,null,null FROM information_schema.tables--" },
+                { t: 18, cls: 't-danger', txt: "[DATA] Tables enumerated: users, sessions, payments, audit_log, products" },
+                { t: 21, cls: 't-warn',   txt: "[*] Targeting users table..." },
+                { t: 24, cls: 't-inject', txt: "[PAYLOAD] q=test' UNION SELECT username,password_hash,email FROM users--" },
+                { t: 28, cls: 't-danger', txt: "[DUMP] admin  | $2b$12$LQv3c1yqBWVHxkd0LQ4YCe | admin@corp.net" },
+                { t: 30, cls: 't-danger', txt: "[DUMP] j.smith | $2b$12$8xHNtf2k4mNzRpL0cV3d2u | j.smith@corp.net" },
+                { t: 32, cls: 't-danger', txt: "[DUMP] ...and 4,847 more records." },
+                ...(hasErrMask ? [] : [{ t: 34, cls: 't-danger', txt: "[ERROR-BASED] DB version exposed via error: MySQL 8.0.33 — enabling targeted exploits." }]),
+                { t: 38, cls: 't-inject', txt: "[PAYLOAD] q=test'; INSERT INTO users(username,password_hash,role) VALUES('hacker','$2b$12$...','admin')--" },
+                { t: 43, cls: 't-danger', txt: "[HIT!] Stacked query executed — backdoor admin account created." },
+                { t: 48, cls: 't-danger', txt: "[EXFIL] Downloading payments table... 12,341 card records extracted." },
+                { t: 54, cls: 't-danger', txt: "⚠ 4,848 user credentials + 12,341 payment records compromised." },
+                { t: 57, cls: 't-danger', txt: "💀 BREACH COMPLETE — Prepared Statements would have stopped this at step 1." }
+            ];
+
+            const seq = hasPrepared ? secureSeq : breachSeq;
+            let elapsed = 0;
+            const totalSecs = 60;
+
+            probeTimer = setInterval(() => {
+                elapsed++;
+                document.getElementById('timerLbl').textContent = `${elapsed}s / ${totalSecs}s`;
+                document.getElementById('timerFill').style.width = ((elapsed / totalSecs) * 100) + '%';
+
+                seq.filter(e => e.t === elapsed).forEach(entry => {
+                    const div = document.createElement('div');
+                    div.className = 't-line ' + entry.cls;
+                    div.textContent = entry.txt;
+                    log.appendChild(div);
+                    log.scrollTop = log.scrollHeight;
+                });
+
+                if (elapsed >= totalSecs) {
+                    clearInterval(probeTimer);
+                    probeTimer = null;
+                    showVerdict(hasPrepared);
+                }
+            }, 500);
+        }
+
+        function showVerdict(success) {
+            const v = document.getElementById('stressVerdict');
+            v.style.display = 'block';
+
+            if (success) {
+                v.innerHTML = `<div class="verdict-box verdict-safe">
+                  <div class="verdict-ico">🛡️</div>
+                  <div class="verdict-title">DATABASE SECURED</div>
+                  <div class="verdict-body">
+                    sqlmap exhausted every injection vector and found nothing. <strong>Prepared Statements</strong> was the decisive control — by separating SQL logic from user data at the driver level, no payload can alter query structure.<br/><br/>
+                    <strong>Key Lesson:</strong> Parameterized queries + Input Sanitization + WAF = defense in depth. Prepared Statements alone defeat classic injection; the other layers handle edge cases and blind attacks. Together, they make automated SQL injection economically unviable.
+                  </div>
+                  <button class="btn-complete" onclick="finishL3()">✓ COMPLETE LEVEL 3 — FINISH TRAINING</button>
+                </div>`;
+            } else {
+                v.innerHTML = `<div class="verdict-box verdict-breach">
+                  <div class="verdict-ico">💀</div>
+                  <div class="verdict-title">DATABASE BREACHED</div>
+                  <div class="verdict-body">
+                    The scanner found a UNION-based injection point and dumped the entire users table in under 60 seconds. <strong>Prepared Statements</strong> were not installed — your queries are still built by concatenating raw user input, giving attackers full control over SQL logic.<br/><br/>
+                    <strong>Key Lesson:</strong> Parameterized queries (Prepared Statements, at just 35 credits) are the single most cost-effective fix against SQL injection. ${installed.waf ? 'Your WAF slowed the attack but could not stop it. ' : ''}${installed.sanitizer ? 'Your sanitizer forced obfuscation but payload bypass succeeded. ' : ''}<em>Never skip Prepared Statements.</em>
+                  </div>
+                  <button class="btn-complete" onclick="finishL3()" style="background:linear-gradient(135deg,var(--red),var(--orange));box-shadow:0 0 28px rgba(255,51,102,0.4);">⚠ ACKNOWLEDGE &amp; COMPLETE LEVEL 3</button>
+                </div>`;
+            }
+
+            l3p3 = true; saveP('p3'); updateL3Bar();
+            markDone(3);
+        }
+
+        function finishL3() {
+            if (!user) return;
+            if (!user.progress) user.progress = {};
+            if (!user.progress.sqli) user.progress.sqli = {};
+            user.progress.sqli.level3 = { p1: true, p2: true, p3: true, complete: true };
+            localStorage.setItem('ss_user', JSON.stringify(user));
+            sessionStorage.setItem('ss_goto', 'page-sqlilevels');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>

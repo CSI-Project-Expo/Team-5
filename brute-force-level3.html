@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ShieldSimulation — Level 3: Defense &amp; Prevention</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        :root {
+            --bg: #040d1a;
+            --bg2: #061020;
+            --card: #0a1628;
+            --border: #1a3a5c;
+            --border2: #0f2744;
+            --cyan: #00f5ff;
+            --cyan2: #00bcd4;
+            --green: #00ff88;
+            --red: #ff3366;
+            --yellow: #ffd700;
+            --orange: #ff6b35;
+            --purple: #a855f7;
+            --text: #c8dff0;
+            --text2: #7a9ab8;
+            --glow: 0 0 20px rgba(0, 245, 255, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 4px);
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        #gridbg {
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(rgba(0, 245, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 245, 255, 0.025) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 48px;
+            background: rgba(4, 13, 26, 0.94);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border2);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 15px;
+            color: #040d1a;
+        }
+
+        .nav-logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            color: var(--text2);
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: default;
+            transition: color .2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyan);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        #navUser {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--cyan);
+            font-size: 13px;
+            display: none;
+        }
+
+        #navUser.show {
+            display: block;
+        }
+
+        #navLogout {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 6px 14px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all .2s;
+            display: none;
+        }
+
+        #navLogout.show {
+            display: block;
+        }
+
+        #navLogout:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        #statusbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 500;
+            background: rgba(4, 13, 26, 0.96);
+            border-top: 1px solid var(--border2);
+            padding: 7px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        .sdot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            display: inline-block;
+            margin-right: 7px;
+            animation: gp 2s infinite;
+        }
+
+        .sdot.red {
+            background: var(--red);
+            animation: rp 1s infinite;
+        }
+
+        @keyframes gp {
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px var(--green);
+            }
+
+            50% {
+                box-shadow: 0 0 12px var(--green);
+            }
+        }
+
+        @keyframes rp {
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px var(--red);
+            }
+
+            50% {
+                box-shadow: 0 0 14px var(--red);
+            }
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            color: var(--text2);
+        }
+
+        .bc-link {
+            color: var(--cyan);
+            cursor: pointer;
+        }
+
+        .bc-link:hover {
+            text-decoration: underline;
+        }
+
+        .bc-sep {
+            color: var(--border);
+        }
+
+        .callout {
+            background: rgba(0, 245, 255, 0.05);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-bottom: 22px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text2);
+        }
+
+        .callout strong {
+            color: var(--cyan);
+        }
+
+        .callout.warn {
+            background: rgba(255, 215, 0, 0.04);
+            border-color: rgba(255, 215, 0, 0.2);
+            border-left-color: var(--yellow);
+        }
+
+        .callout.warn strong {
+            color: var(--yellow);
+        }
+
+        .callout.danger {
+            background: rgba(255, 51, 102, 0.04);
+            border-color: rgba(255, 51, 102, 0.2);
+            border-left-color: var(--red);
+        }
+
+        .callout.danger strong {
+            color: var(--red);
+        }
+
+        .main-scroll {
+            position: fixed;
+            inset: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1;
+            padding: 90px 40px 80px;
+        }
+
+        .inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Glitch */
+        @keyframes glitch {
+
+            0%,
+            100% {
+                clip-path: inset(0 0 98% 0);
+                transform: translate(-2px, 0);
+            }
+
+            20% {
+                clip-path: inset(30% 0 50% 0);
+                transform: translate(2px, 0);
+            }
+
+            40% {
+                clip-path: inset(60% 0 20% 0);
+                transform: translate(-1px, 0);
+            }
+
+            60% {
+                clip-path: inset(80% 0 5% 0);
+                transform: translate(1px, 0);
+            }
+
+            80% {
+                clip-path: inset(10% 0 80% 0);
+                transform: translate(-2px, 0);
+            }
+        }
+
+        .glitch-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .glitch-wrap::before,
+        .glitch-wrap::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch-wrap::before {
+            color: var(--green);
+            animation: glitch 3s infinite linear;
+            opacity: .6;
+        }
+
+        .glitch-wrap::after {
+            color: var(--cyan);
+            animation: glitch 3s infinite linear reverse;
+            opacity: .6;
+            animation-delay: .15s;
+        }
+
+        /* Layout */
+        .ops-layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 22px;
+            align-items: start;
+        }
+
+        .bio-card {
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: 14px;
+            overflow: hidden;
+            position: sticky;
+            top: 0;
+        }
+
+        .bio-header {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 245, 255, 0.06));
+            border-bottom: 1px solid var(--border2);
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bio-status {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            animation: gp 2s infinite;
+            flex-shrink: 0;
+        }
+
+        .bio-header-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--green);
+        }
+
+        .ops-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .step-card {
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: border-color .3s;
+        }
+
+        .step-card.s-active {
+            border-color: rgba(0, 245, 255, 0.4);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.07);
+        }
+
+        .step-card.s-done {
+            border-color: rgba(0, 255, 136, 0.35);
+        }
+
+        .step-card.s-locked {
+            opacity: .45;
+            pointer-events: none;
+        }
+
+        .step-hdr {
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid var(--border2);
+        }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text2);
+            flex-shrink: 0;
+            transition: all .3s;
+        }
+
+        .s-active .step-num {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            background: rgba(0, 245, 255, 0.1);
+            box-shadow: 0 0 12px rgba(0, 245, 255, 0.3);
+        }
+
+        .s-done .step-num {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .step-meta {
+            flex: 1;
+        }
+
+        .step-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .step-sub {
+            font-size: 12px;
+            color: var(--text2);
+        }
+
+        .step-badge {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 8px;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .badge-active {
+            background: rgba(0, 245, 255, .1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+        }
+
+        .badge-done {
+            background: rgba(0, 255, 136, .1);
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+
+        .badge-locked {
+            background: rgba(122, 154, 184, .08);
+            border: 1px solid var(--border);
+            color: var(--text2);
+        }
+
+        .step-body {
+            padding: 22px;
+        }
+
+        /* Progress */
+        .l2-progress {
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 16px 22px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .l2-prog-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--text2);
+            white-space: nowrap;
+        }
+
+        .l2-prog-track {
+            flex: 1;
+            background: var(--bg2);
+            border-radius: 4px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .l2-prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), var(--cyan));
+            border-radius: 4px;
+            transition: width .8s ease;
+            width: 0%;
+        }
+
+        .l2-prog-pct {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--green);
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* Engineering Lab */
+        .eng-lab {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .toolbox {
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .toolbox-lbl {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--text2);
+            margin-bottom: 12px;
+        }
+
+        .module-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all .2s;
+            user-select: none;
+        }
+
+        .module-card:hover {
+            border-color: var(--cyan);
+            background: rgba(0, 245, 255, 0.04);
+        }
+
+        .module-card:active {
+            cursor: grabbing;
+        }
+
+        .module-card.mod-installed {
+            opacity: .25;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .module-card.mod-locked {
+            cursor: not-allowed;
+        }
+
+        .mod-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .mod-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .mod-desc {
+            font-size: 11px;
+            color: var(--text2);
+            margin-bottom: 4px;
+        }
+
+        .mod-costs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mc-c {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--yellow);
+        }
+
+        .mc-l {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--orange);
+        }
+
+        .portal-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .portal-window {
+            background: #020a14;
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .portal-bar {
+            background: #0a1628;
+            border-bottom: 1px solid var(--border2);
+            padding: 9px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .t-dot-sm {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .portal-url {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--text2);
+            margin-left: auto;
+        }
+
+        .portal-body {
+            padding: 14px;
+            min-height: 180px;
+        }
+
+        .drop-zone {
+            background: rgba(0, 245, 255, 0.02);
+            border: 2px dashed var(--border2);
+            border-radius: 8px;
+            padding: 14px;
+            min-height: 160px;
+            transition: all .2s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--cyan);
+            background: rgba(0, 245, 255, 0.06);
+        }
+
+        .drop-placeholder {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--border);
+        }
+
+        .drop-placeholder-ico {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .drop-placeholder-txt {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+        }
+
+        .installed-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            animation: popIn .3s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .inst-remove {
+            background: none;
+            border: none;
+            color: var(--text2);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: color .2s;
+            line-height: 1;
+        }
+
+        .inst-remove:hover {
+            color: var(--red);
+        }
+
+        .mod-count {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .mod-count-lbl {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        .mod-count-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .over-budget {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--red);
+        }
+
+        /* Meter */
+        .meter-section {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border2);
+        }
+
+        .meter-lbl {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--text2);
+            margin-bottom: 10px;
+        }
+
+        .meter-vals {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 6px;
+        }
+
+        .meter-big {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .meter-of {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--text2);
+        }
+
+        .meter-bar-wrap {
+            background: var(--bg2);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .meter-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width .4s, background .4s;
+        }
+
+        .meter-msg {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--text2);
+        }
+
+        /* Console sidebar sections */
+        .console-installed {
+            padding: 16px 22px;
+        }
+
+        .console-mod-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border2);
+        }
+
+        .console-mod-row:last-child {
+            border-bottom: none;
+        }
+
+        .console-mod-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            flex: 1;
+        }
+
+        .console-mod-cost {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            color: var(--text2);
+        }
+
+        .readiness {
+            padding: 12px 22px;
+            background: rgba(0, 0, 0, 0.18);
+            border-top: 1px solid var(--border2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .readiness-txt {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        /* Deploy button */
+        .btn-deploy {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 245, 255, 0.1));
+            border: 1px solid var(--green);
+            color: var(--green);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all .2s;
+            margin-top: 14px;
+        }
+
+        .btn-deploy:hover:not(:disabled) {
+            background: var(--green);
+            color: #040d1a;
+        }
+
+        .btn-deploy:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        /* Terminal */
+        .terminal {
+            background: #020a14;
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .terminal-bar {
+            background: #0a1628;
+            border-bottom: 1px solid var(--border2);
+            padding: 9px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .t-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .t-red {
+            background: #ff5f57;
+        }
+
+        .t-yellow {
+            background: #ffbd2e;
+        }
+
+        .t-green-dot {
+            background: #28c840;
+        }
+
+        .terminal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--text2);
+            margin-left: auto;
+        }
+
+        .terminal-body {
+            padding: 16px;
+            height: 260px;
+            overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .terminal-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 2px;
+        }
+
+        .t-line {
+            margin-bottom: 2px;
+        }
+
+        .t-cmd {
+            color: var(--cyan);
+        }
+
+        .t-fail {
+            color: rgba(255, 51, 102, 0.7);
+        }
+
+        .t-warn {
+            color: var(--yellow);
+        }
+
+        .t-ok {
+            color: var(--green);
+            font-weight: bold;
+        }
+
+        .t-dim {
+            color: rgba(122, 154, 184, 0.5);
+        }
+
+        .t-danger {
+            color: var(--red);
+            font-weight: bold;
+        }
+
+        /* Analysis table */
+        .analysis-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+
+        .analysis-tbl th {
+            background: rgba(0, 245, 255, 0.08);
+            border: 1px solid var(--border2);
+            padding: 8px 10px;
+            color: var(--cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 9px;
+            letter-spacing: 1px;
+            text-align: left;
+        }
+
+        .analysis-tbl td {
+            border: 1px solid var(--border2);
+            padding: 8px 10px;
+            color: var(--text2);
+        }
+
+        .analysis-tbl tr.total td {
+            color: var(--text);
+            font-weight: bold;
+            background: rgba(0, 245, 255, 0.03);
+        }
+
+        /* Verdict */
+        .verdict-box {
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .verdict-safe {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 245, 255, 0.05));
+            border: 2px solid var(--green);
+        }
+
+        .verdict-breach {
+            background: linear-gradient(135deg, rgba(255, 51, 102, 0.1), rgba(168, 85, 247, 0.06));
+            border: 2px solid var(--red);
+        }
+
+        .verdict-ico {
+            font-size: 44px;
+            margin-bottom: 10px;
+        }
+
+        .verdict-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
+
+        .verdict-safe .verdict-title {
+            color: var(--green);
+        }
+
+        .verdict-breach .verdict-title {
+            color: var(--red);
+        }
+
+        .verdict-body {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .verdict-body strong {
+            color: var(--cyan);
+        }
+
+        .btn-complete {
+            padding: 13px 36px;
+            background: linear-gradient(135deg, var(--green), #00cc66);
+            border: none;
+            border-radius: 8px;
+            color: #040d1a;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .btn-complete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 28px rgba(0, 255, 136, 0.5);
+        }
+
+        /* Timer */
+        .timer-wrap {
+            margin-bottom: 14px;
+        }
+
+        .timer-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text2);
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 5px;
+        }
+
+        .timer-track {
+            background: var(--bg);
+            border-radius: 3px;
+            height: 5px;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), var(--green));
+            border-radius: 3px;
+            width: 0%;
+            transition: width .5s;
+        }
+
+        @media(max-width:860px) {
+            .ops-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .bio-card {
+                position: static;
+            }
+
+            .eng-lab {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="gridbg"></div>
+    <nav id="nav">
+        <div class="nav-logo">
+            <div class="nav-logo-icon">S</div><span class="nav-logo-text">ShieldSimulation</span>
+        </div>
+        <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+        <div class="nav-right"><span id="navUser"></span><button id="navLogout" onclick="logout()">LOGOUT</button></div>
+    </nav>
+    <div id="statusbar">
+        <div><span class="sdot" id="sdot"></span><span id="stext">⚡ DEFENSE MODE ACTIVE — Blue Team Operations</span>
+        </div>
+        <span>© 2024 ShieldSimulation | Secure Training Platform</span>
+    </div>
+
+    <div class="main-scroll">
+        <div class="inner">
+
+            <div class="breadcrumb">
+                <span class="bc-link" onclick="window.location.href='index.html'">Home</span>
+                <span class="bc-sep">›</span>
+                <span class="bc-link" onclick="goBFLevels()">Brute Force</span>
+                <span class="bc-sep">›</span>
+                <span style="color:var(--green)">Level 3: Defense &amp; Prevention</span>
+            </div>
+
+            <div style="margin-bottom:28px;">
+                <div class="glitch-wrap" data-text="DEFENSE &amp; PREVENTION"
+                    style="font-family:'Orbitron',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:900;color:var(--green);text-shadow:0 0 30px rgba(0,255,136,0.5);margin-bottom:6px;">
+                    DEFENSE &amp; PREVENTION</div>
+                <div style="color:var(--text2);font-size:15px;">You are now the defender. Build layered security, manage
+                    resources, and stress-test your system against a live attack. 🛡️</div>
+            </div>
+
+            <div class="l2-progress">
+                <div class="l2-prog-label">LEVEL 3 PROGRESS</div>
+                <div class="l2-prog-track">
+                    <div class="l2-prog-fill" id="l3progFill"></div>
+                </div>
+                <div class="l2-prog-pct" id="l3progPct">0%</div>
+            </div>
+
+            <div class="ops-layout">
+
+                <!-- LEFT: Status Console -->
+                <div class="bio-card">
+                    <div class="bio-header">
+                        <div class="bio-status" style="background:var(--green);"></div>
+                        <span class="bio-header-text">◈ SECURITY DEPLOYMENT CONSOLE</span>
+                    </div>
+
+                    <!-- Budget Meter -->
+                    <div class="meter-section">
+                        <div class="meter-lbl">BUDGET ALLOCATION</div>
+                        <div class="meter-vals">
+                            <span
+                                style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);">Credits
+                                Used</span>
+                            <span><span class="meter-big" id="budgetUsed">0</span><span class="meter-of"> /
+                                    100</span></span>
+                        </div>
+                        <div class="meter-bar-wrap">
+                            <div class="meter-bar" id="budgetBar"
+                                style="width:0%;background:linear-gradient(90deg,var(--green),var(--cyan));"></div>
+                        </div>
+                        <div class="meter-msg" id="budgetMsg">100 credits remaining</div>
+                    </div>
+
+                    <!-- Latency Meter -->
+                    <div class="meter-section">
+                        <div class="meter-lbl">SYSTEM LATENCY IMPACT</div>
+                        <div class="meter-vals">
+                            <span
+                                style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);">Added
+                                Latency</span>
+                            <span class="meter-big" id="latencyPct">0%</span>
+                        </div>
+                        <div class="meter-bar-wrap">
+                            <div class="meter-bar" id="latencyBar"
+                                style="width:0%;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));">
+                            </div>
+                        </div>
+                        <div class="meter-msg" id="latencyMsg">No performance impact</div>
+                    </div>
+
+                    <!-- Installed list -->
+                    <div class="console-installed">
+                        <div
+                            style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:10px;">
+                            INSTALLED MODULES</div>
+                        <div id="sidebarList">
+                            <div
+                                style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--border);text-align:center;padding:10px 0;">
+                                [ NONE ]</div>
+                        </div>
+                    </div>
+
+                    <!-- Readiness -->
+                    <div class="readiness" id="readinessRow">
+                        <span style="font-size:15px;">⚪</span>
+                        <span class="readiness-txt" id="readinessTxt">Install modules to begin</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Step Cards -->
+                <div class="ops-panel">
+
+                    <!-- 3.1: Engineering Lab -->
+                    <div class="step-card s-active" id="sc1">
+                        <div class="step-hdr">
+                            <div class="step-num" id="sn1">1</div>
+                            <div class="step-meta">
+                                <div class="step-title">Phase 3.1 — Engineering Lab</div>
+                                <div class="step-sub">Drag security modules into the target portal to build your defense
+                                </div>
+                            </div>
+                            <span class="step-badge badge-active" id="sb1">ACTIVE</span>
+                        </div>
+                        <div class="step-body">
+                            <div class="callout" style="margin-bottom:18px;">
+                                <strong>🧠 Blue Team Mindset:</strong> Defense is about <em>layers</em>. You have
+                                <strong>100 credits</strong> to spend. Each module adds cost and latency — but also
+                                reduces your attack surface. Choose wisely. Not all four will fit within budget.
+                            </div>
+
+                            <div class="eng-lab">
+                                <!-- Toolbox -->
+                                <div class="toolbox">
+                                    <div class="toolbox-lbl">🛠️ SECURITY TOOLBOX</div>
+                                    <div class="module-card" draggable="true" id="mod-mfa" data-id="mfa"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">🔐</div>
+                                        <div>
+                                            <div class="mod-name">MFA Module</div>
+                                            <div class="mod-desc">2-factor auth on all logins</div>
+                                            <div class="mod-costs"><span class="mc-c">50c</span><span class="mc-l">+40%
+                                                    lag</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="module-card" draggable="true" id="mod-captcha" data-id="captcha"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">🤖</div>
+                                        <div>
+                                            <div class="mod-name">CAPTCHA Challenge</div>
+                                            <div class="mod-desc">Visual bot detection system</div>
+                                            <div class="mod-costs"><span class="mc-c">30c</span><span class="mc-l">+15%
+                                                    lag</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="module-card" draggable="true" id="mod-lockout" data-id="lockout"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">🔒</div>
+                                        <div>
+                                            <div class="mod-name">Account Lockout</div>
+                                            <div class="mod-desc">Lock after 5 failed attempts</div>
+                                            <div class="mod-costs"><span class="mc-c">20c</span><span class="mc-l">+5%
+                                                    lag</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="module-card" draggable="true" id="mod-validator" data-id="validator"
+                                        ondragstart="onDragStart(event)" ondragend="onDragEnd(event)">
+                                        <div class="mod-icon">✅</div>
+                                        <div>
+                                            <div class="mod-name">Input Validator</div>
+                                            <div class="mod-desc">Sanitize &amp; rate-limit inputs</div>
+                                            <div class="mod-costs"><span class="mc-c">10c</span><span class="mc-l">+2%
+                                                    lag</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Portal -->
+                                <div class="portal-area">
+                                    <div class="portal-window">
+                                        <div class="portal-bar">
+                                            <div class="t-dot-sm" style="background:#ff5f57;"></div>
+                                            <div class="t-dot-sm" style="background:#ffbd2e;"></div>
+                                            <div class="t-dot-sm" style="background:#28c840;"></div>
+                                            <div class="portal-url">🔒 corp-portal.net/login</div>
+                                        </div>
+                                        <div class="portal-body">
+                                            <div class="drop-zone" id="dropZone" ondragover="onDragOver(event)"
+                                                ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+                                                <div class="drop-placeholder" id="dropPh">
+                                                    <div class="drop-placeholder-ico">⬇️</div>
+                                                    <div class="drop-placeholder-txt">Drop security modules here</div>
+                                                </div>
+                                                <div id="dropList"></div>
+                                            </div>
+                                            <div class="mod-count" style="margin-top:10px;">
+                                                <span class="mod-count-lbl">Modules Installed: <span
+                                                        class="mod-count-val" id="moduleCount">0</span>/4</span>
+                                                <span class="over-budget" id="overBudgetTag" style="display:none;">⚠
+                                                    OVER BUDGET</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn-deploy" id="lockInBtn" onclick="lockInConfig()" disabled>🛡️ LOCK
+                                        IN CONFIGURATION</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3.2: Resource Analysis -->
+                    <div class="step-card s-locked" id="sc2">
+                        <div class="step-hdr">
+                            <div class="step-num" id="sn2">2</div>
+                            <div class="step-meta">
+                                <div class="step-title">Phase 3.2 — Resource &amp; Latency Analysis</div>
+                                <div class="step-sub">Review the performance cost of your chosen defense stack</div>
+                            </div>
+                            <span class="step-badge badge-locked" id="sb2">🔒 LOCKED</span>
+                        </div>
+                        <div class="step-body">
+                            <div id="analysisContent"></div>
+                            <button class="btn-deploy" id="deployBtn" onclick="launchStressTest()" disabled
+                                style="border-color:var(--orange);color:var(--orange);background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,51,102,0.1));">⚡
+                                DEPLOY &amp; RUN STRESS TEST</button>
+                        </div>
+                    </div>
+
+                    <!-- 3.3: Stress Test -->
+                    <div class="step-card s-locked" id="sc3">
+                        <div class="step-hdr">
+                            <div class="step-num" id="sn3">3</div>
+                            <div class="step-meta">
+                                <div class="step-title">Phase 3.3 — Live Stress Test</div>
+                                <div class="step-sub">Watch a credential-stuffing bot attack your deployed defenses in
+                                    real-time</div>
+                            </div>
+                            <span class="step-badge badge-locked" id="sb3">🔒 LOCKED</span>
+                        </div>
+                        <div class="step-body">
+                            <div class="callout danger" style="margin-bottom:16px;">
+                                <strong>🔥 Simulating:</strong> 50,000 credential pairs from a leaked breach
+                                database<br />
+                                Tool: <code>Sentry-MBA</code> credential stuffing — HTTP-POST mode
+                            </div>
+                            <div class="terminal">
+                                <div class="terminal-bar">
+                                    <div class="t-dot t-red"></div>
+                                    <div class="t-dot t-yellow"></div>
+                                    <div class="t-dot t-green-dot"></div>
+                                    <div class="terminal-title">STRESS TEST — corp-portal.net/login</div>
+                                </div>
+                                <div class="terminal-body" id="stressLog">
+                                    <div class="t-line t-dim">Awaiting deployment command...</div>
+                                </div>
+                            </div>
+                            <div class="timer-wrap">
+                                <div class="timer-labels"><span>SIMULATION PROGRESS</span><span id="timerLbl">0s /
+                                        60s</span></div>
+                                <div class="timer-track">
+                                    <div class="timer-fill" id="timerFill"></div>
+                                </div>
+                            </div>
+                            <div id="stressVerdict" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                </div><!-- /ops-panel -->
+            </div><!-- /ops-layout -->
+        </div>
+    </div><!-- /inner /main-scroll -->
+
+    <script>
+        const API = window.location.origin;
+        let user = null;
+
+        async function saveP(part, level) {
+            level = level || 'level3';
+            if (!user) return;
+            if (!user.progress) user.progress = {};
+            if (!user.progress.bruteforce) user.progress.bruteforce = {};
+            if (!user.progress.bruteforce[level]) user.progress.bruteforce[level] = {};
+            user.progress.bruteforce[level][part] = true;
+            localStorage.setItem('ss_user', JSON.stringify(user));
+            try { await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'bruteforce', level, mode: part, completed: true }) }); } catch { }
+        }
+
+        function logout() { localStorage.removeItem('ss_user'); window.location.href = 'index.html'; }
+        function goBFLevels() { sessionStorage.setItem('ss_goto', 'page-bflevels'); window.location.href = 'index.html'; }
+
+        const MODS = {
+            mfa: { name: 'MFA Module', icon: '🔐', cost: 50, lag: 40, color: 'var(--cyan)', coverage: 'Authentication Layer' },
+            captcha: { name: 'CAPTCHA Challenge', icon: '🤖', cost: 30, lag: 15, color: 'var(--purple)', coverage: 'Bot Detection Layer' },
+            lockout: { name: 'Account Lockout', icon: '🔒', cost: 20, lag: 5, color: 'var(--green)', coverage: 'Access Control Layer' },
+            validator: { name: 'Input Validator', icon: '✅', cost: 10, lag: 2, color: 'var(--yellow)', coverage: 'Input Security Layer' }
+        };
+
+        let installed = {};
+        let configLocked = false;
+        let l3p1 = false, l3p2 = false, l3p3 = false;
+        let stressTimer = null;
+
+        /* === GUARD === */
+        window.addEventListener('DOMContentLoaded', () => {
+            const raw = localStorage.getItem('ss_user');
+            if (!raw) { window.location.href = 'index.html'; return; }
+            const u = JSON.parse(raw);
+            const l2 = u.progress?.bruteforce?.level2 || {};
+            if ([l2.p1, l2.p2, l2.p3].filter(Boolean).length < 3) {
+                sessionStorage.setItem('ss_goto', 'page-bflevels');
+                window.location.href = 'index.html'; return;
+            }
+            user = u;
+            document.getElementById('navUser').textContent = u.username;
+            document.getElementById('navUser').classList.add('show');
+            document.getElementById('navLogout').classList.add('show');
+            restoreProgress(u);
+        });
+
+        function restoreProgress(u) {
+            const l3 = u.progress?.bruteforce?.level3 || {};
+            if (l3.p1) { l3p1 = true; markDone(1); unlockStep(2); }
+            if (l3.p2) { l3p2 = true; markDone(2); unlockStep(3); }
+            if (l3.p3) { l3p3 = true; markDone(3); }
+            updateL3Bar();
+        }
+
+        function updateL3Bar() {
+            const done = [l3p1, l3p2, l3p3].filter(Boolean).length;
+            const pct = Math.round((done / 3) * 100);
+            document.getElementById('l3progFill').style.width = pct + '%';
+            document.getElementById('l3progPct').textContent = pct + '%';
+        }
+
+        function markDone(n) {
+            document.getElementById('sc' + n).className = 'step-card s-done';
+            const num = document.getElementById('sn' + n);
+            num.style.cssText = 'width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--green);color:var(--green);background:rgba(0,255,136,0.1);font-family:Orbitron,sans-serif;font-size:11px;font-weight:700;flex-shrink:0;';
+            num.textContent = '✓';
+            const b = document.getElementById('sb' + n);
+            b.textContent = 'COMPLETE'; b.className = 'step-badge badge-done';
+        }
+
+        function unlockStep(n) {
+            document.getElementById('sc' + n).className = 'step-card s-active';
+            const b = document.getElementById('sb' + n);
+            b.textContent = 'ACTIVE'; b.className = 'step-badge badge-active';
+        }
+
+        /* === DRAG & DROP === */
+        function onDragStart(e) {
+            if (configLocked) { e.preventDefault(); return; }
+            const id = e.currentTarget.dataset.id;
+            if (installed[id]) { e.preventDefault(); return; }
+            e.dataTransfer.setData('text/plain', id);
+            setTimeout(() => e.currentTarget.style.opacity = '0.3', 0);
+        }
+        function onDragEnd(e) { e.currentTarget.style.opacity = ''; }
+        function onDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+        function onDragLeave(e) { document.getElementById('dropZone').classList.remove('drag-over'); }
+        function onDrop(e) {
+            e.preventDefault();
+            document.getElementById('dropZone').classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            if (!id || installed[id] || !MODS[id]) return;
+            installModule(id);
+        }
+
+        function installModule(id) {
+            const mod = MODS[id];
+            installed[id] = true;
+            document.getElementById('mod-' + id).classList.add('mod-installed');
+            document.getElementById('dropPh').style.display = 'none';
+            const el = document.createElement('div');
+            el.className = 'installed-item'; el.id = 'inst-' + id;
+            el.innerHTML = `<span style="font-size:20px;">${mod.icon}</span>
+    <div style="flex:1;"><div style="font-family:'Orbitron',sans-serif;font-size:10px;color:${mod.color};">${mod.name}</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);">${mod.cost}c · +${mod.lag}% lag</div></div>
+    <button class="inst-remove" onclick="removeModule('${id}')">✕</button>`;
+            document.getElementById('dropList').appendChild(el);
+            refreshStats();
+        }
+
+        function removeModule(id) {
+            if (configLocked) return;
+            delete installed[id];
+            document.getElementById('mod-' + id).classList.remove('mod-installed');
+            const el = document.getElementById('inst-' + id);
+            if (el) el.remove();
+            const keys = Object.keys(installed);
+            if (keys.length === 0) document.getElementById('dropPh').style.display = '';
+            refreshStats();
+        }
+
+        function refreshStats() {
+            const keys = Object.keys(installed);
+            let cost = 0, lag = 0;
+            keys.forEach(k => { cost += MODS[k].cost; lag += MODS[k].lag; });
+
+            document.getElementById('moduleCount').textContent = keys.length;
+
+            // Budget
+            const bPct = Math.min((cost / 100) * 100, 100);
+            document.getElementById('budgetUsed').style.color = cost > 100 ? 'var(--red)' : 'var(--cyan)';
+            document.getElementById('budgetUsed').textContent = cost;
+            document.getElementById('budgetBar').style.width = bPct + '%';
+            document.getElementById('budgetBar').style.background = cost > 100
+                ? 'linear-gradient(90deg,var(--red),var(--orange))'
+                : 'linear-gradient(90deg,var(--green),var(--cyan))';
+            const rem = 100 - cost;
+            document.getElementById('budgetMsg').textContent = rem >= 0 ? `${rem} credits remaining` : `⚠ ${-rem} credits OVER BUDGET`;
+            document.getElementById('budgetMsg').style.color = rem >= 0 ? 'var(--text2)' : 'var(--red)';
+            document.getElementById('overBudgetTag').style.display = cost > 100 ? 'block' : 'none';
+
+            // Latency
+            document.getElementById('latencyPct').textContent = lag + '%';
+            document.getElementById('latencyBar').style.width = Math.min(lag + 5, 100) + '%';
+            const latOver = lag > 100;
+            if (latOver) {
+                document.getElementById('sdot').className = 'sdot red';
+                document.getElementById('stext').textContent = '⚠ LATENCY CRITICAL — Deploy blocked';
+                document.getElementById('latencyMsg').textContent = '⚠ CRITICAL: >100% — deploy blocked';
+                document.getElementById('latencyMsg').style.color = 'var(--red)';
+            } else {
+                document.getElementById('sdot').className = 'sdot';
+                document.getElementById('stext').textContent = '⚡ DEFENSE MODE ACTIVE — Blue Team Operations';
+                const lvl = lag > 60 ? '⚠ HIGH' : lag > 25 ? 'MODERATE' : lag > 0 ? 'LOW' : 'None';
+                document.getElementById('latencyMsg').textContent = lvl + ' performance impact';
+                document.getElementById('latencyMsg').style.color = lag > 60 ? 'var(--yellow)' : 'var(--text2)';
+            }
+
+            // Sidebar list
+            const sl = document.getElementById('sidebarList');
+            if (keys.length === 0) {
+                sl.innerHTML = '<div style="font-family:\'Share Tech Mono\',monospace;font-size:11px;color:var(--border);text-align:center;padding:10px 0;">[ NONE ]</div>';
+            } else {
+                sl.innerHTML = keys.map(k => {
+                    const m = MODS[k];
+                    return `<div class="console-mod-row"><span style="font-size:14px;">${m.icon}</span>
+        <span class="console-mod-name" style="color:${m.color};">${m.name}</span>
+        <span class="console-mod-cost">${m.cost}c·+${m.lag}%</span></div>`;
+                }).join('') + `<div style="margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);">Total: ${cost}c · ${lag}% lag</div>`;
+            }
+
+            // Readiness & button
+            const ok = keys.length > 0 && cost <= 100 && !latOver;
+            const btn = document.getElementById('lockInBtn');
+            const rRow = document.getElementById('readinessRow');
+            const rTxt = document.getElementById('readinessTxt');
+            if (keys.length === 0) {
+                rRow.innerHTML = '<span style="font-size:15px;">⚪</span><span class="readiness-txt">Install modules to begin</span>';
+                btn.disabled = true;
+            } else if (cost > 100) {
+                rRow.innerHTML = '<span style="font-size:15px;">🔴</span><span class="readiness-txt" style="color:var(--red);">Over budget — remove a module</span>';
+                btn.disabled = true;
+            } else if (latOver) {
+                rRow.innerHTML = '<span style="font-size:15px;">🔴</span><span class="readiness-txt" style="color:var(--red);">Latency critical — reduce modules</span>';
+                btn.disabled = true;
+            } else {
+                rRow.innerHTML = '<span style="font-size:15px;">🟢</span><span class="readiness-txt" style="color:var(--green);">Ready — lock in your configuration</span>';
+                btn.disabled = false;
+            }
+        }
+
+        /* === PHASE 3.1 COMPLETE === */
+        function lockInConfig() {
+            if (l3p1) return;
+            configLocked = true;
+            document.getElementById('lockInBtn').disabled = true;
+            document.getElementById('lockInBtn').textContent = '🔒 CONFIGURATION LOCKED';
+            document.querySelectorAll('.module-card').forEach(el => { el.setAttribute('draggable', 'false'); el.style.opacity = '0.4'; el.style.cursor = 'default'; });
+            document.querySelectorAll('.inst-remove').forEach(el => el.style.display = 'none');
+            l3p1 = true; saveP('p1', 'level3'); updateL3Bar();
+            setTimeout(() => { markDone(1); unlockStep(2); buildAnalysis(); }, 700);
+        }
+
+        /* === PHASE 3.2: ANALYSIS === */
+        function buildAnalysis() {
+            const keys = Object.keys(installed);
+            let cost = 0, lag = 0;
+            keys.forEach(k => { cost += MODS[k].cost; lag += MODS[k].lag; });
+            const hasLockout = !!installed.lockout;
+
+            const rows = keys.map(k => {
+                const m = MODS[k];
+                return `<tr><td style="color:${m.color};">${m.icon} ${m.name}</td><td style="color:var(--yellow);text-align:right;">${m.cost}c</td><td style="text-align:right;">+${m.lag}%</td><td style="color:var(--text2);">${m.coverage}</td></tr>`;
+            }).join('');
+
+            document.getElementById('analysisContent').innerHTML = `
+    <table class="analysis-tbl" style="margin-bottom:14px;">
+      <thead><tr><th>MODULE</th><th style="text-align:right;">COST</th><th style="text-align:right;">LAG</th><th>COVERAGE</th></tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="total"><td>TOTAL</td><td style="color:var(--yellow);text-align:right;">${cost} / 100c</td><td style="text-align:right;">${lag}%</td><td>${keys.length} / 4 layers</td></tr>
+      </tbody>
+    </table>
+    <div class="callout ${hasLockout ? '' : 'warn'}" style="margin-bottom:0;">
+      ${hasLockout
+                    ? '<strong>✅ Account Lockout detected.</strong> Bots will be blocked after 5 failed attempts — this is your most critical defence against credential stuffing.'
+                    : '<strong>⚠️ No Account Lockout installed!</strong> Your portal has no throttling on failed logins. A bot can attempt unlimited passwords. The stress test may reveal a breach.'}
+    </div>`;
+
+            const deployBtn = document.getElementById('deployBtn');
+            deployBtn.disabled = false;
+            l3p2 = true; saveP('p2', 'level3'); updateL3Bar();
+            setTimeout(() => markDone(2), 500);
+        }
+
+        /* === PHASE 3.3: STRESS TEST === */
+        function launchStressTest() {
+            if (stressTimer) return;
+            document.getElementById('deployBtn').disabled = true;
+            unlockStep(3);
+
+            const hasLockout = !!installed.lockout;
+            const hasMFA = !!installed.mfa;
+            const hasCaptcha = !!installed.captcha;
+
+            const log = document.getElementById('stressLog');
+            log.innerHTML = '';
+
+            const secureSeq = [
+                { t: 0, cls: 't-cmd', txt: '$ sentry-mba --target corp-portal.net/login --threads 50 --wordlist breach_50k.txt' },
+                { t: 1, cls: 't-dim', txt: '────────────────────────────────────────────' },
+                { t: 2, cls: 't-warn', txt: '[INIT] Loading 50,000 credential pairs...' },
+                { t: 4, cls: 't-warn', txt: '[INFO] Probing target endpoint...' },
+                { t: 6, cls: 't-fail', txt: '[TRY]  admin:password123 ...... FAIL' },
+                { t: 8, cls: 't-fail', txt: '[TRY]  admin:qwerty123 ........ FAIL' },
+                { t: 10, cls: 't-fail', txt: '[TRY]  admin:letmein .......... FAIL' },
+                { t: 12, cls: 't-fail', txt: '[TRY]  admin:sunshine ......... FAIL' },
+                { t: 14, cls: 't-fail', txt: '[TRY]  admin:dragon ........... FAIL' },
+                { t: 15, cls: 't-warn', txt: '[!] Account locked (5 attempts). 15 min cooldown triggered.' },
+                { t: 20, cls: 't-fail', txt: '[TRY]  Retry after cooldown ... LOCKED AGAIN' },
+                { t: 25, cls: 't-fail', txt: '[TRY]  New credential pair .... LOCKED' },
+                { t: 30, cls: 't-warn', txt: '[!] Bot detecting repeated lockout responses.' },
+                ...(hasMFA ? [{ t: 35, cls: 't-warn', txt: '[MFA] 2FA challenge triggered — bot cannot complete.' }] : []),
+                ...(hasCaptcha ? [{ t: 38, cls: 't-warn', txt: '[CAPTCHA] Visual puzzle served — bot request dropped.' }] : []),
+                { t: 45, cls: 't-dim', txt: '[INFO] Attack slowing down... lockout + delay effective.' },
+                { t: 55, cls: 't-ok', txt: '[RESULT] Attack abandoned after 45 blocked attempts.' },
+                { t: 58, cls: 't-ok', txt: '[SECURE] Estimated crack time: NEVER (lockout prevents enumeration)' },
+                { t: 60, cls: 't-ok', txt: '✅ DEFENSE HELD — System secured. No breach detected.' }
+            ];
+
+            const breachSeq = [
+                { t: 0, cls: 't-cmd', txt: '$ sentry-mba --target corp-portal.net/login --threads 200 --wordlist breach_50k.txt' },
+                { t: 1, cls: 't-dim', txt: '────────────────────────────────────────────' },
+                { t: 2, cls: 't-warn', txt: '[INIT] Loading 50,000 credential pairs...' },
+                { t: 4, cls: 't-warn', txt: '[INFO] No lockout policy detected. Accelerating...' },
+                { t: 6, cls: 't-fail', txt: '[TRY]  admin:password123 ... FAIL [1/50000]' },
+                { t: 8, cls: 't-fail', txt: '[TRY]  admin:qwerty ........ FAIL [2/50000]' },
+                { t: 10, cls: 't-warn', txt: '[INFO] No rate limiting — firing at full speed (200 req/s)...' },
+                { t: 14, cls: 't-fail', txt: '[TRY]  admin:letmein ....... FAIL [500/50000]' },
+                { t: 18, cls: 't-fail', txt: '[TRY]  admin:sunshine ...... FAIL [2000/50000]' },
+                ...(hasCaptcha ? [{ t: 22, cls: 't-warn', txt: '[CAPTCHA] Puzzle triggered — bot solving with OCR...' }] : []),
+                { t: 25, cls: 't-warn', txt: '[INFO] 10,000 combos tried. No match yet. Continuing...' },
+                { t: 30, cls: 't-fail', txt: '[TRY]  john_doe:sunshine ... FAIL [15000/50000]' },
+                { t: 38, cls: 't-warn', txt: '[INFO] Bot pivoting to personalised credential variants...' },
+                { t: 44, cls: 't-fail', txt: '[TRY]  admin:dragon2024 .... FAIL [28000/50000]' },
+                { t: 50, cls: 't-danger', txt: '[HIT!] admin:Sunshine2023! .. SUCCESS [31,427/50000]' },
+                { t: 52, cls: 't-danger', txt: '[BREACH] Session token acquired. Admin access granted.' },
+                { t: 55, cls: 't-danger', txt: '[EXFIL] Downloading user database...' },
+                { t: 58, cls: 't-danger', txt: '⚠ 4,281 user records exposed.' },
+                { t: 60, cls: 't-danger', txt: '💀 BREACH COMPLETE — Account Lockout would have stopped this.' }
+            ];
+
+            const seq = hasLockout ? secureSeq : breachSeq;
+            let elapsed = 0;
+            const totalSecs = 60;
+
+            stressTimer = setInterval(() => {
+                elapsed++;
+                document.getElementById('timerLbl').textContent = `${elapsed}s / ${totalSecs}s`;
+                document.getElementById('timerFill').style.width = ((elapsed / totalSecs) * 100) + '%';
+
+                seq.filter(e => e.t === elapsed).forEach(entry => {
+                    const div = document.createElement('div');
+                    div.className = 't-line ' + entry.cls;
+                    div.textContent = entry.txt;
+                    log.appendChild(div);
+                    log.scrollTop = log.scrollHeight;
+                });
+
+                if (elapsed >= totalSecs) {
+                    clearInterval(stressTimer);
+                    stressTimer = null;
+                    showVerdict(hasLockout);
+                }
+            }, 500);
+        }
+
+        function showVerdict(success) {
+            const v = document.getElementById('stressVerdict');
+            v.style.display = 'block';
+
+            if (success) {
+                v.innerHTML = `<div class="verdict-box verdict-safe">
+      <div class="verdict-ico">🛡️</div>
+      <div class="verdict-title">DEFENSE HELD</div>
+      <div class="verdict-body">
+        Your layered defenses stopped the bot cold. <strong>Account Lockout</strong> was the critical control — after 5 failed attempts, the bot was frozen. Even with 50,000 credentials, it couldn't breach your system.<br/><br/>
+        <strong>Key Lesson:</strong> Lockout + MFA + CAPTCHA = defense in depth. No single layer is enough — attackers will probe each one. Together, they make credential stuffing economically unviable.
+      </div>
+      <button class="btn-complete" onclick="finishL3()">✓ COMPLETE LEVEL 3 — FINISH TRAINING</button>
+    </div>`;
+            } else {
+                v.innerHTML = `<div class="verdict-box verdict-breach">
+      <div class="verdict-ico">💀</div>
+      <div class="verdict-title">SYSTEM BREACHED</div>
+      <div class="verdict-body">
+        The bot cracked admin credentials in under 60 seconds. <strong>Account Lockout</strong> was not installed — the attacker had unlimited attempts. Even with ${installed.captcha ? 'CAPTCHA ' : ''}${installed.mfa ? 'MFA ' : ''}in place, without lockout the bot could keep trying.<br/><br/>
+        <strong>Key Lesson:</strong> Account Lockout (even at just 20 credits) is your most cost-effective control against credential stuffing. <em>Never skip it.</em>
+      </div>
+      <button class="btn-complete" onclick="finishL3()" style="background:linear-gradient(135deg,var(--red),var(--orange));box-shadow:0 0 28px rgba(255,51,102,0.4);">⚠ ACKNOWLEDGE &amp; COMPLETE LEVEL 3</button>
+    </div>`;
+            }
+
+            l3p3 = true; saveP('p3', 'level3'); updateL3Bar();
+            markDone(3);
+        }
+
+        function finishL3() {
+            if (!user) return;
+            if (!user.progress) user.progress = {};
+            if (!user.progress.bruteforce) user.progress.bruteforce = {};
+            user.progress.bruteforce.level3 = { p1: true, p2: true, p3: true, complete: true };
+            localStorage.setItem('ss_user', JSON.stringify(user));
+            sessionStorage.setItem('ss_goto', 'page-bflevels');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>
