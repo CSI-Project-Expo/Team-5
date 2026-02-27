@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>ShieldSimulation — Cyber Defense Training</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #040d1a;
+      --bg2: #061020;
+      --card: #0a1628;
+      --border: #1a3a5c;
+      --border2: #0f2744;
+      --cyan: #00f5ff;
+      --cyan2: #00bcd4;
+      --green: #00ff88;
+      --red: #ff3366;
+      --yellow: #ffd700;
+      --orange: #ff6b35;
+      --purple: #a855f7;
+      --text: #c8dff0;
+      --text2: #7a9ab8;
+      --glow: 0 0 20px rgba(0, 245, 255, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 4px);
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    #gridbg {
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(0, 245, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 245, 255, 0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* PAGES — fixed full-screen, only active one shows */
+    .page {
+      position: fixed;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      z-index: 1;
+    }
+
+    .page.active {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* NAV */
+    #nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 48px;
+      background: rgba(4, 13, 26, 0.94);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 15px;
+      color: #040d1a;
+      box-shadow: var(--glow);
+    }
+
+    .nav-logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: default;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--cyan);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #navUser {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--cyan);
+      font-size: 13px;
+      display: none;
+    }
+
+    #navUser.show {
+      display: block;
+    }
+
+    #navLogout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 6px 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all .2s;
+      display: none;
+    }
+
+    #navLogout.show {
+      display: block;
+    }
+
+    #navLogout:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* STATUS BAR */
+    #statusbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 500;
+      background: rgba(4, 13, 26, 0.96);
+      border-top: 1px solid var(--border2);
+      padding: 7px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .sdot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      margin-right: 7px;
+      animation: gp 2s infinite;
+    }
+
+    .sdot.red {
+      background: var(--red);
+      animation: rp 1s infinite;
+    }
+
+    @keyframes gp {
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px var(--green);
+      }
+
+      50% {
+        box-shadow: 0 0 12px var(--green);
+      }
+    }
+
+    @keyframes rp {
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px var(--red);
+      }
+
+      50% {
+        box-shadow: 0 0 14px var(--red);
+      }
+    }
+
+    /* HELPERS */
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      border: none;
+      border-radius: 8px;
+      color: #040d1a;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: 0 0 28px rgba(0, 245, 255, 0.28);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 44px rgba(0, 245, 255, 0.5);
+    }
+
+    .errmsg {
+      color: var(--red);
+      font-size: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 18px;
+      margin-bottom: 10px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .bc-link {
+      color: var(--cyan);
+      cursor: pointer;
+    }
+
+    .bc-link:hover {
+      text-decoration: underline;
+    }
+
+    .bc-sep {
+      color: var(--border);
+    }
+
+    .sec-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(18px, 2.5vw, 28px);
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .sec-title span {
+      color: var(--cyan);
+    }
+
+    .sec-sub {
+      color: var(--text2);
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+
+    /* LOGIN PAGE */
+    #page-login .pinner {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 40px 60px;
+    }
+
+    .login-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 70px;
+      max-width: 1060px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .login-hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(30px, 4.5vw, 58px);
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--cyan);
+      text-shadow: var(--glow);
+    }
+
+    .login-hero p {
+      margin: 18px 0 28px;
+      color: var(--text2);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .feat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .feat-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 18px;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .feat-icon {
+      color: var(--green);
+    }
+
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 38px;
+      box-shadow: 0 0 60px rgba(0, 245, 255, 0.07);
+    }
+
+    .login-card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .login-sub {
+      color: var(--text2);
+      font-size: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      margin-bottom: 28px;
+    }
+
+    .fgroup {
+      margin-bottom: 18px;
+    }
+
+    .fgroup label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-bottom: 7px;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .fgroup input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 15px;
+      color: #fff;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: all .2s;
+    }
+
+    .fgroup input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.08);
+    }
+
+    .fgroup input::placeholder {
+      color: var(--text2);
+      opacity: .55;
+    }
+
+    .form-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .form-foot label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--text2);
+      cursor: pointer;
+    }
+
+    .form-foot a {
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .login-alt {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .login-alt a {
+      color: var(--cyan);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .reg-section {
+      margin-top: 22px;
+      border-top: 1px solid var(--border2);
+      padding-top: 22px;
+      display: none;
+    }
+
+    /* SCENARIOS PAGE */
+    #page-scenarios .pinner {
+      padding: 90px 40px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .sc-header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(22px, 3vw, 38px);
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .sc-header h1 span {
+      color: var(--cyan);
+      text-shadow: var(--glow);
+    }
+
+    .sc-header p {
+      color: var(--text2);
+      font-size: 15px;
+      margin-bottom: 32px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 22px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--cyan);
+      text-shadow: var(--glow);
+    }
+
+    .stat-lbl {
+      color: var(--text2);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    .sc-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .bf-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all .3s;
+    }
+
+    .bf-card:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 44px rgba(0, 245, 255, 0.15);
+      transform: translateY(-3px);
+    }
+
+    .bf-visual {
+      height: 280px;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 60%, rgba(0, 30, 50, 0.95) 0%, #040d1a 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bf-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(0, 245, 255, 0.06) 0%, transparent 65%);
+    }
+
+    .bitrain {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: rgba(0, 245, 255, 0.18);
+      padding: 10px 14px;
+      line-height: 1.7;
+      pointer-events: none;
+      animation: bscroll 8s linear infinite;
+    }
+
+    @keyframes bscroll {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(-40px);
+      }
+    }
+
+    .lock-svg-wrap {
+      position: relative;
+      z-index: 2;
+    }
+
+    .lock-svg-wrap svg {
+      display: block;
+      filter: drop-shadow(0 0 30px rgba(0, 245, 255, 0.7));
+      animation: lockpulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes lockpulse {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 22px rgba(0, 245, 255, 0.6));
+      }
+
+      50% {
+        filter: drop-shadow(0 0 44px rgba(0, 245, 255, 0.9));
+      }
+    }
+
+    .lock-rings {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 245, 255, 0.15);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .r1 {
+      width: 130px;
+      height: 130px;
+      animation: rp2 2.5s ease-in-out infinite;
+    }
+
+    .r2 {
+      width: 180px;
+      height: 180px;
+      animation: rp2 2.5s ease-in-out infinite .5s;
+    }
+
+    .r3 {
+      width: 230px;
+      height: 230px;
+      animation: rp2 2.5s ease-in-out infinite 1s;
+    }
+
+    @keyframes rp2 {
+
+      0%,
+      100% {
+        opacity: .25;
+        border-color: rgba(0, 245, 255, 0.1);
+      }
+
+      50% {
+        opacity: 1;
+        border-color: rgba(0, 245, 255, 0.4);
+      }
+    }
+
+    .bf-info {
+      padding: 26px;
+    }
+
+    .bf-info h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 5px;
+    }
+
+    .bf-sub {
+      color: var(--text2);
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .prog-lbl {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      margin-bottom: 6px;
+    }
+
+    .prog-track {
+      background: var(--bg2);
+      border-radius: 4px;
+      height: 7px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      border-radius: 4px;
+      transition: width .8s ease;
+    }
+
+    .btn-start {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.12), rgba(0, 188, 212, 0.12));
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+    }
+
+    .btn-start:hover {
+      background: var(--cyan);
+      color: #040d1a;
+    }
+
+    .sc-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sidebar-hdr {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--text2);
+    }
+
+    .sc-side-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .sc-side-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      opacity: .45;
+    }
+
+    .sc-side-info h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .coming-tag {
+      display: inline-block;
+      background: rgba(255, 107, 53, .12);
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      margin-top: 5px;
+    }
+
+    /* BF LEVELS PAGE */
+    #page-bflevels .pinner {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 90px 40px 80px;
+    }
+
+    .pg-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(20px, 2.8vw, 34px);
+      font-weight: 900;
+      color: var(--cyan);
+      text-shadow: var(--glow);
+      margin-bottom: 8px;
+    }
+
+    .pg-sub {
+      color: var(--text2);
+      font-size: 15px;
+      margin-bottom: 36px;
+    }
+
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .lv-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all .3s;
+    }
+
+    .lv-card:hover:not(.lv-locked) {
+      border-color: var(--cyan);
+      box-shadow: 0 0 28px rgba(0, 245, 255, 0.13);
+      transform: translateY(-3px);
+    }
+
+    .lv-locked {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .lv-top {
+      padding: 26px;
+      text-align: center;
+      position: relative;
+    }
+
+    .lv-bgn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 72px;
+      font-weight: 900;
+      color: rgba(0, 245, 255, 0.06);
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      line-height: 1;
+    }
+
+    .lv-icon {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    .lv-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 6px;
+    }
+
+    .lv-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+
+    .lv-foot {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .lv-parts {
+      font-size: 11px;
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .lv-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .lv-badge.open {
+      background: rgba(0, 245, 255, .1);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+    }
+
+    .lv-badge.locked {
+      background: rgba(122, 154, 184, .08);
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+
+    .lv-badge.done {
+      background: rgba(0, 255, 136, .1);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+
+    /* LEVEL 1 PAGE */
+    #page-l1 .pinner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 90px 40px 80px;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .stp {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+    }
+
+    .stp-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text2);
+      transition: all .3s;
+      flex-shrink: 0;
+    }
+
+    .stp.stp-active .stp-circle {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 245, 255, 0.1);
+      box-shadow: 0 0 14px rgba(0, 245, 255, 0.3);
+    }
+
+    .stp.stp-done .stp-circle {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .stp-lbl {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--text2);
+    }
+
+    .stp.stp-active .stp-lbl {
+      color: var(--cyan);
+    }
+
+    .stp.stp-done .stp-lbl {
+      color: var(--green);
+    }
+
+    .stp-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border2);
+      margin: 0 10px;
+      transition: background .4s;
+    }
+
+    .stp-line.stp-done {
+      background: var(--green);
+    }
+
+    .part {
+      display: none;
+    }
+
+    .part.part-on {
+      display: block;
+    }
+
+    .callout {
+      background: rgba(0, 245, 255, 0.05);
+      border: 1px solid rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text2);
+    }
+
+    .callout strong {
+      color: var(--cyan);
+    }
+
+    .callout.warn {
+      background: rgba(255, 215, 0, 0.04);
+      border-color: rgba(255, 215, 0, 0.2);
+      border-left-color: var(--yellow);
+    }
+
+    .callout.warn strong {
+      color: var(--yellow);
+    }
+
+    .callout.danger {
+      background: rgba(255, 51, 102, 0.04);
+      border-color: rgba(255, 51, 102, 0.2);
+      border-left-color: var(--red);
+    }
+
+    .callout.danger strong {
+      color: var(--red);
+    }
+
+    .anim-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .anim-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-bottom: 20px;
+    }
+
+    .anim-scene {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .anim-box {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-align: center;
+      min-width: 100px;
+    }
+
+    .ab-ico {
+      font-size: 28px;
+    }
+
+    .ab-lbl {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--text2);
+      margin-top: 5px;
+    }
+
+    .pw-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .pw-try {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+
+    .pw-fail {
+      color: var(--red);
+      background: rgba(255, 51, 102, 0.07);
+      animation: fa 3.5s infinite;
+    }
+
+    .pw-win {
+      color: var(--green);
+      background: rgba(0, 255, 136, 0.09);
+    }
+
+    .pw-try:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .pw-try:nth-child(2) {
+      animation-delay: .5s;
+    }
+
+    .pw-try:nth-child(3) {
+      animation-delay: 1s;
+    }
+
+    @keyframes fa {
+      0% {
+        opacity: 0;
+        transform: translateX(-6px);
+      }
+
+      10% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      80% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .arr {
+      font-size: 20px;
+      color: var(--red);
+      animation: ab 1.2s ease-in-out infinite;
+    }
+
+    @keyframes ab {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .25;
+      }
+    }
+
+    .atgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 13px;
+      margin-bottom: 24px;
+    }
+
+    .atcard {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .atcard-hd {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .atdot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .atname {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .atdesc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+
+    .rw-box {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+
+    .rw-hd {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .rw-tag {
+      background: rgba(168, 85, 247, 0.13);
+      border: 1px solid var(--purple);
+      color: var(--purple);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 3px 9px;
+      border-radius: 3px;
+    }
+
+    .rw-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .rw-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .rw-step {
+      display: flex;
+      gap: 11px;
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    .rw-num {
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      background: rgba(0, 245, 255, .08);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .rw-step span {
+      line-height: 1.6;
+    }
+
+    .rw-step strong {
+      color: var(--cyan);
+    }
+
+    .flow {
+      display: flex;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+
+    .flow-step {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 13px 14px;
+      min-width: 118px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .flow-ico {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+
+    .flow-lbl {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .flow-dtl {
+      font-size: 10px;
+      color: var(--text2);
+    }
+
+    .flow-arr {
+      color: var(--cyan);
+      font-size: 16px;
+      padding: 0 5px;
+      flex-shrink: 0;
+    }
+
+    .part-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 36px;
+    }
+
+    .btn-back-sm {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 11px 26px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+    }
+
+    .btn-back-sm:hover {
+      border-color: var(--text2);
+      color: #fff;
+    }
+
+    .btn-next-sm {
+      padding: 11px 30px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      border: none;
+      border-radius: 8px;
+      color: #040d1a;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-next-sm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 22px rgba(0, 245, 255, 0.4);
+    }
+
+    .btn-next-sm:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* MCQ */
+    .quiz-hdr {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-bottom: 20px;
+    }
+
+    .q-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .q-num {
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .q-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .q-opts {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .q-opt {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 15px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .2s;
+      font-size: 14px;
+    }
+
+    .q-opt:hover:not(.q-dis) {
+      border-color: var(--cyan);
+      background: rgba(0, 245, 255, 0.05);
+    }
+
+    .q-ok {
+      border-color: var(--green) !important;
+      background: rgba(0, 255, 136, 0.08) !important;
+      color: var(--green);
+    }
+
+    .q-no {
+      border-color: var(--red) !important;
+      background: rgba(255, 51, 102, 0.07) !important;
+      color: var(--red);
+    }
+
+    .q-dis {
+      pointer-events: none;
+    }
+
+    .q-radio {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+
+    .q-ok .q-radio {
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .q-no .q-radio {
+      border-color: var(--red);
+      background: var(--red);
+    }
+
+    .q-fb {
+      font-size: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      margin-top: 10px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .q-fb.show {
+      display: block;
+    }
+
+    .q-fb.ok {
+      color: var(--green);
+    }
+
+    .q-fb.no {
+      color: var(--red);
+    }
+
+    .score-box {
+      background: var(--card);
+      border: 2px solid var(--green);
+      border-radius: 14px;
+      padding: 26px;
+      text-align: center;
+      display: none;
+      margin-top: 16px;
+    }
+
+    .score-box.show {
+      display: block;
+    }
+
+    .score-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 52px;
+      font-weight: 900;
+      text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+    }
+
+    .score-lbl {
+      color: var(--text2);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    /* FITB */
+    .word-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--bg2);
+      border-radius: 10px;
+      border: 1px solid var(--border2);
+    }
+
+    .wb-tag {
+      background: rgba(0, 245, 255, 0.08);
+      border: 1px solid rgba(0, 245, 255, 0.25);
+      color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 4px;
+    }
+
+    .fitb-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+
+    .fitb-sent {
+      font-size: 15px;
+      line-height: 2.2;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .blank {
+      display: inline-block;
+      background: var(--bg2);
+      border: none;
+      border-bottom: 2px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      padding: 2px 8px;
+      width: 130px;
+      outline: none;
+      border-radius: 2px;
+      transition: all .2s;
+    }
+
+    .blank:focus {
+      border-bottom-color: var(--yellow);
+    }
+
+    .blank.bok {
+      border-bottom-color: var(--green);
+      color: var(--green);
+    }
+
+    .blank.bno {
+      border-bottom-color: var(--red);
+      color: var(--red);
+    }
+
+    .fitb-hint {
+      font-size: 11px;
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      margin-bottom: 8px;
+    }
+
+    .fitb-fb {
+      font-size: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      display: none;
+    }
+
+    .fitb-fb.show {
+      display: block;
+    }
+
+    .fitb-fb.ok {
+      color: var(--green);
+    }
+
+    .fitb-fb.no {
+      color: var(--red);
+    }
+
+    .btn-chk {
+      background: transparent;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      padding: 7px 18px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all .2s;
+      margin-top: 8px;
+    }
+
+    .btn-chk:hover {
+      background: var(--cyan);
+      color: #040d1a;
+    }
+
+    /* SQL LEVELS PAGE */
+    #page-sqilevels .pinner {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 90px 40px 80px;
+    }
+
+    /* SQL LEVEL 1 PAGE */
+    #page-sql1 .pinner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 90px 40px 80px;
+    }
+
+    /* Clickable sidebar card */
+    .sc-side-card-link {
+      cursor: pointer;
+      transition: all .3s;
+    }
+
+    .sc-side-card-link:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 22px rgba(0, 245, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    @media(max-width:860px) {
+
+      .login-grid,
+      .sc-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .levels-grid,
+      .atgrid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      #nav {
+        padding: 12px 20px;
+      }
+
+      #statusbar {
+        padding: 7px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="gridbg"></div>
+
+  <nav id="nav">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">S</div>
+      <span class="nav-logo-text">ShieldSimulation</span>
+    </div>
+    <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+    <div class="nav-right">
+      <span id="navUser"></span>
+      <button id="navLogout" onclick="logout()">LOGOUT</button>
+    </div>
+  </nav>
+
+  <div id="statusbar">
+    <div><span class="sdot" id="sdot"></span><span id="stext">System Status: Operational</span></div>
+    <span>© 2024 ShieldSimulation | Secure Training Platform</span>
+  </div>
+
+  <!-- ════════ PAGE: LOGIN ════════ -->
+  <div id="page-login" class="page active">
+    <div class="pinner">
+      <div class="login-grid">
+        <div class="login-hero">
+          <h1>Master Blue Team<br />Operations</h1>
+          <p>Train your cybersecurity skills in realistic simulation environments. Defend against live threats, analyze
+            security incidents, and sharpen your incident response capabilities.</p>
+          <div class="feat-list">
+            <div class="feat-item"><span class="feat-icon">✓</span>Real-world threat simulations</div>
+            <div class="feat-item"><span class="feat-icon">✓</span>Hands-on incident response training</div>
+            <div class="feat-item"><span class="feat-icon">✓</span>Progress tracking &amp; certifications</div>
+            <div class="feat-item"><span class="feat-icon">✓</span>Team collaboration &amp; competition</div>
+          </div>
+        </div>
+        <div class="login-card">
+          <h2>Access Control</h2>
+          <p class="login-sub">Enter your credentials to continue</p>
+          <div class="errmsg" id="loginErr"></div>
+          <div class="fgroup"><label>USERNAME</label><input id="lu" type="text" placeholder="defender@shieldsim.net"
+              autocomplete="username" /></div>
+          <div class="fgroup"><label>PASSWORD</label><input id="lp" type="password"
+              placeholder="Enter your secure password" autocomplete="current-password" /></div>
+          <div class="form-foot">
+            <label><input type="checkbox" /> REMEMBER ME</label>
+            <a>Forgot password?</a>
+          </div>
+          <button class="btn-primary" id="loginBtn" onclick="doLogin()">INITIALIZE SESSION</button>
+          <div class="login-alt">Don't have an account? <a onclick="toggleReg()">Request Access</a></div>
+          <div class="reg-section" id="regSection">
+            <div class="fgroup"><label>NEW USERNAME</label><input id="ru" type="text" placeholder="choose username" />
+            </div>
+            <div class="fgroup"><label>NEW PASSWORD</label><input id="rp" type="password"
+                placeholder="choose password" /></div>
+            <div class="errmsg" id="regErr"></div>
+            <button class="btn-primary" onclick="doRegister()">CREATE ACCOUNT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ PAGE: SCENARIOS ════════ -->
+  <div id="page-scenarios" class="page">
+    <div class="pinner">
+      <div class="sc-header">
+        <h1>Welcome back, <span id="scUser">Defender</span></h1>
+        <p>Choose your training scenario. Complete all levels to master each attack type.</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" id="stM">0%</div>
+          <div class="stat-lbl">Overall Mastery</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stD">0/3</div>
+          <div class="stat-lbl">Parts Completed</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stR">RECRUIT</div>
+          <div class="stat-lbl">Current Rank</div>
+        </div>
+      </div>
+      <div class="sc-layout">
+        <div class="bf-card" onclick="goTo('page-bflevels')">
+          <div class="bf-visual">
+            <div class="bitrain">
+              01001011&nbsp;&nbsp;10110010<br />11010010&nbsp;&nbsp;00101101<br />01101101&nbsp;&nbsp;10010110<br />10110010&nbsp;&nbsp;01001011
+            </div>
+            <div class="lock-rings">
+              <div class="ring r1"></div>
+              <div class="ring r2"></div>
+              <div class="ring r3"></div>
+            </div>
+            <div class="lock-svg-wrap">
+              <svg width="110" height="130" viewBox="0 0 110 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="55" width="90" height="70" rx="10" fill="#061a2e" stroke="#00f5ff" stroke-width="2" />
+                <path d="M28 55 V35 Q28 12 55 12 Q82 12 82 35 V55" stroke="#00f5ff" stroke-width="4" fill="none"
+                  stroke-linecap="round" />
+                <circle cx="55" cy="88" r="11" fill="#040d1a" stroke="#00f5ff" stroke-width="1.5" />
+                <circle cx="55" cy="85" r="5" fill="#00f5ff" opacity="0.9" />
+                <rect x="52" y="90" width="6" height="12" rx="2" fill="#00f5ff" opacity="0.9" />
+                <line x1="10" y1="75" x2="100" y2="75" stroke="#00f5ff" stroke-width="0.5" opacity="0.2" />
+                <line x1="10" y1="95" x2="100" y2="95" stroke="#00f5ff" stroke-width="0.5" opacity="0.2" />
+                <circle cx="18" cy="63" r="2" fill="#00f5ff" opacity="0.4" />
+                <circle cx="92" cy="63" r="2" fill="#00f5ff" opacity="0.4" />
+                <circle cx="18" cy="117" r="2" fill="#00f5ff" opacity="0.4" />
+                <circle cx="92" cy="117" r="2" fill="#00f5ff" opacity="0.4" />
+              </svg>
+            </div>
+          </div>
+          <div class="bf-info">
+            <h2>Brute Force Protocol</h2>
+            <div class="bf-sub">Authentication Breach — Simulate &amp; Defend</div>
+            <div class="prog-lbl"><span>Completion</span><span id="bfPct">0%</span></div>
+            <div class="prog-track">
+              <div class="prog-fill" id="bfBar" style="width:0%"></div>
+            </div>
+            <button class="btn-start">▶ START MISSION</button>
+          </div>
+        </div>
+        <div class="sc-sidebar">
+          <div class="sidebar-hdr">SCENARIO DEPLOYMENT</div>
+          <div class="sc-side-card sc-side-card-link" onclick="goTo('page-sqilevels')">
+            <div class="sc-side-icon" style="opacity:1;">🗄️</div>
+            <div class="sc-side-info">
+              <h3 style="color:var(--text);">SQL Injection</h3>
+              <div class="prog-lbl" style="margin-top:5px;"><span>Completion</span><span id="sqiPct">0%</span></div>
+              <div class="prog-track" style="height:4px;margin-top:4px;margin-bottom:0;">
+                <div class="prog-fill" id="sqiBar" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="sc-side-card">
+            <div class="sc-side-icon">🌐</div>
+            <div class="sc-side-info">
+              <h3>Recon &amp; OSINT</h3><span class="coming-tag">COMING SOON</span>
+            </div>
+          </div>
+          <div class="sc-side-card">
+            <div class="sc-side-icon">🛡️</div>
+            <div class="sc-side-info">
+              <h3>Malware Analysis</h3><span class="coming-tag">COMING SOON</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ PAGE: BF LEVELS ════════ -->
+  <div id="page-bflevels" class="page">
+    <div class="pinner">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="goTo('page-scenarios')">Home</span>
+        <span class="bc-sep">›</span><span>Brute Force Protocol</span>
+      </div>
+      <div class="pg-title">🔒 Brute Force Protocol</div>
+      <div class="pg-sub">3 progressive levels — theory, interactive examples, MCQs, and fill-in-the-blank exercises.
+      </div>
+      <div class="levels-grid">
+        <div class="lv-card" onclick="startL1()">
+          <div class="lv-top">
+            <div class="lv-bgn">1</div>
+            <div class="lv-icon">📖</div>
+            <div class="lv-title">What is Brute Force?</div>
+            <div class="lv-desc">Core concepts, all 5 attack types, step-by-step working, real-world LinkedIn breach
+              example.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Theory + MCQ + FillBlank</span><span
+              class="lv-badge open" id="l1badge">AVAILABLE</span></div>
+        </div>
+        <div class="lv-card lv-locked" id="l2card" onclick="startL2()">
+          <div class="lv-top">
+            <div class="lv-bgn">2</div>
+            <div class="lv-icon">🔧</div>
+            <div class="lv-title">Offensive Operations</div>
+            <div class="lv-desc">Social engineering intel, automated dictionary attacks, and raw GPU brute force — the
+              attacker's journey.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Hands-on Lab</span><span class="lv-badge locked"
+              id="l2badge">🔒 LOCKED</span></div>
+        </div>
+        <div class="lv-card lv-locked" id="l3card" onclick="startL3()">
+          <div class="lv-top">
+            <div class="lv-bgn">3</div>
+            <div class="lv-icon">🛡️</div>
+            <div class="lv-title">Defense &amp; Prevention</div>
+            <div class="lv-desc">Account lockout, MFA, rate limiting, SIEM. Stop attacks before they succeed.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Blue Team Ops</span><span class="lv-badge locked"
+              id="l3badge">🔒 LOCKED</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ PAGE: LEVEL 1 ════════ -->
+  <div id="page-l1" class="page">
+    <div class="pinner">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="goTo('page-scenarios')">Home</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-link" onclick="goTo('page-bflevels')">Brute Force</span>
+        <span class="bc-sep">›</span><span>Level 1</span>
+      </div>
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="stp stp-active" id="stp1">
+          <div class="stp-circle">1</div><span class="stp-lbl">THEORY</span>
+        </div>
+        <div class="stp-line" id="sl1"></div>
+        <div class="stp stp" id="stp2">
+          <div class="stp-circle">2</div><span class="stp-lbl">QUIZ</span>
+        </div>
+        <div class="stp-line" id="sl2"></div>
+        <div class="stp" id="stp3">
+          <div class="stp-circle">3</div><span class="stp-lbl">FILL BLANKS</span>
+        </div>
+      </div>
+
+      <!-- PART 1: THEORY -->
+      <div class="part part-on" id="part1">
+        <div class="sec-title">Part 1 — <span>Understanding Brute Force</span></div>
+        <div class="sec-sub">Learn the concept, all attack types, and exactly how attackers operate — with real-world
+          examples.</div>
+
+        <div class="callout"><strong>💡 What is a Brute Force Attack?</strong><br />Think of a combination lock with
+          10,000 possible codes. A brute force attack tries <strong>every single one</strong> — 0000, 0001, 0002… until
+          the lock opens. No cleverness, no software exploits. Just raw trial-and-error with computing power. A modern
+          GPU can try <strong>billions of combinations per second</strong> — making weak passwords trivially crackable.
+        </div>
+
+        <div class="anim-panel">
+          <div class="anim-title">⚡ LIVE ATTACK SIMULATION — WATCH HOW IT WORKS</div>
+          <div class="anim-scene">
+            <div class="anim-box">
+              <div class="ab-ico">👤</div>
+              <div class="ab-lbl">ATTACKER</div>
+            </div>
+            <div>
+              <div class="arr">→</div>
+              <div class="pw-stream">
+                <div class="pw-try pw-fail">❌ password123</div>
+                <div class="pw-try pw-fail">❌ admin123</div>
+                <div class="pw-try pw-fail">❌ qwerty</div>
+                <div class="pw-try pw-win">✅ letmein ← FOUND!</div>
+              </div>
+            </div>
+            <div class="anim-box">
+              <div class="ab-ico">🌐</div>
+              <div class="ab-lbl">LOGIN PAGE</div>
+            </div>
+            <div class="arr" style="animation-delay:.6s">→</div>
+            <div class="anim-box" style="border-color:rgba(0,255,136,.3)">
+              <div class="ab-ico">🔓</div>
+              <div class="ab-lbl" style="color:var(--green)">ACCESS!</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-title" style="font-size:18px;margin-bottom:14px;">5 Types of Brute Force Attacks</div>
+        <div class="atgrid">
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--cyan)"></div><span class="atname">Simple Brute Force</span>
+            </div>
+            <div class="atdesc">Tries <strong>every possible combination</strong> — aa, ab, ac… zz. Guaranteed to crack
+              but extremely slow for long passwords. No external wordlist needed.</div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--yellow)"></div><span class="atname">Dictionary Attack</span>
+            </div>
+            <div class="atdesc">Uses a <strong>pre-built wordlist</strong> of common passwords. rockyou.txt has 14
+              million real leaked passwords. Much faster — most users pick predictable passwords.</div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--orange)"></div><span class="atname">Hybrid Attack</span>
+            </div>
+            <div class="atdesc">Combines dictionary words + brute-force additions. Tries <strong>"password" →
+                "password123" → "password!"</strong>. Starts with logic, then adds permutations.</div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--red)"></div><span class="atname">Reverse Brute Force</span>
+            </div>
+            <div class="atdesc">Flips the logic — starts with <strong>one known common password</strong> like
+              "Summer2024!" and tries it against <strong>millions of different usernames</strong>.</div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--purple)"></div><span class="atname">Rainbow Table</span>
+            </div>
+            <div class="atdesc">Uses a <strong>precomputed hash database</strong> to instantly reverse password hashes —
+              no cracking needed, just lookup. Defeated by adding a random "salt".</div>
+          </div>
+          <div class="atcard" style="background:rgba(0,245,255,0.03);border-color:rgba(0,245,255,0.15)">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--green)"></div><span class="atname" style="color:var(--green)">⚡
+                Speed Reality Check</span>
+            </div>
+            <div class="atdesc" style="color:var(--text2)">A modern GPU tests <strong style="color:var(--yellow)">100
+                billion</strong> MD5 password guesses per second. An 8-character lowercase password has 208 billion
+              combos — crackable in minutes.</div>
+          </div>
+        </div>
+
+        <div class="rw-box">
+          <div class="rw-hd"><span class="rw-tag">REAL WORLD</span><span class="rw-title">2013 LinkedIn Breach — 6.5
+              Million Passwords Cracked in 72 Hours</span></div>
+          <div class="callout danger" style="margin-bottom:14px;">LinkedIn stored passwords as <strong>unsalted SHA-1
+              hashes</strong>. Attackers used rainbow table lookups + dictionary attacks to crack <strong>90% of all
+              passwords within 72 hours.</strong></div>
+          <div class="rw-steps">
+            <div class="rw-step">
+              <div class="rw-num">1</div><span><strong>Target:</strong> LinkedIn's database of 6.5M SHA-1 hashed
+                passwords stolen via SQL injection.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">2</div><span><strong>Clues:</strong> Email format known (<a
+                  href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                  data-cfemail="086e617a7b7c6669656d2664697b7c6669656d486b6765">[email&#160;protected]</a>).
+                Hashing algorithm identified as SHA-1.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">3</div><span><strong>Method:</strong> Rainbow table attack — precomputed SHA-1 hashes
+                of top 100M passwords. No cracking needed, just lookup.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">4</div><span><strong>Tools:</strong> Hashcat + rockyou.txt. Passwords like <code
+                  style="color:var(--red)">"linkedin"</code>, <code style="color:var(--red)">"password1"</code>, <code
+                  style="color:var(--red)">"123456"</code> fell instantly.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">5</div><span><strong>Result:</strong> 90% cracked in 72 hours. Credentials sold on
+                dark web for years after the breach.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-title" style="font-size:18px;margin-bottom:14px;">How a Brute Force Attack Works — Step by Step
+        </div>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-ico">🎯</div>
+            <div class="flow-lbl">Select Target</div>
+            <div class="flow-dtl">Login, SSH, RDP</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">🔍</div>
+            <div class="flow-lbl">Gather Clues</div>
+            <div class="flow-dtl">admin, user1, email</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">🛠️</div>
+            <div class="flow-lbl">Choose Tool</div>
+            <div class="flow-dtl">Hydra / Hashcat</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">📋</div>
+            <div class="flow-lbl">Load Wordlist</div>
+            <div class="flow-dtl">rockyou.txt</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">⚡</div>
+            <div class="flow-lbl">Auto-Fire</div>
+            <div class="flow-dtl">Tries each guess</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">✅</div>
+            <div class="flow-lbl">Match Found</div>
+            <div class="flow-dtl">Login succeeds</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">💀</div>
+            <div class="flow-lbl">Access Gained</div>
+            <div class="flow-dtl">Data stolen</div>
+          </div>
+        </div>
+
+        <div class="callout warn"><strong>⚠️ Why Weak Passwords Are Dangerous</strong><br />4-digit PIN = 10,000 combos
+          → cracked in milliseconds &nbsp;|&nbsp; 8-char lowercase = 208 billion → minutes by GPU &nbsp;|&nbsp; 12-char
+          mixed = 475 quadrillion → years. <strong>Every extra character multiplies safety exponentially.</strong></div>
+
+        <div class="part-nav">
+          <button class="btn-back-sm" onclick="goTo('page-bflevels')">← Back to Levels</button>
+          <button class="btn-next-sm" onclick="goPart(2)">NEXT: Quiz ▶</button>
+        </div>
+      </div>
+
+      <!-- PART 2: MCQ -->
+      <div class="part" id="part2">
+        <div class="sec-title">Part 2 — <span>Knowledge Check</span></div>
+        <div class="sec-sub">5 questions based on what you just learned. Read carefully!</div>
+        <div class="quiz-hdr">📋 MULTIPLE CHOICE — SELECT THE BEST ANSWER</div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 01 / 05</div>
+          <div class="q-text">What does a brute force attack rely on to crack passwords?</div>
+          <div class="q-opts" id="q1">
+            <div class="q-opt" onclick="ansQ('q1',0)">
+              <div class="q-radio"></div>Exploiting a software vulnerability in the server
+            </div>
+            <div class="q-opt" onclick="ansQ('q1',1)">
+              <div class="q-radio"></div>Trial-and-error testing of all possible passwords
+            </div>
+            <div class="q-opt" onclick="ansQ('q1',2)">
+              <div class="q-radio"></div>Tricking the victim with a fake login page
+            </div>
+            <div class="q-opt" onclick="ansQ('q1',3)">
+              <div class="q-radio"></div>Intercepting network packets between client and server
+            </div>
+          </div>
+          <div class="q-fb" id="q1fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 02 / 05</div>
+          <div class="q-text">Which attack type uses a precomputed database to reverse password hashes instantly without
+            cracking?</div>
+          <div class="q-opts" id="q2">
+            <div class="q-opt" onclick="ansQ('q2',0)">
+              <div class="q-radio"></div>Dictionary Attack
+            </div>
+            <div class="q-opt" onclick="ansQ('q2',1)">
+              <div class="q-radio"></div>Hybrid Attack
+            </div>
+            <div class="q-opt" onclick="ansQ('q2',2)">
+              <div class="q-radio"></div>Rainbow Table Attack
+            </div>
+            <div class="q-opt" onclick="ansQ('q2',3)">
+              <div class="q-radio"></div>Reverse Brute Force
+            </div>
+          </div>
+          <div class="q-fb" id="q2fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 03 / 05</div>
+          <div class="q-text">In the 2013 LinkedIn breach, why were passwords cracked so quickly?</div>
+          <div class="q-opts" id="q3">
+            <div class="q-opt" onclick="ansQ('q3',0)">
+              <div class="q-radio"></div>LinkedIn stored passwords in plain text with no hashing at all
+            </div>
+            <div class="q-opt" onclick="ansQ('q3',1)">
+              <div class="q-radio"></div>Passwords were hashed with unsalted SHA-1, vulnerable to rainbow tables
+            </div>
+            <div class="q-opt" onclick="ansQ('q3',2)">
+              <div class="q-radio"></div>Attackers used social engineering to get passwords directly from users
+            </div>
+            <div class="q-opt" onclick="ansQ('q3',3)">
+              <div class="q-radio"></div>LinkedIn had an open SSH port with no rate limiting
+            </div>
+          </div>
+          <div class="q-fb" id="q3fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 04 / 05</div>
+          <div class="q-text">A Reverse Brute Force attack is best described as:</div>
+          <div class="q-opts" id="q4">
+            <div class="q-opt" onclick="ansQ('q4',0)">
+              <div class="q-radio"></div>Trying all possible passwords on one account until one works
+            </div>
+            <div class="q-opt" onclick="ansQ('q4',1)">
+              <div class="q-radio"></div>Cracking a hash by working backwards from the encrypted value
+            </div>
+            <div class="q-opt" onclick="ansQ('q4',2)">
+              <div class="q-radio"></div>Using one common password against many different usernames
+            </div>
+            <div class="q-opt" onclick="ansQ('q4',3)">
+              <div class="q-radio"></div>Reversing a dictionary wordlist and trying entries backwards
+            </div>
+          </div>
+          <div class="q-fb" id="q4fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 05 / 05</div>
+          <div class="q-text">Which is the MOST brute-force resistant password?</div>
+          <div class="q-opts" id="q5">
+            <div class="q-opt" onclick="ansQ('q5',0)">
+              <div class="q-radio"></div>linkedin2013
+            </div>
+            <div class="q-opt" onclick="ansQ('q5',1)">
+              <div class="q-radio"></div>P@ssw0rd
+            </div>
+            <div class="q-opt" onclick="ansQ('q5',2)">
+              <div class="q-radio"></div>Tr0ub4dor&3!xK9mQ
+            </div>
+            <div class="q-opt" onclick="ansQ('q5',3)">
+              <div class="q-radio"></div>Summer2024!
+            </div>
+          </div>
+          <div class="q-fb" id="q5fb"></div>
+        </div>
+
+        <div class="score-box" id="mcqScore">
+          <div class="score-val" id="mcqSV"></div>
+          <div class="score-lbl">Quiz complete — great work, Defender!</div>
+        </div>
+        <div class="part-nav">
+          <button class="btn-back-sm" onclick="goPart(1)">← Back to Theory</button>
+          <button class="btn-next-sm" id="btnP3" onclick="goPart(3)" disabled>NEXT: Fill Blanks ▶</button>
+        </div>
+      </div>
+
+      <!-- PART 3: FILL BLANKS -->
+      <div class="part" id="part3">
+        <div class="sec-title">Part 3 — <span>Fill in the Blanks</span></div>
+        <div class="sec-sub">Complete each sentence. Spelling matters — use the word bank below!</div>
+        <div
+          style="font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:10px;">
+          📦 WORD BANK</div>
+        <div class="word-bank">
+          <span class="wb-tag">brute force</span><span class="wb-tag">dictionary</span><span class="wb-tag">rainbow
+            table</span>
+          <span class="wb-tag">Hydra</span><span class="wb-tag">salting</span><span class="wb-tag">hybrid</span>
+          <span class="wb-tag">reverse</span><span class="wb-tag">Hashcat</span><span class="wb-tag">SHA-1</span>
+        </div>
+        <div class="fitb-card">
+          <div class="q-num">BLANK 01 / 06</div>
+          <div class="fitb-sent">A <input class="blank" id="b1" placeholder="______" /> attack does not exploit software
+            flaws — it relies purely on trial-and-error testing of every possible password combination.</div>
+          <div class="fitb-hint">💡 The name of the whole attack category we are studying</div>
+          <div class="fitb-fb" id="b1fb"></div>
+          <button class="btn-chk" onclick="chkB('b1','brute force','b1fb')">CHECK ↵</button>
+        </div>
+        <div class="fitb-card">
+          <div class="q-num">BLANK 02 / 06</div>
+          <div class="fitb-sent">A <input class="blank" id="b2" placeholder="______" /> attack uses a pre-built wordlist
+            of common passwords like "123456" to guess credentials much faster than trying every combination.</div>
+          <div class="fitb-hint">💡 Think of a book full of words 📖</div>
+          <div class="fitb-fb" id="b2fb"></div>
+          <button class="btn-chk" onclick="chkB('b2','dictionary','b2fb')">CHECK ↵</button>
+        </div>
+        <div class="fitb-card">
+          <div class="q-num">BLANK 03 / 06</div>
+          <div class="fitb-sent">A <input class="blank" id="b3" placeholder="______" /> is a precomputed database used
+            to reverse cryptographic hashes — allowing attackers to look up the original password instantly.</div>
+          <div class="fitb-hint">💡 Colourful... think of colours after rain 🌈</div>
+          <div class="fitb-fb" id="b3fb"></div>
+          <button class="btn-chk" onclick="chkB('b3','rainbow table','b3fb')">CHECK ↵</button>
+        </div>
+        <div class="fitb-card">
+          <div class="q-num">BLANK 04 / 06</div>
+          <div class="fitb-sent"><input class="blank" id="b4" placeholder="______" /> is a popular open-source network
+            login cracker that supports SSH, FTP, HTTP, and RDP — widely used in automated brute force attacks.</div>
+          <div class="fitb-hint">💡 A nine-headed mythological serpent 🐍</div>
+          <div class="fitb-fb" id="b4fb"></div>
+          <button class="btn-chk" onclick="chkB('b4','hydra','b4fb')">CHECK ↵</button>
+        </div>
+        <div class="fitb-card">
+          <div class="q-num">BLANK 05 / 06</div>
+          <div class="fitb-sent">Adding a random value to a password before hashing — called <input class="blank"
+              id="b5" placeholder="______" /> — defeats rainbow table attacks because every hash becomes unique even for
+            identical passwords.</div>
+          <div class="fitb-hint">💡 What you add to food to enhance flavour? 🧂</div>
+          <div class="fitb-fb" id="b5fb"></div>
+          <button class="btn-chk" onclick="chkB('b5','salting','b5fb')">CHECK ↵</button>
+        </div>
+        <div class="fitb-card">
+          <div class="q-num">BLANK 06 / 06</div>
+          <div class="fitb-sent">A <input class="blank" id="b6" placeholder="______" /> brute force attack begins with
+            dictionary logic, then adds brute-force permutations — like appending "123" or "!" to common base words.
+          </div>
+          <div class="fitb-hint">💡 Mixed — part dictionary, part random 🔀</div>
+          <div class="fitb-fb" id="b6fb"></div>
+          <button class="btn-chk" onclick="chkB('b6','hybrid','b6fb')">CHECK ↵</button>
+        </div>
+        <div class="score-box" id="fitbScore" style="margin-top:20px;">
+          <div class="score-val" id="fitbSV"></div>
+          <div class="score-lbl">Fill-in-the-Blank Score — Level 1 Complete! 🎉<br /><span
+              style="font-size:13px;color:var(--text2)">Level 2 unlocked!</span></div>
+        </div>
+        <div class="part-nav">
+          <button class="btn-back-sm" onclick="goPart(2)">← Back to Quiz</button>
+          <button class="btn-next-sm" id="btnFinish" onclick="finishL1()" disabled>✓ COMPLETE LEVEL 1</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = window.location.origin;
+    let user = null, mcqDone = {}, fitbDone = {}, curPart = 1;
+    const saved = localStorage.getItem('ss_user');
+    if (saved) { user = JSON.parse(saved); }
+    document.addEventListener('DOMContentLoaded', () => { if (user) enterApp(); });
+
+    function goTo(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const pg = document.getElementById(id);
+      pg.classList.add('active');
+      pg.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    function showNav(on) {
+      document.getElementById('navUser').classList.toggle('show', on);
+      document.getElementById('navLogout').classList.toggle('show', on);
+    }
+    async function doLogin() {
+      const u = document.getElementById('lu').value.trim(), p = document.getElementById('lp').value;
+      if (!u || !p) { setErr('loginErr', 'Please fill in both fields.'); return; }
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'AUTHENTICATING...';
+      try {
+        const r = await fetch(`${API}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) });
+        const d = await r.json();
+        if (!r.ok) { setErr('loginErr', d.error || 'Invalid credentials'); setSt(true); btn.disabled = false; btn.textContent = 'INITIALIZE SESSION'; return; }
+        user = d.user;
+      } catch {
+        user = { username: u, progress: { bruteforce: { level1: { p1: false, p2: false, p3: false }, completion: 0 } } };
+        setSt(false, 'System Status: Demo Mode');
+      }
+      localStorage.setItem('ss_user', JSON.stringify(user));
+      btn.disabled = false; btn.textContent = 'INITIALIZE SESSION';
+      enterApp();
+    }
+    async function doRegister() {
+      const u = document.getElementById('ru').value.trim(), p = document.getElementById('rp').value;
+      if (!u || !p) { setErr('regErr', 'Fill all fields'); return; }
+      try {
+        const r = await fetch(`${API}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) });
+        const d = await r.json();
+        if (!r.ok) { setErr('regErr', d.error || 'Error'); return; }
+        setErr('regErr', '✓ Account created! Login above.');
+      } catch { setErr('regErr', 'Server offline — use any credentials for demo mode'); }
+    }
+    function logout() { user = null; localStorage.removeItem('ss_user'); showNav(false); goTo('page-login'); }
+    function toggleReg() { const s = document.getElementById('regSection'); s.style.display = s.style.display === 'block' ? 'none' : 'block'; }
+    function enterApp() {
+      document.getElementById('navUser').textContent = user.username;
+      showNav(true);
+      document.getElementById('scUser').textContent = user.username;
+      updateStats();
+      updateSqlStats();
+      checkLevelUnlocks();
+      // Handle redirect back from level 2 page
+      const goto = sessionStorage.getItem('ss_goto');
+      if (goto) { sessionStorage.removeItem('ss_goto'); goTo(goto); }
+      else goTo('page-scenarios');
+    }
+    function updateStats() {
+      const l1 = user.progress?.bruteforce?.level1 || {};
+      const l1Done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length;
+      const l2 = user.progress?.bruteforce?.level2 || {};
+      const l2Done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length;
+      const l3 = user.progress?.bruteforce?.level3 || {};
+      const l3Done = [l3.p1, l3.p2, l3.p3].filter(Boolean).length;
+      const bfDone = l1Done + l2Done + l3Done;
+      const sq1 = user.progress?.sqli?.level1 || {};
+      const sq1Done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length;
+      const sq2 = user.progress?.sqli?.level2 || {};
+      const sq2Done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length;
+      const sqlDone = sq1Done + sq2Done;
+      const totalDone = bfDone + sqlDone;
+      const pct = Math.round((totalDone / 15) * 100);
+      document.getElementById('stM').textContent = pct + '%';
+      document.getElementById('stD').textContent = totalDone + '/15';
+      document.getElementById('bfPct').textContent = Math.round((bfDone / 9) * 100) + '%';
+      document.getElementById('bfBar').style.width = Math.round((bfDone / 9) * 100) + '%';
+      const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'ELITE', 'MASTER', 'VETERAN', 'LEGEND', 'ELITE', 'ELITE'];
+      document.getElementById('stR').textContent = ranks[totalDone] || 'ELITE';
+    }
+    function updateSqlStats() {
+      const p1 = user.progress?.sqli?.level1 || {};
+      const p2 = user.progress?.sqli?.level2 || {};
+      const done1 = [p1.p1, p1.p2, p1.p3].filter(Boolean).length;
+      const done2 = [p2.p1, p2.p2, p2.p3].filter(Boolean).length;
+      const totalDone = done1 + done2;
+      const pct = Math.round((totalDone / 6) * 100);
+      const pctEl = document.getElementById('sqiPct');
+      const barEl = document.getElementById('sqiBar');
+      if (pctEl) pctEl.textContent = pct + '%';
+      if (barEl) barEl.style.width = pct + '%';
+    }
+    function startL1() { curPart = 1; mcqDone = {}; fitbDone = {}; renderStepper(); showPart(1); goTo('page-l1'); }
+    function startL2() {
+      const l1 = user.progress?.bruteforce?.level1 || {};
+      if ([l1.p1, l1.p2, l1.p3].filter(Boolean).length < 3) return;
+      const l2 = user.progress?.bruteforce?.level2 || {};
+      if ([l2.p1, l2.p2, l2.p3].filter(Boolean).length === 3) { goTo('page-bflevels'); return; }
+      window.location.href = 'brute-force-level2.html';
+    }
+    function startL3() {
+      const l2 = user.progress?.bruteforce?.level2 || {};
+      if ([l2.p1, l2.p2, l2.p3].filter(Boolean).length < 3) return;
+      const l3 = user.progress?.bruteforce?.level3 || {};
+      if ([l3.p1, l3.p2, l3.p3].filter(Boolean).length === 3) { goTo('page-bflevels'); return; }
+      window.location.href = 'brute-force-level3.html';
+    }
+    function checkLevelUnlocks() {
+      // BF Level 2 unlock
+      const l1 = user.progress?.bruteforce?.level1 || {};
+      const l1done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length === 3;
+      const card = document.getElementById('l2card');
+      const badge = document.getElementById('l2badge');
+      if (l1done && card) { card.classList.remove('lv-locked'); badge.textContent = 'AVAILABLE'; badge.className = 'lv-badge open'; }
+      const l2 = user.progress?.bruteforce?.level2 || {};
+      const l2done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length === 3;
+      if (l2done && badge) { badge.textContent = 'COMPLETE'; badge.className = 'lv-badge done'; }
+      // BF Level 3 unlock
+      const l3card = document.getElementById('l3card');
+      const l3badge = document.getElementById('l3badge');
+      if (l2done && l3card) { l3card.classList.remove('lv-locked'); if (l3badge) { l3badge.textContent = 'AVAILABLE'; l3badge.className = 'lv-badge open'; } }
+      const l3 = user.progress?.bruteforce?.level3 || {};
+      const l3done = [l3.p1, l3.p2, l3.p3].filter(Boolean).length === 3;
+      if (l3done && l3badge) { l3badge.textContent = 'COMPLETE'; l3badge.className = 'lv-badge done'; }
+      // SQL unlock
+      const sq1 = user.progress?.sqli?.level1 || {};
+      const sq1done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length === 3;
+      const sqCard = document.getElementById('sqll2card');
+      const sqBadge = document.getElementById('sqll2badge');
+      if (sq1done && sqCard) { sqCard.classList.remove('lv-locked'); sqBadge.textContent = 'AVAILABLE'; sqBadge.className = 'lv-badge open'; }
+      const sq2 = user.progress?.sqli?.level2 || {};
+      if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3 && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
+      // Mark SQL Level 1 badge as complete if done
+      const sql1badge = document.getElementById('sql1badge');
+      if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
+    }
+    function startSqlL2() {
+      const sq1 = user.progress?.sqli?.level1 || {};
+      if ([sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length < 3) return;
+      const sq2 = user.progress?.sqli?.level2 || {};
+      if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3) { goTo('page-sqilevels'); return; }
+      window.location.href = 'sql-injection-level2.html';
+    }
+    function goPart(n) { curPart = n; renderStepper(); showPart(n); document.getElementById('page-l1').scrollTo({ top: 0, behavior: 'smooth' }); }
+    function showPart(n) { for (let i = 1; i <= 3; i++) { const e = document.getElementById('part' + i); e.className = 'part' + (i === n ? ' part-on' : ''); } }
+    function renderStepper() {
+      for (let i = 1; i <= 3; i++) {
+        const e = document.getElementById('stp' + i);
+        e.className = 'stp' + (i < curPart ? ' stp-done' : i === curPart ? ' stp-active' : '');
+      }
+      document.getElementById('sl1').className = 'stp-line' + (curPart > 1 ? ' stp-done' : '');
+      document.getElementById('sl2').className = 'stp-line' + (curPart > 2 ? ' stp-done' : '');
+    }
+    const CANS = { q1: 1, q2: 2, q3: 1, q4: 2, q5: 2 };
+    const CFBT = {
+      q1: ['❌ Brute force needs no vulnerability — it just tries everything.', '✅ Correct! Pure trial-and-error — no exploits, just trying every possibility.', '❌ That is phishing — a completely different attack.', '❌ That is a Man-in-the-Middle attack.'],
+      q2: ['❌ Dictionary uses wordlists but not precomputed lookups.', '❌ Hybrid combines dictionary words with brute-force additions.', '✅ Correct! Rainbow tables are precomputed hash databases for instant reversal.', '❌ Reverse brute force uses one password against many usernames.'],
+      q3: ['❌ LinkedIn did hash their passwords — just with weak, unsalted SHA-1.', '✅ Exactly! Unsalted SHA-1 + rainbow tables = cracked within hours.', '❌ The breach was technical, not social engineering.', '❌ The vulnerability was weak hashing, not an open SSH port.'],
+      q4: ['❌ That is standard brute force — many passwords on one account.', '❌ That describes cryptanalysis, not reverse brute force.', '✅ Spot on! One known password tested against thousands of different usernames.', '❌ "Reversing" here means flipping who vs what is fixed — not reversing the list.'],
+      q5: ['❌ Weak dictionary-style password — cracks instantly.', '❌ "P@ssw0rd" substitutions are in every dictionary list.', '✅ Correct! Long, random, mixed characters = exponentially harder to brute force.', '❌ Season+Year+Symbol pattern appears in many hybrid attack wordlists.']
+    };
+    function ansQ(qId, chosen) {
+      const c = CANS[qId];
+      const opts = document.getElementById(qId).querySelectorAll('.q-opt');
+      opts.forEach(o => o.classList.add('q-dis'));
+      opts[chosen].classList.add(chosen === c ? 'q-ok' : 'q-no');
+      if (chosen !== c) opts[c].classList.add('q-ok');
+      const fb = document.getElementById(qId + 'fb');
+      fb.textContent = CFBT[qId][chosen];
+      fb.className = 'q-fb show ' + (chosen === c ? 'ok' : 'no');
+      mcqDone[qId] = (chosen === c);
+      if (Object.keys(mcqDone).length === 5) {
+        const score = Object.values(mcqDone).filter(Boolean).length;
+        const sv = document.getElementById('mcqSV');
+        sv.textContent = score + '/5';
+        sv.style.color = score >= 4 ? 'var(--green)' : score >= 3 ? 'var(--yellow)' : 'var(--red)';
+        document.getElementById('mcqScore').classList.add('show');
+        document.getElementById('btnP3').disabled = false;
+        saveP('p2');
+      }
+    }
+    const BANS = { b1: 'brute force', b2: 'dictionary', b3: 'rainbow table', b4: 'hydra', b5: 'salting', b6: 'hybrid' };
+    function chkB(id, ans, fbId) {
+      const inp = document.getElementById(id);
+      const val = inp.value.trim().toLowerCase();
+      const fb = document.getElementById(fbId);
+      if (!val) { fb.textContent = '⚠️ Type an answer first.'; fb.className = 'fitb-fb show no'; return; }
+      if (val === ans) {
+        inp.classList.add('bok'); inp.disabled = true;
+        fb.textContent = '✅ Correct!'; fb.className = 'fitb-fb show ok';
+        fitbDone[id] = true;
+      } else {
+        inp.classList.add('bno');
+        fb.textContent = '❌ Not quite — check the word bank and try again.'; fb.className = 'fitb-fb show no';
+        fitbDone[id] = false;
+        setTimeout(() => { inp.classList.remove('bno'); inp.value = ''; }, 1300);
+      }
+      if (Object.keys(BANS).every(k => fitbDone[k] === true)) {
+        const sv = document.getElementById('fitbSV');
+        sv.textContent = '6/6'; sv.style.color = 'var(--green)';
+        document.getElementById('fitbScore').classList.add('show');
+        document.getElementById('btnFinish').disabled = false;
+        saveP('p3');
+      }
+    }
+    async function finishL1() {
+      saveP('p1'); saveP('p2'); saveP('p3');
+      document.getElementById('l1badge').textContent = 'COMPLETE';
+      document.getElementById('l1badge').className = 'lv-badge done';
+      updateStats();
+      goTo('page-bflevels');
+    }
+    async function saveP(part) {
+      if (!user.progress) user.progress = { bruteforce: { level1: {} } };
+      if (!user.progress.bruteforce) user.progress.bruteforce = { level1: {} };
+      if (!user.progress.bruteforce.level1) user.progress.bruteforce.level1 = {};
+      user.progress.bruteforce.level1[part] = true;
+      localStorage.setItem('ss_user', JSON.stringify(user));
+      try { await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'bruteforce', level: 'level1', mode: part, completed: true }) }); } catch { }
+    }
+    function setErr(id, msg) { document.getElementById(id).textContent = msg; }
+    function setSt(err, msg) {
+      document.getElementById('stext').textContent = msg || (err ? 'Access Denied' : 'System Status: Operational');
+      document.getElementById('sdot').className = 'sdot' + (err ? ' red' : '');
+    }
+    document.getElementById('lp').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('lu').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('lp').focus(); });
+
+    // ══════════════════════════════════════════════
+    //  SQL INJECTION MODULE
+    // ══════════════════════════════════════════════
+    let sqlCurPart = 1, sqlMcqDone = {}, sqlFitbDone = {};
+
+    function startSqlL1() { sqlCurPart = 1; sqlMcqDone = {}; sqlFitbDone = {}; sqlRenderStepper(); sqlShowPart(1); goTo('page-sql1'); }
+
+    function sqlGoPart(n) {
+      sqlCurPart = n; sqlRenderStepper(); sqlShowPart(n);
+      document.getElementById('page-sql1').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function sqlShowPart(n) {
+      for (let i = 1; i <= 3; i++) {
+        const e = document.getElementById('sqlpart' + i);
+        e.className = 'part' + (i === n ? ' part-on' : '');
+      }
+    }
+
+    function sqlRenderStepper() {
+      for (let i = 1; i <= 3; i++) {
+        const e = document.getElementById('sstp' + i);
+        e.className = 'stp' + (i < sqlCurPart ? ' stp-done' : i === sqlCurPart ? ' stp-active' : '');
+      }
+      document.getElementById('ssl1').className = 'stp-line' + (sqlCurPart > 1 ? ' stp-done' : '');
+      document.getElementById('ssl2').className = 'stp-line' + (sqlCurPart > 2 ? ' stp-done' : '');
+    }
+
+    const SQL_CANS = { sq1: 1, sq2: 2, sq3: 1, sq4: 2, sq5: 2 };
+    const SQL_CFBT = {
+      sq1: ['❌ That describes malware — SQLi manipulates queries, not files.', '✅ Correct! SQL Injection inserts malicious SQL into input fields to manipulate database queries.', '❌ That describes a Man-in-the-Middle attack, not SQL Injection.', '❌ That is brute force — a completely different attack type.'],
+      sq2: ['❌ Error-Based SQLi reads database errors, not UNION results.', '❌ Blind SQLi infers results from behavior changes, not UNION.', '✅ Exactly! Union-Based SQLi uses UNION to chain queries and pull data from other tables.', '❌ Time-Based is a subtype of Blind SQLi using SLEEP() — not UNION.'],
+      sq3: ['✅ Correct! Blind SQLi infers data from page behavior (Boolean-Based) or delay times (Time-Based).', '❌ Reading error messages describes Error-Based SQLi, not Blind.', '❌ Using UNION to combine results describes Union-Based SQLi.', '❌ Stolen credentials describe credential stuffing, not Blind SQLi.'],
+      sq4: ['❌ addslashes() is weak — numeric injection still bypasses it.', '❌ Hiding errors is good practice but doesn\'t stop injection.', '✅ Correct! Prepared statements treat input as data — not SQL code — making injection impossible.', '❌ Authentication helps access control but doesn\'t stop SQLi in forms.'],
+      sq5: ['❌ The breach was massive — 100+ million, not 500 records.', '❌ Customers were the primary victims — over 100 million of them.', '✅ Exactly! 100M+ customers had SSNs, addresses and credit scores exposed in the Capital One breach.', '❌ The data was accessed in plaintext — SSNs and financial records were fully readable.']
+    };
+
+    function sqlAnsQ(qId, chosen) {
+      const c = SQL_CANS[qId];
+      const opts = document.getElementById(qId).querySelectorAll('.q-opt');
+      opts.forEach(o => o.classList.add('q-dis'));
+      opts[chosen].classList.add(chosen === c ? 'q-ok' : 'q-no');
+      if (chosen !== c) opts[c].classList.add('q-ok');
+      const fb = document.getElementById(qId + 'fb');
+      fb.textContent = SQL_CFBT[qId][chosen];
+      fb.className = 'q-fb show ' + (chosen === c ? 'ok' : 'no');
+      sqlMcqDone[qId] = (chosen === c);
+      if (Object.keys(sqlMcqDone).length === 5) {
+        const score = Object.values(sqlMcqDone).filter(Boolean).length;
+        const sv = document.getElementById('sqlMcqSV');
+        sv.textContent = score + '/5';
+        sv.style.color = score >= 4 ? 'var(--green)' : score >= 3 ? 'var(--yellow)' : 'var(--red)';
+        document.getElementById('sqlMcqScore').classList.add('show');
+        document.getElementById('sqlBtnP3').disabled = false;
+        sqlSaveP('p2');
+      }
+    }
+
+    const SQL_BANS = { sb1: 'sql injection', sb2: 'union', sb3: 'blind', sb4: 'prepared statements', sb5: 'error-based', sb6: 'capital one' };
+
+    function sqlChkB(id, ans, fbId) {
+      const inp = document.getElementById(id);
+      const val = inp.value.trim().toLowerCase();
+      const fb = document.getElementById(fbId);
+      if (!val) { fb.textContent = '⚠️ Type an answer first.'; fb.className = 'fitb-fb show no'; return; }
+      if (val === ans) {
+        inp.classList.add('bok'); inp.disabled = true;
+        fb.textContent = '✅ Correct!'; fb.className = 'fitb-fb show ok';
+        sqlFitbDone[id] = true;
+      } else {
+        inp.classList.add('bno');
+        fb.textContent = '❌ Not quite — check the word bank and try again.'; fb.className = 'fitb-fb show no';
+        sqlFitbDone[id] = false;
+        setTimeout(() => { inp.classList.remove('bno'); inp.value = ''; }, 1300);
+      }
+      if (Object.keys(SQL_BANS).every(k => sqlFitbDone[k] === true)) {
+        const sv = document.getElementById('sqlFitbSV');
+        sv.textContent = '6/6'; sv.style.color = 'var(--green)';
+        document.getElementById('sqlFitbScore').classList.add('show');
+        document.getElementById('sqlBtnFinish').disabled = false;
+        sqlSaveP('p3');
+      }
+    }
+
+    async function finishSqlL1() {
+      sqlSaveP('p1'); sqlSaveP('p2'); sqlSaveP('p3');
+      document.getElementById('sql1badge').textContent = 'COMPLETE';
+      document.getElementById('sql1badge').className = 'lv-badge done';
+      updateSqlStats();
+      goTo('page-sqilevels');
+    }
+
+    async function sqlSaveP(part) {
+      if (!user.progress) user.progress = {};
+      if (!user.progress.sqli) user.progress.sqli = { level1: {} };
+      if (!user.progress.sqli.level1) user.progress.sqli.level1 = {};
+      user.progress.sqli.level1[part] = true;
+      localStorage.setItem('ss_user', JSON.stringify(user));
+      updateSqlStats();
+      try {
+        await fetch(`${API}/api/progress/${user.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'sqli', level: 'level1', mode: part, completed: true }) });
+      } catch { }
+    }
+
+    function updateSqlStats() {
+      const p1 = user.progress?.sqli?.level1 || {};
+      const p2 = user.progress?.sqli?.level2 || {};
+      const done1 = [p1.p1, p1.p2, p1.p3].filter(Boolean).length;
+      const done2 = [p2.p1, p2.p2, p2.p3].filter(Boolean).length;
+      const pct = Math.round(((done1 + done2) / 6) * 100);
+      const pctEl = document.getElementById('sqiPct');
+      const barEl = document.getElementById('sqiBar');
+      if (pctEl) pctEl.textContent = pct + '%';
+      if (barEl) barEl.style.width = pct + '%';
+    }
+  </script>
+
+  <!-- ════════ PAGE: SQL INJECTION LEVELS ════════ -->
+  <div id="page-sqilevels" class="page">
+    <div class="pinner">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="goTo('page-scenarios')">Home</span>
+        <span class="bc-sep">›</span><span>SQL Injection Protocol</span>
+      </div>
+      <div class="pg-title">🗄️ SQL Injection Protocol</div>
+      <div class="pg-sub">3 progressive levels — theory, interactive examples, MCQs, and fill-in-the-blank exercises.
+      </div>
+      <div class="levels-grid">
+        <div class="lv-card" onclick="startSqlL1()">
+          <div class="lv-top">
+            <div class="lv-bgn">1</div>
+            <div class="lv-icon">📖</div>
+            <div class="lv-title">What is SQL Injection?</div>
+            <div class="lv-desc">Core concepts, attack types (Error, Union, Blind), security levels, and real-world
+              Capital One breach example.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Theory + MCQ + FillBlank</span><span
+              class="lv-badge open" id="sql1badge">AVAILABLE</span></div>
+        </div>
+        <div class="lv-card lv-locked" id="sqll2card" onclick="startSqlL2()">
+          <div class="lv-top">
+            <div class="lv-bgn">2</div>
+            <div class="lv-icon">🔧</div>
+            <div class="lv-title">Exploitation Techniques</div>
+            <div class="lv-desc">Hands-on offensive ops — manual injection probes, automated sqlmap scans, and live
+              UNION data extraction.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 phases · Hands-on Lab</span><span class="lv-badge locked"
+              id="sqll2badge">🔒 LOCKED</span></div>
+        </div>
+        <div class="lv-card lv-locked">
+          <div class="lv-top">
+            <div class="lv-bgn">3</div>
+            <div class="lv-icon">🛡️</div>
+            <div class="lv-title">Defense &amp; Prevention</div>
+            <div class="lv-desc">Prepared statements, input validation, WAF rules, ORM frameworks — stop SQLi before it
+              starts.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Blue Team Ops</span><span class="lv-badge locked">🔒
+              LOCKED</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ PAGE: SQL LEVEL 1 ════════ -->
+  <div id="page-sql1" class="page">
+    <div class="pinner">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="goTo('page-scenarios')">Home</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-link" onclick="goTo('page-sqilevels')">SQL Injection</span>
+        <span class="bc-sep">›</span><span>Level 1</span>
+      </div>
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="stp stp-active" id="sstp1">
+          <div class="stp-circle">1</div><span class="stp-lbl">THEORY</span>
+        </div>
+        <div class="stp-line" id="ssl1"></div>
+        <div class="stp" id="sstp2">
+          <div class="stp-circle">2</div><span class="stp-lbl">QUIZ</span>
+        </div>
+        <div class="stp-line" id="ssl2"></div>
+        <div class="stp" id="sstp3">
+          <div class="stp-circle">3</div><span class="stp-lbl">FILL BLANKS</span>
+        </div>
+      </div>
+
+      <!-- PART 1: THEORY -->
+      <div class="part part-on" id="sqlpart1">
+        <div class="sec-title">Part 1 — <span>Understanding SQL Injection</span></div>
+        <div class="sec-sub">Learn what SQLi is, how attackers exploit it, the three main attack types, and how to
+          defend against it.</div>
+
+        <div class="callout"><strong>💡 What is SQL Injection?</strong><br />SQL Injection (SQLi) is a security
+          vulnerability that occurs when an attacker inserts <strong>malicious SQL code</strong> into user input fields.
+          Instead of just reading your input as data, the database actually <strong>executes it as a command</strong> —
+          allowing attackers to retrieve, modify, or delete sensitive data. In some cases they can escalate privileges
+          and gain full control of the server.</div>
+
+        <div class="anim-panel">
+          <div class="anim-title">⚡ LIVE ATTACK SIMULATION — HOW SQL INJECTION WORKS</div>
+          <div class="anim-scene" style="flex-wrap:wrap;gap:10px;">
+            <div class="anim-box">
+              <div class="ab-ico">👤</div>
+              <div class="ab-lbl">ATTACKER</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <div class="arr">→</div>
+              <div class="pw-stream">
+                <div class="pw-try pw-fail" style="font-size:11px;">❌ 1 (normal user)</div>
+                <div class="pw-try pw-fail" style="font-size:11px;">❌ 1' (syntax error)</div>
+                <div class="pw-try pw-win" style="font-size:11px;">✅ 1' OR '1'='1 ← ALL ROWS!</div>
+              </div>
+            </div>
+            <div class="anim-box">
+              <div class="ab-ico">🗄️</div>
+              <div class="ab-lbl">DATABASE</div>
+            </div>
+            <div class="arr" style="animation-delay:.6s">→</div>
+            <div class="anim-box" style="border-color:rgba(0,255,136,.3)">
+              <div class="ab-ico">💀</div>
+              <div class="ab-lbl" style="color:var(--green)">DATA LEAKED!</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-title" style="font-size:18px;margin-bottom:14px;">3 Types of SQL Injection</div>
+        <div class="atgrid">
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--red)"></div><span class="atname">Error-Based SQLi</span>
+            </div>
+            <div class="atdesc">Attacker injects <strong>malformed input</strong> that causes the database to throw an
+              error message. That error <strong>leaks the database structure</strong> — table names, column names, DB
+              version. Fast to exploit but requires error messages to be visible.</div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--cyan)"></div><span class="atname">Union-Based SQLi</span>
+            </div>
+            <div class="atdesc">Uses the <strong>UNION operator</strong> to combine two SELECT queries. Works when both
+              queries have the <strong>same number of columns</strong> — letting attackers pull data from other tables
+              like <code>users</code> or <code>passwords</code>.</div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--orange)"></div><span class="atname">Blind SQLi</span>
+            </div>
+            <div class="atdesc">No query results are shown. Attacker infers data from <strong>behavior changes</strong>
+              (Boolean-Based: page differs for true/false) or <strong>response time</strong> (Time-Based: SLEEP() delays
+              the page). Slower but equally dangerous.</div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--yellow)"></div><span class="atname">Security Level: Low</span>
+            </div>
+            <div class="atdesc">Input goes directly into the SQL query with <strong>no filtering</strong>. Entering
+              <code>'</code> breaks the query. Entering <code>1' OR '1'='1</code> returns all rows.
+              <code>UNION SELECT</code> can pull hidden data.
+            </div>
+          </div>
+          <div class="atcard">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--purple)"></div><span class="atname">Security Level:
+                Medium</span>
+            </div>
+            <div class="atdesc"><code>addslashes()</code> escapes the <code>'</code> quote, blocking basic attacks. But
+              <strong>numeric injection</strong> still works — <code>1 OR 1=1</code> (no quotes needed) still returns
+              all records.
+            </div>
+          </div>
+          <div class="atcard" style="background:rgba(0,245,255,0.03);border-color:rgba(0,245,255,0.15)">
+            <div class="atcard-hd">
+              <div class="atdot" style="background:var(--green)"></div><span class="atname"
+                style="color:var(--green)">Security Level: High ✓</span>
+            </div>
+            <div class="atdesc" style="color:var(--text2)"><strong style="color:var(--green)">Prepared statements
+                (parameterized queries)</strong> safely handle user input. All inputs are treated as <strong>data — not
+                SQL code</strong>. Injection attempts like <code>' OR 1=1</code> simply fail.</div>
+          </div>
+        </div>
+
+        <div class="rw-box">
+          <div class="rw-hd"><span class="rw-tag">REAL WORLD</span><span class="rw-title">2019 Capital One Breach — 100
+              Million Customers Exposed</span></div>
+          <div class="callout danger" style="margin-bottom:14px;">A <strong>misconfigured web application</strong>
+            allowed an attacker to exploit a SQL injection vulnerability, leaking the personal data of over <strong>100
+              million customers</strong> — names, addresses, credit scores, and Social Security Numbers.</div>
+          <div class="rw-steps">
+            <div class="rw-step">
+              <div class="rw-num">1</div><span><strong>Target:</strong> Capital One's cloud-hosted banking application
+                with a vulnerable input endpoint.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">2</div><span><strong>Probe:</strong> Attacker sent a single-quote <code>'</code> to
+                find input fields not sanitizing user data.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">3</div><span><strong>Inject:</strong> Used UNION-based injection to chain queries and
+                pull customer records from internal tables.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">4</div><span><strong>Exfiltrate:</strong> Over 100 million records extracted including
+                SSNs, bank account numbers, and credit scores.</span>
+            </div>
+            <div class="rw-step">
+              <div class="rw-num">5</div><span><strong>Result:</strong> $80 million regulatory fine, massive
+                reputational damage, class-action lawsuits.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-title" style="font-size:18px;margin-bottom:14px;">How SQL Injection Works — Step by Step</div>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="flow-ico">🎯</div>
+            <div class="flow-lbl">Find Input</div>
+            <div class="flow-dtl">Form, URL param</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">🔍</div>
+            <div class="flow-lbl">Test with <code>'</code></div>
+            <div class="flow-dtl">Trigger error</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">🛠️</div>
+            <div class="flow-lbl">Choose Type</div>
+            <div class="flow-dtl">Error/Union/Blind</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">📋</div>
+            <div class="flow-lbl">Craft Payload</div>
+            <div class="flow-dtl">OR 1=1, UNION…</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">⚡</div>
+            <div class="flow-lbl">Execute</div>
+            <div class="flow-dtl">DB runs SQL</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-step">
+            <div class="flow-ico">💀</div>
+            <div class="flow-lbl">Data Stolen</div>
+            <div class="flow-dtl">Passwords, PII</div>
+          </div>
+        </div>
+
+        <div class="callout warn"><strong>⚠️ Impact of SQL Injection</strong><br />Unauthorized data access
+          &nbsp;|&nbsp; Data corruption or deletion &nbsp;|&nbsp; Authentication bypass &nbsp;|&nbsp; Privilege
+          escalation &nbsp;|&nbsp; Full server takeover &nbsp;|&nbsp; Reputation damage &amp; regulatory fines.
+          <strong>SQLi consistently ranks #1 in OWASP Top 10 vulnerabilities.</strong>
+        </div>
+
+        <div class="part-nav">
+          <button class="btn-back-sm" onclick="goTo('page-sqilevels')">← Back to Levels</button>
+          <button class="btn-next-sm" onclick="sqlGoPart(2)">NEXT: Quiz ▶</button>
+        </div>
+      </div>
+
+      <!-- PART 2: MCQ -->
+      <div class="part" id="sqlpart2">
+        <div class="sec-title">Part 2 — <span>Knowledge Check</span></div>
+        <div class="sec-sub">5 questions based on what you just learned. Read carefully!</div>
+        <div class="quiz-hdr">📋 MULTIPLE CHOICE — SELECT THE BEST ANSWER</div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 01 / 05</div>
+          <div class="q-text">What is SQL Injection?</div>
+          <div class="q-opts" id="sq1">
+            <div class="q-opt" onclick="sqlAnsQ('sq1',0)">
+              <div class="q-radio"></div>A virus that deletes database files from the server
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq1',1)">
+              <div class="q-radio"></div>Inserting malicious SQL code into user input fields to manipulate database
+              queries
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq1',2)">
+              <div class="q-radio"></div>A network attack that intercepts database connections between servers
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq1',3)">
+              <div class="q-radio"></div>Brute-forcing a database administrator's password to gain access
+            </div>
+          </div>
+          <div class="q-fb" id="sq1fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 02 / 05</div>
+          <div class="q-text">Which SQL Injection type uses the UNION operator to extract data from other database
+            tables?</div>
+          <div class="q-opts" id="sq2">
+            <div class="q-opt" onclick="sqlAnsQ('sq2',0)">
+              <div class="q-radio"></div>Error-Based SQL Injection
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq2',1)">
+              <div class="q-radio"></div>Blind SQL Injection
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq2',2)">
+              <div class="q-radio"></div>Union-Based SQL Injection
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq2',3)">
+              <div class="q-radio"></div>Time-Based SQL Injection
+            </div>
+          </div>
+          <div class="q-fb" id="sq2fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 03 / 05</div>
+          <div class="q-text">In Blind SQL Injection, how does the attacker extract information without seeing query
+            results?</div>
+          <div class="q-opts" id="sq3">
+            <div class="q-opt" onclick="sqlAnsQ('sq3',0)">
+              <div class="q-radio"></div>By observing page behavior changes or response times to infer true/false
+              conditions
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq3',1)">
+              <div class="q-radio"></div>By reading detailed error messages from the server
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq3',2)">
+              <div class="q-radio"></div>By using the UNION operator to combine hidden query results
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq3',3)">
+              <div class="q-radio"></div>By accessing the database admin panel with stolen credentials
+            </div>
+          </div>
+          <div class="q-fb" id="sq3fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 04 / 05</div>
+          <div class="q-text">Which prevention method is MOST effective at stopping SQL Injection?</div>
+          <div class="q-opts" id="sq4">
+            <div class="q-opt" onclick="sqlAnsQ('sq4',0)">
+              <div class="q-radio"></div>Using addslashes() to escape single quotes in user input
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq4',1)">
+              <div class="q-radio"></div>Hiding database error messages from users
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq4',2)">
+              <div class="q-radio"></div>Using prepared statements (parameterized queries) that treat input as data
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq4',3)">
+              <div class="q-radio"></div>Requiring users to log in before accessing any database form
+            </div>
+          </div>
+          <div class="q-fb" id="sq4fb"></div>
+        </div>
+
+        <div class="q-card">
+          <div class="q-num">QUESTION 05 / 05</div>
+          <div class="q-text">In the 2019 Capital One breach caused by SQL Injection, what was the scale of the damage?
+          </div>
+          <div class="q-opts" id="sq5">
+            <div class="q-opt" onclick="sqlAnsQ('sq5',0)">
+              <div class="q-radio"></div>500 customer records were exposed over a period of 5 years
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq5',1)">
+              <div class="q-radio"></div>Only internal employee data was leaked — no customers were affected
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq5',2)">
+              <div class="q-radio"></div>Over 100 million customers had personal data exposed including SSNs and credit
+              scores
+            </div>
+            <div class="q-opt" onclick="sqlAnsQ('sq5',3)">
+              <div class="q-radio"></div>The breach only exposed encrypted data that couldn't be decrypted
+            </div>
+          </div>
+          <div class="q-fb" id="sq5fb"></div>
+        </div>
+
+        <div class="score-box" id="sqlMcqScore">
+          <div class="score-val" id="sqlMcqSV"></div>
+          <div class="score-lbl">Quiz complete — great work, Defender!</div>
+        </div>
+        <div class="part-nav">
+          <button class="btn-back-sm" onclick="sqlGoPart(1)">← Back to Theory</button>
+          <button class="btn-next-sm" id="sqlBtnP3" onclick="sqlGoPart(3)" disabled>NEXT: Fill Blanks ▶</button>
+        </div>
+      </div>
+
+      <!-- PART 3: FILL BLANKS -->
+      <div class="part" id="sqlpart3">
+        <div class="sec-title">Part 3 — <span>Fill in the Blanks</span></div>
+        <div class="sec-sub">Complete each sentence. Spelling matters — use the word bank below!</div>
+        <div
+          style="font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:10px;">
+          📦 WORD BANK</div>
+        <div class="word-bank">
+          <span class="wb-tag">sql injection</span><span class="wb-tag">union</span><span class="wb-tag">blind</span>
+          <span class="wb-tag">prepared statements</span><span class="wb-tag">error-based</span><span
+            class="wb-tag">capital one</span>
+          <span class="wb-tag">UNION</span><span class="wb-tag">parameterized</span><span class="wb-tag">SLEEP</span>
+        </div>
+
+        <div class="fitb-card">
+          <div class="q-num">BLANK 01 / 06</div>
+          <div class="fitb-sent"><input class="blank" id="sb1" placeholder="______" /> is a vulnerability where
+            malicious SQL code is inserted into user input fields to manipulate a web application's database queries.
+          </div>
+          <div class="fitb-hint">💡 The name of the whole attack category we are studying 🗄️</div>
+          <div class="fitb-fb" id="sb1fb"></div>
+          <button class="btn-chk" onclick="sqlChkB('sb1','sql injection','sb1fb')">CHECK ↵</button>
+        </div>
+
+        <div class="fitb-card">
+          <div class="q-num">BLANK 02 / 06</div>
+          <div class="fitb-sent">In <input class="blank" id="sb2" placeholder="______" />-based SQL injection, the
+            attacker uses the UNION operator to combine results of two SELECT statements — both must have the same
+            number of columns.</div>
+          <div class="fitb-hint">💡 Think of combining or joining two things together 🔗</div>
+          <div class="fitb-fb" id="sb2fb"></div>
+          <button class="btn-chk" onclick="sqlChkB('sb2','union','sb2fb')">CHECK ↵</button>
+        </div>
+
+        <div class="fitb-card">
+          <div class="q-num">BLANK 03 / 06</div>
+          <div class="fitb-sent"><input class="blank" id="sb3" placeholder="______" /> SQL injection occurs when the
+            attacker cannot see query results directly — instead inferring data from changes in page behavior or
+            response times.</div>
+          <div class="fitb-hint">💡 The attacker works in the dark — they can't see results 🌑</div>
+          <div class="fitb-fb" id="sb3fb"></div>
+          <button class="btn-chk" onclick="sqlChkB('sb3','blind','sb3fb')">CHECK ↵</button>
+        </div>
+
+        <div class="fitb-card">
+          <div class="q-num">BLANK 04 / 06</div>
+          <div class="fitb-sent"><input class="blank" id="sb4" placeholder="______" /> (also called parameterized
+            queries) are the gold-standard defense against SQL injection — they treat all user input as data, never as
+            executable SQL code.</div>
+          <div class="fitb-hint">💡 You "prepare" the query in advance so nothing can be injected 🛡️</div>
+          <div class="fitb-fb" id="sb4fb"></div>
+          <button class="btn-chk" onclick="sqlChkB('sb4','prepared statements','sb4fb')">CHECK ↵</button>
+        </div>
+
+        <div class="fitb-card">
+          <div class="q-num">BLANK 05 / 06</div>
+          <div class="fitb-sent">In <input class="blank" id="sb5" placeholder="______" /> SQL injection, the attacker
+            sends malformed input that causes the database to throw a detailed error — revealing the database structure,
+            version, and table names.</div>
+          <div class="fitb-hint">💡 The database makes a mistake and complains loudly ❌</div>
+          <div class="fitb-fb" id="sb5fb"></div>
+          <button class="btn-chk" onclick="sqlChkB('sb5','error-based','sb5fb')">CHECK ↵</button>
+        </div>
+
+        <div class="fitb-card">
+          <div class="q-num">BLANK 06 / 06</div>
+          <div class="fitb-sent">The 2019 <input class="blank" id="sb6" placeholder="______" /> Data Breach exposed over
+            100 million customers' personal data — including Social Security Numbers and credit scores — due to a SQL
+            injection vulnerability.</div>
+          <div class="fitb-hint">💡 A major US bank — think of a very important one 🏦</div>
+          <div class="fitb-fb" id="sb6fb"></div>
+          <button class="btn-chk" onclick="sqlChkB('sb6','capital one','sb6fb')">CHECK ↵</button>
+        </div>
+
+        <div class="score-box" id="sqlFitbScore" style="margin-top:20px;">
+          <div class="score-val" id="sqlFitbSV"></div>
+          <div class="score-lbl">Fill-in-the-Blank Score — Level 1 Complete! 🎉<br /><span
+              style="font-size:13px;color:var(--text2)">Level 2 unlocked!</span></div>
+        </div>
+        <div class="part-nav">
+          <button class="btn-back-sm" onclick="sqlGoPart(2)">← Back to Quiz</button>
+          <button class="btn-next-sm" id="sqlBtnFinish" onclick="finishSqlL1()" disabled>✓ COMPLETE LEVEL 1</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>
