@@ -14,11 +14,10 @@ The platform bridges the gap between academic theory and practical security skil
 ---
 
 ## 👥 Team Members
-Name 
 **Thanush J**  (Team Leader)
-****
-****
-****
+**Shreelakshmi Prabhu**
+**Shreya Shridhara**
+**Nidhi Shetty**
 
 ---
 
@@ -240,11 +239,6 @@ If you have VS Code with the **Live Server** extension:
 
 ---
 
-## 📄 License
-
-This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
-
----
 
 <div align="center">
 
