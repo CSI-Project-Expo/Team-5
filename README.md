@@ -14,10 +14,10 @@ The platform bridges the gap between academic theory and practical security skil
 ---
 
 ## 👥 Team Members
-**Thanush J**  (Team Leader)
-**Shreelakshmi Prabhu**
-**Shreya Shridhara**
-**Nidhi Shetty**
+**Thanush J**  (Team Leader) ,
+**Shreelakshmi Prabhu**,
+**Shreya Shridhara**,
+**Nidhi Shetty**,
 
 ---
 
