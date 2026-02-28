@@ -2157,35 +2157,48 @@
               <div class="atdot" style="background:var(--cyan)"></div><span class="atname">Simple Brute Force</span>
             </div>
             <div class="atdesc">Tries <strong>every possible combination</strong> — aa, ab, ac… zz. Guaranteed to crack
-              but extremely slow for long passwords. No external wordlist needed.</div>
+              but extremely slow for long passwords. No external wordlist needed. <br><strong
+                style="color:var(--cyan)">Example:</strong> Manually typing guesses based on what you know about the
+              person, like their pet's name or birth year. It's like trying every number on a combination lock until it
+              opens.</div>
           </div>
           <div class="atcard">
             <div class="atcard-hd">
               <div class="atdot" style="background:var(--yellow)"></div><span class="atname">Dictionary Attack</span>
             </div>
-            <div class="atdesc">Uses a <strong>pre-built wordlist</strong> of common passwords. rockyou.txt has 14
-              million real leaked passwords. Much faster — most users pick predictable passwords.</div>
+            <div class="atdesc">Uses a <strong>pre-built wordlist</strong> of common passwords. Much faster — most users
+              pick predictable passwords.<br><strong style="color:var(--cyan)">Example:</strong> An attacker runs a
+              script that reads passwords from a massive <code>.txt</code> file (like <code>rockyou.txt</code>,
+              containing 14 million real leaked passwords) and tries them one by one automatically.</div>
           </div>
           <div class="atcard">
             <div class="atcard-hd">
               <div class="atdot" style="background:var(--orange)"></div><span class="atname">Hybrid Attack</span>
             </div>
-            <div class="atdesc">Combines dictionary words + brute-force additions. Tries <strong>"password" →
-                "password123" → "password!"</strong>. Starts with logic, then adds permutations.</div>
+            <div class="atdesc">Combines dictionary words + brute-force additions. Starts with logic, then adds
+              permutations.<br><strong style="color:var(--cyan)">Example:</strong> Knowing users must have a number and
+              symbol, the attacker tests <strong>"password" → "password123" → "password123!"</strong>. It blends
+              wordlists with simple number/symbol combinations.</div>
           </div>
           <div class="atcard">
             <div class="atcard-hd">
               <div class="atdot" style="background:var(--red)"></div><span class="atname">Reverse Brute Force</span>
             </div>
-            <div class="atdesc">Flips the logic — starts with <strong>one known common password</strong> like
-              "Summer2024!" and tries it against <strong>millions of different usernames</strong>.</div>
+            <div class="atdesc">Flips the logic — instead of guessing many passwords for one user, it tries <strong>one
+                known common password</strong> against <strong>millions of different usernames</strong>.<br><strong
+                style="color:var(--cyan)">Example:</strong> Trying the password "Summer2024!" across an entire database
+              of company employee emails to find the one user who used it, avoiding account lockout policies since each
+              account only gets one failed attempt.</div>
           </div>
           <div class="atcard">
             <div class="atcard-hd">
-              <div class="atdot" style="background:var(--purple)"></div><span class="atname">Rainbow Table</span>
+              <div class="atdot" style="background:var(--purple)"></div><span class="atname">Rainbow Table Attack</span>
             </div>
             <div class="atdesc">Uses a <strong>precomputed hash database</strong> to instantly reverse password hashes —
-              no cracking needed, just lookup. Defeated by adding a random "salt".</div>
+              no cracking needed, just a massive lookup index. Defeated by adding a random "salt".<br><strong
+                style="color:var(--cyan)">Example:</strong> If an attacker steals a database of encrypted passwords,
+              they don't guess them. They compare the stolen hashes against a massive pre-calculated table (a rainbow
+              table) to instantly find the original password.</div>
           </div>
           <div class="atcard" style="background:rgba(0,245,255,0.03);border-color:rgba(0,245,255,0.15)">
             <div class="atcard-hd">
@@ -2978,24 +2991,31 @@
               <div class="atdot" style="background:var(--red)"></div><span class="atname">Error-Based SQLi</span>
             </div>
             <div class="atdesc">Attacker injects <strong>malformed input</strong> that causes the database to throw an
-              error message. That error <strong>leaks the database structure</strong> — table names, column names, DB
-              version. Fast to exploit but requires error messages to be visible.</div>
+              error message, which leaks the database structure (table names, DB version).<br><strong
+                style="color:var(--cyan)">Example:</strong> Typing an apostrophe <code>'</code> into a search bar.
+              Instead of saying "no results", the page crashes and shows a raw database error like
+              <code>Syntax error near ''</code>. The attacker reads these errors like a map to steal data.</div>
           </div>
           <div class="atcard">
             <div class="atcard-hd">
               <div class="atdot" style="background:var(--cyan)"></div><span class="atname">Union-Based SQLi</span>
             </div>
-            <div class="atdesc">Uses the <strong>UNION operator</strong> to combine two SELECT queries. Works when both
-              queries have the <strong>same number of columns</strong> — letting attackers pull data from other tables
-              like <code>users</code> or <code>passwords</code>.</div>
+            <div class="atdesc">Uses the <strong>UNION operator</strong> to seamlessly glue a second, malicious query
+              onto the original query, tricking the app into displaying the combined data.<br><strong
+                style="color:var(--cyan)">Example:</strong> In a store's search box, an attacker searches for "shoes",
+              but tricks the database by adding <code>UNION SELECT username, password FROM users</code> to the search
+              query. The website displays out a list of shoes, followed immediately by a list of all user passwords
+              right on the screen.</div>
           </div>
           <div class="atcard">
             <div class="atcard-hd">
               <div class="atdot" style="background:var(--orange)"></div><span class="atname">Blind SQLi</span>
             </div>
-            <div class="atdesc">No query results are shown. Attacker infers data from <strong>behavior changes</strong>
-              (Boolean-Based: page differs for true/false) or <strong>response time</strong> (Time-Based: SLEEP() delays
-              the page). Slower but equally dangerous.</div>
+            <div class="atdesc">No data or errors are shown. The attacker plays a game of <strong>"20
+                Questions"</strong> with the database, asking Yes/No questions and measuring the response.<br><strong
+                style="color:var(--cyan)">Example:</strong> The attacker secretly injects the question "Does the admin
+              password start with 'a'?", and tells the server <code>IF YES, SLEEP 10 SECONDS</code>. If the website
+              takes exactly 10 seconds to load, the attacker knows they guessed correctly. Slower, but deadly.</div>
           </div>
           <div class="atcard">
             <div class="atcard-hd">
