@@ -92,6 +92,7 @@
       justify-content: space-between;
       padding: 14px 48px;
       background: rgba(4, 13, 26, 0.94);
+      -webkit-backdrop-filter: blur(18px);
       backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--border2);
     }
@@ -1586,6 +1587,12 @@
       background: var(--cyan);
       color: #040d1a;
     }
+    /* RECON LEVELS PAGE */
+  #page-reconlevels .pinner {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 90px 40px 80px;
+  }
 
     /* SQL LEVELS PAGE */
     #page-sqilevels .pinner {
@@ -1769,10 +1776,14 @@
               </div>
             </div>
           </div>
-          <div class="sc-side-card">
-            <div class="sc-side-icon">🌐</div>
-            <div class="sc-side-info">
-              <h3>Recon &amp; OSINT</h3><span class="coming-tag">COMING SOON</span>
+          <div class="sc-side-card sc-side-card-link" onclick="goTo('page-reconlevels')">
+           <div class="sc-side-icon" style="opacity:1;">🌐</div>
+           <div class="sc-side-info">
+             <h3 style="color:var(--text);">Recon &amp; OSINT</h3>
+             <div class="prog-lbl" style="margin-top:5px;"><span>Completion</span><span id="reconPct">0%</span></div>
+             <div class="prog-track" style="height:4px;margin-top:4px;margin-bottom:0;">
+               <div class="prog-fill" id="reconBar" style="width:0%"></div>
+             </div>
             </div>
           </div>
           <div class="sc-side-card">
@@ -2232,8 +2243,8 @@
     const API = window.location.origin;
     let user = null, mcqDone = {}, fitbDone = {}, curPart = 1;
     const saved = localStorage.getItem('ss_user');
-    if (saved) { user = JSON.parse(saved); }
-    document.addEventListener('DOMContentLoaded', () => { if (user) enterApp(); });
+    if (saved) { user = JSON.parse(saved); enterApp(); }
+    
 
     function goTo(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2276,39 +2287,49 @@
     function logout() { user = null; localStorage.removeItem('ss_user'); showNav(false); goTo('page-login'); }
     function toggleReg() { const s = document.getElementById('regSection'); s.style.display = s.style.display === 'block' ? 'none' : 'block'; }
     function enterApp() {
-      document.getElementById('navUser').textContent = user.username;
-      showNav(true);
-      document.getElementById('scUser').textContent = user.username;
-      updateStats();
-      updateSqlStats();
-      checkLevelUnlocks();
-      // Handle redirect back from level 2 page
-      const goto = sessionStorage.getItem('ss_goto');
-      if (goto) { sessionStorage.removeItem('ss_goto'); goTo(goto); }
-      else goTo('page-scenarios');
+    document.getElementById('navUser').textContent = user.username;
+    showNav(true);
+    document.getElementById('scUser').textContent = user.username;
+    updateStats();
+    updateSqlStats();
+    updateReconStats();
+
+    // Wrap in try/catch so a crash here doesn't block the redirect
+    try { checkLevelUnlocks(); } catch(e) { console.warn('checkLevelUnlocks error:', e); }
+
+    const goto = sessionStorage.getItem('ss_goto');
+    if (goto) { 
+      sessionStorage.removeItem('ss_goto'); 
+      goTo(goto);   // ← This now always runs even if checkLevelUnlocks had an issue
     }
+    else goTo('page-scenarios');
+  }
     function updateStats() {
-      const l1 = user.progress?.bruteforce?.level1 || {};
-      const l1Done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length;
-      const l2 = user.progress?.bruteforce?.level2 || {};
-      const l2Done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length;
-      const l3 = user.progress?.bruteforce?.level3 || {};
-      const l3Done = [l3.p1, l3.p2, l3.p3].filter(Boolean).length;
-      const bfDone = l1Done + l2Done + l3Done;
-      const sq1 = user.progress?.sqli?.level1 || {};
-      const sq1Done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length;
-      const sq2 = user.progress?.sqli?.level2 || {};
-      const sq2Done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length;
-      const sqlDone = sq1Done + sq2Done;
-      const totalDone = bfDone + sqlDone;
-      const pct = Math.round((totalDone / 15) * 100);
-      document.getElementById('stM').textContent = pct + '%';
-      document.getElementById('stD').textContent = totalDone + '/15';
-      document.getElementById('bfPct').textContent = Math.round((bfDone / 9) * 100) + '%';
-      document.getElementById('bfBar').style.width = Math.round((bfDone / 9) * 100) + '%';
-      const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'DEFENDER', 'ELITE', 'MASTER', 'VETERAN', 'LEGEND', 'ELITE', 'ELITE'];
-      document.getElementById('stR').textContent = ranks[totalDone] || 'ELITE';
-    }
+     const l1 = user.progress?.bruteforce?.level1 || {};
+     const doneL1 = [l1.p1, l1.p2, l1.p3].filter(Boolean).length;
+     const l2 = user.progress?.bruteforce?.level2 || {};
+     const doneL2 = [l2.p1, l2.p2, l2.p3].filter(Boolean).length;
+     const l3 = user.progress?.bruteforce?.level3 || {};
+     const l3Done = [l3.p1, l3.p2, l3.p3].filter(Boolean).length;
+     const sq1 = user.progress?.sqli?.level1 || {};
+     const sq1Done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length;
+     const sq2 = user.progress?.sqli?.level2 || {};
+     const sq2Done = [sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length;
+     const r1 = user.progress?.recon?.level1 || {};
+     const r2 = user.progress?.recon?.level2 || {};
+     const reconDone = [r1.p1, r1.p2, r1.p3].filter(Boolean).length + [r2.p1, r2.p2, r2.p3].filter(Boolean).length;
+  
+     const totalDone = doneL1 + doneL2 + l3Done + sq1Done + sq2Done + reconDone;
+     const pct = Math.round((totalDone / 21) * 100);
+  
+    document.getElementById('stM').textContent = pct + '%';
+    document.getElementById('stD').textContent = totalDone + '/21';
+    document.getElementById('bfPct').textContent = Math.round(((doneL1 + doneL2 + l3Done) / 9) * 100) + '%';
+    document.getElementById('bfBar').style.width = Math.round(((doneL1 + doneL2 + l3Done) / 9) * 100) + '%';
+  
+    const ranks = ['RECRUIT', 'ANALYST', 'SPECIALIST', 'DEFENDER', 'EXPERT', 'ELITE', 'MASTER', 'VETERAN', 'LEGEND', 'ELITE', 'ELITE', 'ELITE', 'ELITE'];
+    document.getElementById('stR').textContent = ranks[totalDone] || 'ELITE';
+}
     function updateSqlStats() {
       const p1 = user.progress?.sqli?.level1 || {};
       const p2 = user.progress?.sqli?.level2 || {};
@@ -2321,6 +2342,18 @@
       if (pctEl) pctEl.textContent = pct + '%';
       if (barEl) barEl.style.width = pct + '%';
     }
+    // ADD THIS after updateSqlStats() closes:
+    function updateReconStats() {
+      const r1 = user.progress?.recon?.level1 || {};
+      const r2 = user.progress?.recon?.level2 || {};
+      const done1 = [r1.p1, r1.p2, r1.p3].filter(Boolean).length;
+      const done2 = [r2.p1, r2.p2, r2.p3].filter(Boolean).length;
+      const pct = Math.round(((done1 + done2) / 6) * 100);
+      const pctEl = document.getElementById('reconPct');
+      const barEl = document.getElementById('reconBar');
+      if (pctEl) pctEl.textContent = pct + '%';
+      if (barEl) barEl.style.width = pct + '%';
+   }
     function startL1() { curPart = 1; mcqDone = {}; fitbDone = {}; renderStepper(); showPart(1); goTo('page-l1'); }
     function startL2() {
       const l1 = user.progress?.bruteforce?.level1 || {};
@@ -2337,33 +2370,59 @@
       window.location.href = 'brute-force-level3.html';
     }
     function checkLevelUnlocks() {
-      // BF Level 2 unlock
-      const l1 = user.progress?.bruteforce?.level1 || {};
-      const l1done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length === 3;
-      const card = document.getElementById('l2card');
-      const badge = document.getElementById('l2badge');
-      if (l1done && card) { card.classList.remove('lv-locked'); badge.textContent = 'AVAILABLE'; badge.className = 'lv-badge open'; }
-      const l2 = user.progress?.bruteforce?.level2 || {};
-      const l2done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length === 3;
-      if (l2done && badge) { badge.textContent = 'COMPLETE'; badge.className = 'lv-badge done'; }
-      // BF Level 3 unlock
-      const l3card = document.getElementById('l3card');
-      const l3badge = document.getElementById('l3badge');
-      if (l2done && l3card) { l3card.classList.remove('lv-locked'); if (l3badge) { l3badge.textContent = 'AVAILABLE'; l3badge.className = 'lv-badge open'; } }
-      const l3 = user.progress?.bruteforce?.level3 || {};
-      const l3done = [l3.p1, l3.p2, l3.p3].filter(Boolean).length === 3;
-      if (l3done && l3badge) { l3badge.textContent = 'COMPLETE'; l3badge.className = 'lv-badge done'; }
-      // SQL unlock
-      const sq1 = user.progress?.sqli?.level1 || {};
-      const sq1done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length === 3;
-      const sqCard = document.getElementById('sqll2card');
-      const sqBadge = document.getElementById('sqll2badge');
-      if (sq1done && sqCard) { sqCard.classList.remove('lv-locked'); sqBadge.textContent = 'AVAILABLE'; sqBadge.className = 'lv-badge open'; }
-      const sq2 = user.progress?.sqli?.level2 || {};
-      if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3 && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
-      // Mark SQL Level 1 badge as complete if done
-      const sql1badge = document.getElementById('sql1badge');
-      if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
+     // BF Level 2 unlock
+     const l1 = user.progress?.bruteforce?.level1 || {};
+     const l1done = [l1.p1, l1.p2, l1.p3].filter(Boolean).length === 3;
+     const card = document.getElementById('l2card');
+     const badge = document.getElementById('l2badge');
+     if (l1done && card) { card.classList.remove('lv-locked'); if (badge) { badge.textContent = 'AVAILABLE'; badge.className = 'lv-badge open'; } }
+     const l2 = user.progress?.bruteforce?.level2 || {};
+     const l2done = [l2.p1, l2.p2, l2.p3].filter(Boolean).length === 3;
+     if (l2done && badge) { badge.textContent = 'COMPLETE'; badge.className = 'lv-badge done'; }
+
+     // BF Level 3 unlock
+     const l3card = document.getElementById('l3card');
+     const l3badge = document.getElementById('l3badge');
+     if (l2done && l3card) { l3card.classList.remove('lv-locked'); if (l3badge) { l3badge.textContent = 'AVAILABLE'; l3badge.className = 'lv-badge open'; } }
+     const l3 = user.progress?.bruteforce?.level3 || {};
+     const l3done = [l3.p1, l3.p2, l3.p3].filter(Boolean).length === 3;
+     if (l3done && l3badge) { l3badge.textContent = 'COMPLETE'; l3badge.className = 'lv-badge done'; }
+
+     // SQL unlock
+     const sq1 = user.progress?.sqli?.level1 || {};
+     const sq1done = [sq1.p1, sq1.p2, sq1.p3].filter(Boolean).length === 3;
+     const sqCard = document.getElementById('sqll2card');
+     const sqBadge = document.getElementById('sqll2badge');
+     if (sq1done && sqCard) { sqCard.classList.remove('lv-locked'); if (sqBadge) { sqBadge.textContent = 'AVAILABLE'; sqBadge.className = 'lv-badge open'; } }
+     const sq2 = user.progress?.sqli?.level2 || {};
+     if ([sq2.p1, sq2.p2, sq2.p3].filter(Boolean).length === 3 && sqBadge) { sqBadge.textContent = 'COMPLETE'; sqBadge.className = 'lv-badge done'; }
+     const sql1badge = document.getElementById('sql1badge');
+     if (sq1done && sql1badge) { sql1badge.textContent = 'COMPLETE'; sql1badge.className = 'lv-badge done'; }
+
+     // RECON unlock — all wrapped in null checks ✅
+     const r1 = user.progress?.recon?.level1 || {};
+     const r1done = [r1.p1, r1.p2, r1.p3].filter(Boolean).length === 3;
+     const reconL2card = document.getElementById('reconl2card');
+     const reconL2badge = document.getElementById('reconl2badge');
+     if (r1done && reconL2card) { 
+       reconL2card.classList.remove('lv-locked'); 
+       if (reconL2badge) { reconL2badge.textContent = 'AVAILABLE'; reconL2badge.className = 'lv-badge open'; } 
+     }
+     const r2 = user.progress?.recon?.level2 || {};
+     const r2done = [r2.p1, r2.p2, r2.p3].filter(Boolean).length === 3;
+     if (r2done && reconL2badge) { reconL2badge.textContent = 'COMPLETE'; reconL2badge.className = 'lv-badge done'; }
+     const recon1badge = document.getElementById('recon1badge');
+     if (r1done && recon1badge) { recon1badge.textContent = 'COMPLETE'; recon1badge.className = 'lv-badge done'; }
+   }    
+    function startReconL1() {
+     window.location.href = 'recon-level1.html';
+    }
+    function startReconL2() {
+     const r1 = user.progress?.recon?.level1 || {};
+     if ([r1.p1, r1.p2, r1.p3].filter(Boolean).length < 3) return;
+     const r2 = user.progress?.recon?.level2 || {};
+     if ([r2.p1, r2.p2, r2.p3].filter(Boolean).length === 3) { goTo('page-reconlevels'); return; }
+     window.location.href = 'recon-level2.html';
     }
     function startSqlL2() {
       const sq1 = user.progress?.sqli?.level1 || {};
@@ -2621,7 +2680,47 @@
       </div>
     </div>
   </div>
-
+  <!-- ════════ PAGE: RECON LEVELS ════════ -->
+  <!-- ════════ PAGE: RECON LEVELS ════════ -->
+  <div id="page-reconlevels" class="page">
+    <div class="pinner">
+      <div class="breadcrumb">
+        <span class="bc-link" onclick="goTo('page-scenarios')">Home</span>
+        <span class="bc-sep">›</span><span>Recon & OSINT Protocol</span>
+      </div>
+      <div class="pg-title">🌐 Reconnaissance & OSINT Protocol</div>
+      <div class="pg-sub">2 progressive levels — theory, OSINT tools, MCQs, and live recon simulations.</div>
+      <div class="levels-grid">
+        <div class="lv-card" onclick="startReconL1()">
+          <div class="lv-top">
+            <div class="lv-bgn">1</div>
+            <div class="lv-icon">📖</div>
+            <div class="lv-title">Recon Fundamentals</div>
+            <div class="lv-desc">Passive vs active recon, WHOIS, Google Dorking, Shodan, DNS Enumeration, and key OSINT tools.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Theory + MCQ + FillBlank</span><span class="lv-badge open" id="recon1badge">AVAILABLE</span></div>
+        </div>
+        <div class="lv-card lv-locked" id="reconl2card" onclick="startReconL2()">
+          <div class="lv-top">
+            <div class="lv-bgn">2</div>
+            <div class="lv-icon">🔧</div>
+            <div class="lv-title">Offensive Operations</div>
+            <div class="lv-desc">Google Dorking simulation, automated subdomain enumeration with Sublist3r, and LinkedIn/OSINT profiling.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 phases · Hands-on Lab</span><span class="lv-badge locked" id="reconl2badge">🔒 LOCKED</span></div>
+        </div>
+        <div class="lv-card lv-locked">
+          <div class="lv-top">
+            <div class="lv-bgn">3</div>
+            <div class="lv-icon">🛡️</div>
+            <div class="lv-title">OPSEC & Counter-Recon</div>
+            <div class="lv-desc">Minimise your digital footprint. WHOIS privacy, DNS security, employee awareness and data minimisation.</div>
+          </div>
+          <div class="lv-foot"><span class="lv-parts">3 parts · Blue Team Ops</span><span class="lv-badge locked">🔒 LOCKED</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- ════════ PAGE: SQL LEVEL 1 ════════ -->
   <div id="page-sql1" class="page">
     <div class="pinner">

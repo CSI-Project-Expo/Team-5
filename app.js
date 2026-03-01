@@ -147,7 +147,7 @@ function showPart(n) {
 
 function renderStepper() {
   for (let i = 1; i <= 3; i++) {
-    const e = document.getElementById('stp' + i);
+    const e = document.getElementById('stM' + i);
     e.className = 'stp' + (i < curPart ? ' stp-done' : i === curPart ? ' stp-active' : '');
   }
   document.getElementById('sl1').className = 'stp-line' + (curPart > 1 ? ' stp-done' : '');
