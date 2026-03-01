@@ -2297,12 +2297,7 @@
     // Wrap in try/catch so a crash here doesn't block the redirect
     try { checkLevelUnlocks(); } catch(e) { console.warn('checkLevelUnlocks error:', e); }
 
-    const goto = sessionStorage.getItem('ss_goto');
-    if (goto) { 
-      sessionStorage.removeItem('ss_goto'); 
-      goTo(goto);   // ← This now always runs even if checkLevelUnlocks had an issue
-    }
-    else goTo('page-scenarios');
+    goTo('page-scenarios');
   }
     function updateStats() {
      const l1 = user.progress?.bruteforce?.level1 || {};
@@ -2631,6 +2626,46 @@
       if (pctEl) pctEl.textContent = pct + '%';
       if (barEl) barEl.style.width = pct + '%';
     }
+
+    
+  window.addEventListener("load", () => {
+
+    const goto = sessionStorage.getItem("ss_goto");
+
+    if (goto) {
+      sessionStorage.removeItem("ss_goto");
+
+      // wait until UI loads
+      setTimeout(() => {
+        if (typeof goTo === "function") {
+          goTo(goto);
+       }
+      }, 100);
+    } 
+
+  });
+  // ===============================
+// POST-LOAD ROUTE RESTORATION
+// ===============================
+window.addEventListener("load", () => {
+
+  const savedUser = localStorage.getItem("ss_user");
+
+  if (!savedUser) return;
+
+  const goto = sessionStorage.getItem("ss_goto");
+
+  if (goto) {
+    sessionStorage.removeItem("ss_goto");
+
+    setTimeout(() => {
+      if (typeof goTo === "function") {
+        goTo(goto);
+      }
+    }, 120);
+  }
+
+});
   </script>
 
   <!-- ════════ PAGE: SQL INJECTION LEVELS ════════ -->
