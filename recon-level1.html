@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ShieldSimulation — Recon & OSINT Level 1: Theory</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#040d1a;--bg2:#061020;--card:#0a1628;--border:#1a3a5c;--border2:#0f2744;
+  --cyan:#00f5ff;--cyan2:#00bcd4;--green:#00ff88;--red:#ff3366;--yellow:#ffd700;
+  --orange:#ff6b35;--purple:#a855f7;--text:#c8dff0;--text2:#7a9ab8;
+  --glow:0 0 20px rgba(0,245,255,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);pointer-events:none;z-index:9998;}
+#gridbg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:rgba(4,13,26,0.94);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--border2);}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:900;font-size:15px;color:#040d1a;box-shadow:var(--glow);}
+.nav-logo-text{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{color:var(--text2);font-size:13px;font-weight:500;letter-spacing:1px;text-transform:uppercase;cursor:default;transition:color .2s;}
+.nav-links a:hover{color:var(--cyan);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+#navUser{font-family:'Share Tech Mono',monospace;color:var(--cyan);font-size:13px;}
+#navLogout{background:transparent;border:1px solid var(--border);color:var(--text2);padding:6px 14px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:4px;transition:all .2s;}
+#navLogout:hover{border-color:var(--red);color:var(--red);}
+#statusbar{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(4,13,26,0.96);border-top:1px solid var(--border2);padding:7px 48px;display:flex;justify-content:space-between;align-items:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:7px;animation:gp 2s infinite;}
+@keyframes gp{0%,100%{box-shadow:0 0 5px var(--green);}50%{box-shadow:0 0 12px var(--green);}}
+.page{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;visibility:hidden;opacity:0;pointer-events:none;transition:opacity 0.22s ease;z-index:1;}
+.page.active{visibility:visible;opacity:1;pointer-events:all;}
+.pinner{max-width:960px;margin:0 auto;padding:90px 40px 80px;}
+.breadcrumb{display:flex;align-items:center;gap:10px;margin-bottom:28px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text2);}
+.bc-link{color:var(--cyan);cursor:pointer;}
+.bc-link:hover{text-decoration:underline;}
+.bc-sep{color:var(--border);}
+.stepper{display:flex;align-items:center;margin-bottom:40px;}
+.stp{display:flex;align-items:center;gap:9px;cursor:pointer;}
+.stp-circle{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--text2);transition:all .3s;flex-shrink:0;}
+.stp.stp-active .stp-circle{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,255,0.1);box-shadow:0 0 14px rgba(0,245,255,0.3);}
+.stp.stp-done .stp-circle{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.1);}
+.stp-lbl{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;color:var(--text2);}
+.stp.stp-active .stp-lbl{color:var(--cyan);}
+.stp.stp-done .stp-lbl{color:var(--green);}
+.stp-line{flex:1;height:2px;background:var(--border2);margin:0 10px;transition:background .4s;}
+.stp-line.stp-done{background:var(--green);}
+.part{display:none;}
+.part.part-on{display:block;}
+.sec-title{font-family:'Orbitron',sans-serif;font-size:clamp(18px,2.5vw,26px);font-weight:900;color:#fff;margin-bottom:6px;}
+.sec-title span{color:var(--cyan);}
+.sec-sub{color:var(--text2);font-size:15px;margin-bottom:28px;}
+.callout{background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.2);border-left:3px solid var(--cyan);border-radius:8px;padding:18px 20px;margin-bottom:22px;font-size:14px;line-height:1.7;color:var(--text2);}
+.callout strong{color:var(--cyan);}
+.callout.warn{background:rgba(255,215,0,0.04);border-color:rgba(255,215,0,0.2);border-left-color:var(--yellow);}
+.callout.warn strong{color:var(--yellow);}
+.callout.danger{background:rgba(255,51,102,0.04);border-color:rgba(255,51,102,0.2);border-left-color:var(--red);}
+.callout.danger strong{color:var(--red);}
+.anim-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:24px;margin-bottom:24px;}
+.anim-title{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:18px;text-align:center;}
+.anim-scene{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.anim-box{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;text-align:center;min-width:80px;}
+.ab-ico{font-size:28px;margin-bottom:4px;}
+.ab-lbl{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;color:var(--text2);}
+.arr{font-size:20px;color:var(--cyan);animation:arrP 1.4s infinite;}
+@keyframes arrP{0%,100%{opacity:.4;}50%{opacity:1;}}
+.recon-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+.rc-card{border-radius:12px;padding:20px;border:1px solid;}
+.rc-card.passive{background:rgba(0,245,255,0.04);border-color:rgba(0,245,255,0.2);}
+.rc-card.active{background:rgba(255,107,53,0.04);border-color:rgba(255,107,53,0.2);}
+.rc-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.rc-title.passive{color:var(--cyan);}
+.rc-title.active{color:var(--orange);}
+.rc-dot{width:9px;height:9px;border-radius:50%;}
+.rc-row{display:flex;gap:10px;margin-bottom:8px;font-size:13px;color:var(--text2);line-height:1.5;}
+.rc-row::before{content:'›';color:var(--cyan);flex-shrink:0;font-weight:700;}
+.rc-card.active .rc-row::before{color:var(--orange);}
+.atgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:24px;}
+.atcard{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:15px;}
+.atcard-hd{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.atdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.atname{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;color:#fff;}
+.atdesc{font-size:13px;color:var(--text2);line-height:1.6;}
+.atdesc strong{color:var(--cyan);}
+.atdesc code{background:rgba(0,245,255,0.1);border-radius:3px;padding:1px 5px;color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:11px;}
+.dork-table,.dns-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;}
+.dork-table th{background:rgba(0,245,255,0.08);border:1px solid var(--border2);padding:9px 14px;color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;text-align:left;}
+.dork-table td{border:1px solid var(--border2);padding:9px 14px;color:var(--text2);}
+.dork-table td code{color:var(--yellow);font-family:'Share Tech Mono',monospace;font-size:12px;}
+.dork-table tr:hover td{background:rgba(255,255,255,0.02);}
+.dns-table th{background:rgba(168,85,247,0.08);border:1px solid var(--border2);padding:9px 14px;color:var(--purple);font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px;text-align:left;}
+.dns-table td{border:1px solid var(--border2);padding:9px 14px;color:var(--text2);}
+.dns-table td code{color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:12px;}
+.rw-box{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:22px;margin-bottom:22px;}
+.rw-hd{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.rw-tag{background:rgba(255,51,102,0.15);border:1px solid rgba(255,51,102,0.35);color:var(--red);font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;padding:3px 9px;border-radius:3px;flex-shrink:0;}
+.rw-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#fff;}
+.rw-steps{display:flex;flex-direction:column;gap:9px;}
+.rw-step{display:flex;gap:11px;font-size:14px;color:var(--text2);}
+.rw-num{width:24px;height:24px;border-radius:50%;background:rgba(0,245,255,0.1);border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;color:var(--cyan);flex-shrink:0;margin-top:1px;}
+.rw-step span{line-height:1.6;}
+.rw-step strong{color:var(--cyan);}
+.terminal-snip{background:#020a14;border:1px solid var(--border2);border-radius:8px;padding:14px 18px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.8;margin-bottom:20px;}
+.t-cmd{color:var(--cyan);}
+.t-ok{color:var(--green);}
+.t-dim{color:rgba(122,154,184,0.55);}
+.t-warn{color:var(--yellow);}
+.quiz-hdr{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;color:var(--text2);margin-bottom:20px;}
+.q-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:14px;}
+.q-num{color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;margin-bottom:5px;}
+.q-text{font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;line-height:1.5;}
+.q-opts{display:flex;flex-direction:column;gap:8px;}
+.q-opt{display:flex;align-items:center;gap:11px;padding:11px 15px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .2s;font-size:14px;}
+.q-opt:hover:not(.q-dis){border-color:var(--cyan);background:rgba(0,245,255,0.05);}
+.q-opt.q-dis{cursor:default;pointer-events:none;}
+.q-opt.q-ok{border-color:var(--green);background:rgba(0,255,136,0.07);color:var(--green);}
+.q-opt.q-no{border-color:var(--red);background:rgba(255,51,102,0.07);color:var(--red);}
+.q-radio{width:15px;height:15px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .2s;}
+.q-ok .q-radio{border-color:var(--green);background:var(--green);}
+.q-no .q-radio{border-color:var(--red);background:var(--red);}
+.q-fb{font-family:'Share Tech Mono',monospace;font-size:12px;margin-top:10px;min-height:16px;display:none;padding:8px 12px;border-radius:6px;}
+.q-fb.show{display:block;}
+.q-fb.ok{background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.3);color:var(--green);}
+.q-fb.no{background:rgba(255,51,102,0.07);border:1px solid rgba(255,51,102,0.3);color:var(--red);}
+.score-box{background:var(--card);border:2px solid var(--green);border-radius:14px;padding:26px;text-align:center;display:none;margin-top:16px;}
+.score-box.show{display:block;}
+.score-val{font-family:'Orbitron',sans-serif;font-size:36px;font-weight:900;color:var(--green);text-shadow:0 0 20px rgba(0,255,136,0.4);margin-bottom:4px;}
+.score-lbl{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text2);}
+.word-bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;padding:16px;background:var(--bg2);border-radius:10px;border:1px solid var(--border2);}
+.wb-tag{background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.25);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:12px;padding:4px 12px;border-radius:4px;}
+.fitb-card{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.fitb-sent{font-size:15px;color:var(--text);line-height:1.9;margin-bottom:8px;}
+.blank{background:rgba(0,245,255,0.06);border:none;border-bottom:2px solid var(--cyan);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:14px;padding:2px 8px;width:170px;outline:none;transition:all .2s;}
+.blank.bok{border-bottom-color:var(--green);color:var(--green);background:rgba(0,255,136,0.06);}
+.blank.bno{border-bottom-color:var(--red);color:var(--red);}
+.fitb-hint{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:8px;}
+.fitb-fb{font-family:'Share Tech Mono',monospace;font-size:12px;min-height:16px;display:none;padding:7px 12px;border-radius:6px;}
+.fitb-fb.show{display:block;}
+.fitb-fb.ok{background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.3);color:var(--green);}
+.fitb-fb.no{background:rgba(255,51,102,0.07);border:1px solid rgba(255,51,102,0.3);color:var(--red);}
+.btn-chk{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:7px 18px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:6px;transition:all .2s;margin-top:8px;}
+.btn-chk:hover{background:var(--cyan);color:#040d1a;}
+.part-nav{display:flex;justify-content:space-between;align-items:center;margin-top:36px;}
+.btn-next-sm{padding:11px 24px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border:none;border-radius:8px;color:#040d1a;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.btn-next-sm:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 28px rgba(0,245,255,0.4);}
+.btn-next-sm:disabled{opacity:.4;cursor:not-allowed;}
+.btn-back-sm{padding:11px 24px;background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:1px;cursor:pointer;border-radius:8px;transition:all .2s;}
+.btn-back-sm:hover{border-color:var(--cyan);color:var(--cyan);}
+@media(max-width:760px){
+  .atgrid,.recon-compare{grid-template-columns:1fr 1fr;}
+  #nav{padding:12px 20px;}
+  #statusbar{padding:7px 20px;}
+  .pinner{padding:80px 20px 70px;}
+}
+</style>
+</head>
+<body>
+<div id="gridbg"></div>
+<nav id="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">S</div>
+    <span class="nav-logo-text">ShieldSimulation</span>
+  </div>
+  <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+  <div class="nav-right">
+    <span id="navUser"></span>
+    <button id="navLogout" onclick="logout()">LOGOUT</button>
+  </div>
+</nav>
+<div id="statusbar">
+  <div><span class="sdot"></span><span>System Status: Operational</span></div>
+  <span>© 2025 ShieldSimulation | Secure Training Platform</span>
+</div>
+
+<div id="page-recon1" class="page active">
+<div class="pinner">
+
+  <div class="breadcrumb">
+    <span class="bc-link" onclick="goHome()">Home</span>
+    <span class="bc-sep">›</span>
+    <span class="bc-link" onclick="goReconLevels()">Recon &amp; OSINT</span>
+    <span class="bc-sep">›</span>
+    <span>Level 1</span>
+  </div>
+
+  <div class="stepper">
+    <div class="stp stp-active" id="rstp1"><div class="stp-circle">1</div><span class="stp-lbl">THEORY</span></div>
+    <div class="stp-line" id="rsl1"></div>
+    <div class="stp" id="rstp2"><div class="stp-circle">2</div><span class="stp-lbl">QUIZ</span></div>
+    <div class="stp-line" id="rsl2"></div>
+    <div class="stp" id="rstp3"><div class="stp-circle">3</div><span class="stp-lbl">FILL BLANKS</span></div>
+  </div>
+
+  <!-- ══════════════════ PART 1: THEORY ══════════════════ -->
+  <div class="part part-on" id="reconpart1">
+    <div class="sec-title">Part 1 — <span>Reconnaissance &amp; OSINT</span></div>
+    <div class="sec-sub">Master the first phase of every cyberattack — mapping the target's digital footprint before a single exploit is fired.</div>
+
+    <div class="callout">
+      <strong>🔭 What is Reconnaissance?</strong><br/>
+      Reconnaissance (Recon) is the <strong>first and most critical phase</strong> of any cyberattack or penetration test. Before exploiting anything, attackers map the target's entire digital footprint — domains, IP addresses, open ports, employee names, technologies in use, and potential vulnerabilities. The quality of recon directly determines the success of everything that follows. All intelligence gathered here powers precision exploits, social engineering, and phishing campaigns.
+    </div>
+
+    <div class="anim-panel">
+      <div class="anim-title">⚡ THE ATTACK LIFECYCLE — RECON IS STEP ZERO</div>
+      <div class="anim-scene">
+        <div class="anim-box"><div class="ab-ico">🕵️</div><div class="ab-lbl">ATTACKER</div></div>
+        <div class="arr">→</div>
+        <div class="anim-box" style="border-color:rgba(0,245,255,0.3)"><div class="ab-ico">🔍</div><div class="ab-lbl" style="color:var(--cyan)">RECON</div></div>
+        <div class="arr">→</div>
+        <div class="anim-box" style="border-color:rgba(255,215,0,0.3)"><div class="ab-ico">🗺️</div><div class="ab-lbl" style="color:var(--yellow)">TARGET MAP</div></div>
+        <div class="arr">→</div>
+        <div class="anim-box" style="border-color:rgba(255,107,53,0.3)"><div class="ab-ico">🎯</div><div class="ab-lbl" style="color:var(--orange)">EXPLOIT PLAN</div></div>
+        <div class="arr">→</div>
+        <div class="anim-box" style="border-color:rgba(255,51,102,0.3)"><div class="ab-ico">💥</div><div class="ab-lbl" style="color:var(--red)">BREACH</div></div>
+      </div>
+    </div>
+
+    <!-- PASSIVE vs ACTIVE -->
+    <div class="sec-title" style="font-size:18px;margin-bottom:14px;">Passive vs. Active Reconnaissance</div>
+    <div class="recon-compare">
+      <div class="rc-card passive">
+        <div class="rc-title passive"><div class="rc-dot" style="background:var(--cyan)"></div>🛡 Passive Recon</div>
+        <div class="rc-row">Uses <strong>publicly available sources only</strong> — no direct contact with the target system ever occurs</div>
+        <div class="rc-row"><strong>Zero trace</strong> — the target has no way to detect or log this activity</div>
+        <div class="rc-row">Tools: WHOIS, Google Dorking, Shodan, social media scraping, DNS lookups</div>
+        <div class="rc-row">Examples: reading job postings, WHOIS queries, LinkedIn reconnaissance, Shodan searches</div>
+        <div class="rc-row"><strong style="color:var(--cyan)">Detection risk: ZERO — fully undetectable</strong></div>
+      </div>
+      <div class="rc-card active">
+        <div class="rc-title active"><div class="rc-dot" style="background:var(--orange)"></div>⚡ Active Recon</div>
+        <div class="rc-row">Directly <strong>interacts with the target</strong> — sends packets, probes ports, queries DNS servers directly</div>
+        <div class="rc-row">Leaves <strong>logs and network traces</strong> — IDS/IPS systems can detect and alert on this</div>
+        <div class="rc-row">Tools: Nmap port scanner, banner grabbing, ping sweeps, zone transfer requests</div>
+        <div class="rc-row">Examples: Nmap scan, traceroute, direct DNS zone transfer attempt against target's servers</div>
+        <div class="rc-row"><strong style="color:var(--orange)">Detection risk: HIGH — requires written authorization</strong></div>
+      </div>
+    </div>
+
+    <!-- WHOIS -->
+    <div class="sec-title" style="font-size:18px;margin-bottom:14px;">WHOIS Lookups</div>
+    <div class="callout">
+      <strong>📋 What is WHOIS?</strong><br/>
+      WHOIS is a public query protocol that exposes who registered a domain. A single WHOIS lookup can reveal the registrant's <strong>full name, organization, email address, phone number</strong>, creation and expiration dates, registrar name, and nameservers. This is pure passive recon — all data is pulled from public registrar databases. Attackers use this data to identify key personnel for targeted phishing and to begin mapping DNS infrastructure.
+    </div>
+    <div class="terminal-snip">
+      <div class="t-dim">$ whois mega-corp.com</div>
+      <div class="t-ok">Domain Name: MEGA-CORP.COM</div>
+      <div class="t-cmd">Registrant Name: Marcus J. Holloway</div>
+      <div class="t-cmd">Registrant Organization: MegaCorp Industries</div>
+      <div class="t-cmd">Registrant Email: admin@mega-corp.com</div>
+      <div class="t-cmd">Registrar: GoDaddy LLC</div>
+      <div class="t-cmd">Creation Date: 2009-03-14T00:00:00Z</div>
+      <div class="t-cmd">Name Server: NS1.MEGA-CORP.COM</div>
+      <div class="t-warn">⚠ Registrant email → spear-phishing target. Nameserver → DNS zone transfer attempt vector.</div>
+    </div>
+
+    <!-- GOOGLE DORKING -->
+    <div class="sec-title" style="font-size:18px;margin-bottom:14px;">Google Dorking (Google Hacking)</div>
+    <div class="callout">
+      <strong>🔎 What is Google Dorking?</strong><br/>
+      Google Dorking uses <strong>advanced search operators</strong> to surgically find sensitive information that companies accidentally expose to search engines — config files, password lists, employee directories, internal PDFs, and admin panels. It is entirely passive — you never touch the target server. The <strong>Google Hacking Database (GHDB)</strong>, maintained since 2002, catalogs thousands of known working dork strings used in real penetration tests and attacks.
+    </div>
+    <table class="dork-table">
+      <tr><th>OPERATOR</th><th>PURPOSE</th><th>ATTACK EXAMPLE</th></tr>
+      <tr><td><code>site:</code></td><td>Restricts all results to one domain</td><td><code>site:mega-corp.com filetype:pdf</code></td></tr>
+      <tr><td><code>filetype:</code></td><td>Finds specific file extensions only</td><td><code>filetype:sql "password"</code></td></tr>
+      <tr><td><code>intitle:</code></td><td>Searches within HTML page titles</td><td><code>intitle:"index of" passwords</code></td></tr>
+      <tr><td><code>inurl:</code></td><td>Searches within the URL itself</td><td><code>inurl:admin inurl:login</code></td></tr>
+      <tr><td><code>intext:</code></td><td>Finds specific text inside pages</td><td><code>intext:"api_key" site:github.com</code></td></tr>
+      <tr><td><code>cache:</code></td><td>Returns Google's cached copy of a page</td><td><code>cache:mega-corp.com/hr/docs</code></td></tr>
+    </table>
+
+    <!-- SHODAN -->
+    <div class="sec-title" style="font-size:18px;margin-bottom:14px;">Shodan — The Hacker's Search Engine</div>
+    <div class="callout warn">
+      <strong>🛰 What is Shodan?</strong><br/>
+      Shodan is a <strong>continuously running internet scanner</strong> that crawls every publicly accessible IP and records open ports, service banners, software versions, SSL certificate data, and more. Unlike Google — which indexes web content — Shodan indexes <strong>devices and services</strong>: webcams, routers, industrial SCADA systems, exposed databases, IoT devices, and misconfigured servers. Shodan also automatically flags known <strong>CVEs</strong> based on detected software versions. A single query can reveal an unpatched target in seconds.
+    </div>
+    <div class="atgrid">
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--red)"></div><span class="atname">Service Banners</span></div>
+        <div class="atdesc">Shodan captures <strong>banner responses</strong> — including software name and version. Seeing <code>Apache/2.4.1</code> in a banner instantly reveals if a known CVE applies to that server.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--orange)"></div><span class="atname">Open Port Discovery</span></div>
+        <div class="atdesc">Find every open port on a target without sending packets yourself. Search <code>hostname:mega-corp.com</code> to see everything Shodan has already indexed.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--yellow)"></div><span class="atname">CVE Detection</span></div>
+        <div class="atdesc">Shodan cross-references detected software versions against known <strong>CVE databases</strong>. Vulnerable services appear directly in search results with their CVE numbers listed.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--purple)"></div><span class="atname">IoT &amp; SCADA</span></div>
+        <div class="atdesc">Exposed webcams, industrial control systems, and smart devices with <strong>default credentials</strong> are all indexed. Many industrial systems still respond to factory-default passwords.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--cyan)"></div><span class="atname">Search Filters</span></div>
+        <div class="atdesc">Narrow results with powerful filters: <code>org:"MegaCorp"</code>, <code>port:3306</code>, <code>country:US</code>, <code>os:"Windows Server"</code>, <code>before:2025-01-01</code>.</div>
+      </div>
+      <div class="atcard" style="background:rgba(0,255,136,0.03);border-color:rgba(0,255,136,0.15)">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--green)"></div><span class="atname" style="color:var(--green)">Defensive Use ✓</span></div>
+        <div class="atdesc" style="color:var(--text2)">Defenders search their own org name to <strong>audit their own exposure</strong> — discovering misconfigured services before attackers do. Run it against yourself first.</div>
+      </div>
+    </div>
+
+    <!-- DNS ENUMERATION -->
+    <div class="sec-title" style="font-size:18px;margin-bottom:14px;">DNS Enumeration</div>
+    <div class="callout">
+      <strong>🌐 What is DNS Enumeration?</strong><br/>
+      DNS (Domain Name System) is the internet's phone book — it maps hostnames to IP addresses and reveals infrastructure details. DNS enumeration extracts all available DNS records for a target to build a complete map of its servers, mail systems, subdomains, and hosting providers. Tools like <strong>nslookup</strong>, <strong>dig</strong>, <strong>dnsrecon</strong>, and <strong>dnsenum</strong> automate this. Passive DNS enumeration queries public databases without ever touching the target's own nameservers.
+    </div>
+    <table class="dns-table">
+      <tr><th>RECORD TYPE</th><th>MAPS TO</th><th>ATTACKER INTEL VALUE</th></tr>
+      <tr><td><code>A</code></td><td>Hostname → IPv4 address</td><td>Reveals the actual web/app server IP for targeting</td></tr>
+      <tr><td><code>AAAA</code></td><td>Hostname → IPv6 address</td><td>Reveals IPv6 infrastructure — often less protected</td></tr>
+      <tr><td><code>MX</code></td><td>Mail Exchange server for the domain</td><td>Identifies email provider (Google, Microsoft) — phishing setup</td></tr>
+      <tr><td><code>NS</code></td><td>Authoritative nameserver for the domain</td><td>Reveals DNS hosting provider — zone transfer target</td></tr>
+      <tr><td><code>CNAME</code></td><td>Alias pointing one hostname to another</td><td>Reveals CDN, cloud platforms (Cloudflare, AWS) in use</td></tr>
+      <tr><td><code>TXT</code></td><td>Arbitrary text data (SPF, DKIM, verification)</td><td>Reveals email security posture — SPF gaps enable spoofing</td></tr>
+      <tr><td><code>SOA</code></td><td>Start of Authority — primary nameserver info</td><td>Admin contact email exposed — social engineering target</td></tr>
+    </table>
+    <div class="terminal-snip">
+      <div class="t-dim">$ dig mega-corp.com ANY +noall +answer</div>
+      <div class="t-cmd">mega-corp.com.   300  IN  A      192.168.40.10</div>
+      <div class="t-cmd">mega-corp.com.   300  IN  MX  10 mail.mega-corp.com.</div>
+      <div class="t-cmd">mega-corp.com.   300  IN  NS     ns1.mega-corp.com.</div>
+      <div class="t-cmd">mega-corp.com.   300  IN  TXT    "v=spf1 include:_spf.google.com ~all"</div>
+      <div class="t-warn">⚠ A record → web server IP. MX → email provider. TXT → SPF uses Google (Workspace). NS → zone transfer candidate.</div>
+    </div>
+
+    <!-- OSINT TOOLS -->
+    <div class="sec-title" style="font-size:18px;margin-bottom:14px;">Key OSINT Tools</div>
+    <div class="atgrid">
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--cyan)"></div><span class="atname">Maltego</span></div>
+        <div class="atdesc">Visualizes <strong>relationships between entities</strong> — people, domains, IPs, social profiles, and organizations. Pre-installed in Kali Linux. Maps org structures graphically.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--purple)"></div><span class="atname">Recon-ng</span></div>
+        <div class="atdesc">A modular Python recon framework that ingests <strong>multiple OSINT modules</strong> and consolidates findings into one unified report. Pre-installed in Kali Linux.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--orange)"></div><span class="atname">theHarvester</span></div>
+        <div class="atdesc">Passively harvests <strong>emails, subdomains, IPs, and hostnames</strong> from Google, Bing, Shodan, LinkedIn, and more. Core passive recon tool in Kali Linux.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--yellow)"></div><span class="atname">Sublist3r</span></div>
+        <div class="atdesc">Python tool for fast <strong>subdomain enumeration</strong> by scraping search engines and certificate transparency logs. Finds hidden infrastructure like dev and staging servers.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--green)"></div><span class="atname">Wayback Machine</span></div>
+        <div class="atdesc">Archives historical web snapshots. Attackers find <strong>old admin portals, config files, and past technologies</strong> that may expose legacy vulnerabilities still running internally.</div>
+      </div>
+      <div class="atcard">
+        <div class="atcard-hd"><div class="atdot" style="background:var(--red)"></div><span class="atname">SpiderFoot</span></div>
+        <div class="atdesc">Automated OSINT scanner querying <strong>over 1,000 public sources</strong>. Runs from Kali CLI or a graphical web interface. Correlates findings across all sources automatically.</div>
+      </div>
+    </div>
+
+    <!-- REAL WORLD -->
+    <div class="rw-box">
+      <div class="rw-hd"><span class="rw-tag">REAL WORLD</span><span class="rw-title">2013 Target Breach — 40M Cards Stolen via OSINT-Driven Supply Chain Attack</span></div>
+      <div class="callout danger" style="margin-bottom:16px;">Attackers used <strong>passive OSINT recon</strong> to identify a third-party HVAC vendor with network access to Target's systems. The breach resulted in <strong>40 million credit card numbers</strong> and 70 million customer records stolen — all starting with public information gathering.</div>
+      <div class="rw-steps">
+        <div class="rw-step"><div class="rw-num">1</div><span><strong>OSINT Phase:</strong> LinkedIn, WHOIS records, and public procurement contracts revealed Fazio Mechanical — a Target HVAC contractor with remote network access credentials.</span></div>
+        <div class="rw-step"><div class="rw-num">2</div><span><strong>Spear Phishing:</strong> Using harvested employee names, roles, and email formats, a targeted phishing email compromised Fazio's login credentials.</span></div>
+        <div class="rw-step"><div class="rw-num">3</div><span><strong>Lateral Movement:</strong> Attacker used Fazio's VPN credentials to pivot from the vendor's network into Target's internal payment card infrastructure.</span></div>
+        <div class="rw-step"><div class="rw-num">4</div><span><strong>Deployment:</strong> POS malware (BlackPOS) was quietly deployed across 1,800+ Target retail locations, silently capturing card data at every swipe.</span></div>
+        <div class="rw-step"><div class="rw-num">5</div><span><strong>Result:</strong> $162M in damages, resignation of Target's CIO and CEO, class-action lawsuits. <strong>It all started with a WHOIS lookup and a LinkedIn profile.</strong></span></div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>⚠ Ethical &amp; Legal Boundaries:</strong> Performing reconnaissance against systems you <strong>do not own or have explicit written permission</strong> to test is illegal under the Computer Fraud and Abuse Act (CFAA) and equivalent laws worldwide. All techniques practiced in ShieldSimulation are conducted in isolated, simulated environments for educational purposes only.
+    </div>
+
+    <div class="part-nav">
+      <button class="btn-back-sm" onclick="goReconLevels()">← Back to Levels</button>
+      <button class="btn-next-sm" onclick="reconGoPart(2)">NEXT: Quiz ▶</button>
+    </div>
+  </div><!-- /part1 -->
+
+  <!-- ══════════════════ PART 2: MCQ ══════════════════ -->
+  <div class="part" id="reconpart2">
+    <div class="sec-title">Part 2 — <span>Knowledge Check</span></div>
+    <div class="sec-sub">5 questions based on the theory you just studied. Read each carefully!</div>
+    <div class="quiz-hdr">📋 MULTIPLE CHOICE — SELECT THE BEST ANSWER</div>
+
+    <div class="q-card">
+      <div class="q-num">QUESTION 01 / 05</div>
+      <div class="q-text">What is the fundamental difference between passive and active reconnaissance?</div>
+      <div class="q-opts" id="rq1">
+        <div class="q-opt" onclick="reconAnsQ('rq1',0)"><div class="q-radio"></div>Active recon uses automated scripts while passive recon is always performed manually</div>
+        <div class="q-opt" onclick="reconAnsQ('rq1',1)"><div class="q-radio"></div>Passive recon collects data from public sources without touching the target; active recon directly interacts with the target system</div>
+        <div class="q-opt" onclick="reconAnsQ('rq1',2)"><div class="q-radio"></div>Passive recon is illegal without authorization while active recon is always permitted</div>
+        <div class="q-opt" onclick="reconAnsQ('rq1',3)"><div class="q-radio"></div>Active recon only covers social media; passive recon uses port scanners and network tools</div>
+      </div>
+      <div class="q-fb" id="rq1fb"></div>
+    </div>
+
+    <div class="q-card">
+      <div class="q-num">QUESTION 02 / 05</div>
+      <div class="q-text">A WHOIS query on a target domain can reveal which of the following pieces of information?</div>
+      <div class="q-opts" id="rq2">
+        <div class="q-opt" onclick="reconAnsQ('rq2',0)"><div class="q-radio"></div>The registrant's name, organization, email address, registration dates, and nameservers</div>
+        <div class="q-opt" onclick="reconAnsQ('rq2',1)"><div class="q-radio"></div>The target's internal database schema and all stored table names</div>
+        <div class="q-opt" onclick="reconAnsQ('rq2',2)"><div class="q-radio"></div>All currently open ports and services running on the web server</div>
+        <div class="q-opt" onclick="reconAnsQ('rq2',3)"><div class="q-radio"></div>The plaintext passwords of all registered admin accounts</div>
+      </div>
+      <div class="q-fb" id="rq2fb"></div>
+    </div>
+
+    <div class="q-card">
+      <div class="q-num">QUESTION 03 / 05</div>
+      <div class="q-text">Which Google Dork is MOST effective for finding exposed PDF documents on a specific target domain?</div>
+      <div class="q-opts" id="rq3">
+        <div class="q-opt" onclick="reconAnsQ('rq3',0)"><div class="q-radio"></div><code style="color:var(--yellow)">inurl:mega-corp.com confidential report</code></div>
+        <div class="q-opt" onclick="reconAnsQ('rq3',1)"><div class="q-radio"></div><code style="color:var(--yellow)">intitle:mega-corp pdf internal documents</code></div>
+        <div class="q-opt" onclick="reconAnsQ('rq3',2)"><div class="q-radio"></div><code style="color:var(--yellow)">site:mega-corp.com filetype:pdf</code></div>
+        <div class="q-opt" onclick="reconAnsQ('rq3',3)"><div class="q-radio"></div><code style="color:var(--yellow)">mega-corp.com OR filetype:pdf confidential</code></div>
+      </div>
+      <div class="q-fb" id="rq3fb"></div>
+    </div>
+
+    <div class="q-card">
+      <div class="q-num">QUESTION 04 / 05</div>
+      <div class="q-text">What makes Shodan fundamentally different from traditional search engines like Google or Bing?</div>
+      <div class="q-opts" id="rq4">
+        <div class="q-opt" onclick="reconAnsQ('rq4',0)"><div class="q-radio"></div>Shodan indexes websites and blog content faster than any other search engine</div>
+        <div class="q-opt" onclick="reconAnsQ('rq4',1)"><div class="q-radio"></div>Shodan indexes internet-connected devices, open ports, and service banners — not web page content</div>
+        <div class="q-opt" onclick="reconAnsQ('rq4',2)"><div class="q-radio"></div>Shodan actively exploits every vulnerability it finds when crawling the internet</div>
+        <div class="q-opt" onclick="reconAnsQ('rq4',3)"><div class="q-radio"></div>Shodan only indexes government and military networks for authorized security researchers</div>
+      </div>
+      <div class="q-fb" id="rq4fb"></div>
+    </div>
+
+    <div class="q-card">
+      <div class="q-num">QUESTION 05 / 05</div>
+      <div class="q-text">During DNS enumeration, which record type identifies the mail servers responsible for receiving email on behalf of a domain?</div>
+      <div class="q-opts" id="rq5">
+        <div class="q-opt" onclick="reconAnsQ('rq5',0)"><div class="q-radio"></div>A record — maps the hostname directly to an IPv4 address</div>
+        <div class="q-opt" onclick="reconAnsQ('rq5',1)"><div class="q-radio"></div>CNAME record — a hostname alias that points to another canonical hostname</div>
+        <div class="q-opt" onclick="reconAnsQ('rq5',2)"><div class="q-radio"></div>NS record — identifies the authoritative nameservers for the domain</div>
+        <div class="q-opt" onclick="reconAnsQ('rq5',3)"><div class="q-radio"></div>MX record — specifies the mail exchange servers handling email delivery for the domain</div>
+      </div>
+      <div class="q-fb" id="rq5fb"></div>
+    </div>
+
+    <div class="score-box" id="reconMcqScore">
+      <div class="score-val" id="reconMcqSV"></div>
+      <div class="score-lbl">Quiz complete — good work, Operator!</div>
+    </div>
+    <div class="part-nav">
+      <button class="btn-back-sm" onclick="reconGoPart(1)">← Back to Theory</button>
+      <button class="btn-next-sm" id="reconBtnP3" onclick="reconGoPart(3)" disabled>NEXT: Fill Blanks ▶</button>
+    </div>
+  </div><!-- /part2 -->
+
+  <!-- ══════════════════ PART 3: FILL IN BLANKS ══════════════════ -->
+  <div class="part" id="reconpart3">
+    <div class="sec-title">Part 3 — <span>Fill in the Blanks</span></div>
+    <div class="sec-sub">Complete each sentence using the word bank below. Spelling matters — type carefully!</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);margin-bottom:10px;">📦 WORD BANK</div>
+    <div class="word-bank">
+      <span class="wb-tag">passive</span>
+      <span class="wb-tag">whois</span>
+      <span class="wb-tag">google dorking</span>
+      <span class="wb-tag">shodan</span>
+      <span class="wb-tag">dns enumeration</span>
+      <span class="wb-tag">osint</span>
+      <span class="wb-tag">active</span>
+      <span class="wb-tag">mx</span>
+      <span class="wb-tag">sublist3r</span>
+      <span class="wb-tag">maltego</span>
+    </div>
+
+    <div class="fitb-card">
+      <div class="q-num">BLANK 01 / 06</div>
+      <div class="fitb-sent"><input class="blank" id="rb1" placeholder="______"/> reconnaissance gathers information exclusively from publicly available sources without ever directly interacting with or alerting the target system.</div>
+      <div class="fitb-hint">💡 No packets sent, no trace left — operating completely in the shadows 🌑</div>
+      <div class="fitb-fb" id="rb1fb"></div>
+      <button class="btn-chk" onclick="reconChkB('rb1','passive','rb1fb')">CHECK ↵</button>
+    </div>
+
+    <div class="fitb-card">
+      <div class="q-num">BLANK 02 / 06</div>
+      <div class="fitb-sent">A <input class="blank" id="rb2" placeholder="______"/> lookup queries public domain registrar databases to reveal the registrant's name, email address, organization, registration dates, and nameservers.</div>
+      <div class="fitb-hint">💡 A public protocol used to query domain ownership records — "who is" this domain? 🗂️</div>
+      <div class="fitb-fb" id="rb2fb"></div>
+      <button class="btn-chk" onclick="reconChkB('rb2','whois','rb2fb')">CHECK ↵</button>
+    </div>
+
+    <div class="fitb-card">
+      <div class="q-num">BLANK 03 / 06</div>
+      <div class="fitb-sent"><input class="blank" id="rb3" placeholder="______"/> uses advanced search operators such as <code style="color:var(--yellow)">site:</code>, <code style="color:var(--yellow)">filetype:</code>, and <code style="color:var(--yellow)">intitle:</code> to find sensitive files and data accidentally indexed by search engines.</div>
+      <div class="fitb-hint">💡 Named after the world's most famous search engine — it's hacking with a search bar since 2002 🔍</div>
+      <div class="fitb-fb" id="rb3fb"></div>
+      <button class="btn-chk" onclick="reconChkB('rb3','google dorking','rb3fb')">CHECK ↵</button>
+    </div>
+
+    <div class="fitb-card">
+      <div class="q-num">BLANK 04 / 06</div>
+      <div class="fitb-sent"><input class="blank" id="rb4" placeholder="______"/> is a search engine that continuously scans the entire public internet and indexes open ports, service banners, software versions, CVEs, and exposed devices.</div>
+      <div class="fitb-hint">💡 Named after a fictional character from a classic novel — known as "the hacker's search engine" 🛰️</div>
+      <div class="fitb-fb" id="rb4fb"></div>
+      <button class="btn-chk" onclick="reconChkB('rb4','shodan','rb4fb')">CHECK ↵</button>
+    </div>
+
+    <div class="fitb-card">
+      <div class="q-num">BLANK 05 / 06</div>
+      <div class="fitb-sent"><input class="blank" id="rb5" placeholder="______"/> is the process of querying and extracting DNS records — including A, MX, NS, CNAME, and TXT records — to build a complete map of a target's network infrastructure.</div>
+      <div class="fitb-hint">💡 Extracting every record from the internet's "phone book" — three words 🌐</div>
+      <div class="fitb-fb" id="rb5fb"></div>
+      <button class="btn-chk" onclick="reconChkB('rb5','dns enumeration','rb5fb')">CHECK ↵</button>
+    </div>
+
+    <div class="fitb-card">
+      <div class="q-num">BLANK 06 / 06</div>
+      <div class="fitb-sent"><input class="blank" id="rb6" placeholder="______"/> stands for Open Source Intelligence — the discipline of collecting, analyzing, and acting on information gathered exclusively from publicly available sources.</div>
+      <div class="fitb-hint">💡 Its four-letter abbreviation spells out a word meaning "intelligence gathered openly" 🕵️</div>
+      <div class="fitb-fb" id="rb6fb"></div>
+      <button class="btn-chk" onclick="reconChkB('rb6','osint','rb6fb')">CHECK ↵</button>
+    </div>
+
+    <div class="score-box" id="reconFitbScore" style="margin-top:20px;">
+      <div class="score-val" id="reconFitbSV"></div>
+      <div class="score-lbl">Fill-in-the-Blank Score — Level 1 Complete! 🎉<br/><span style="font-size:13px;color:var(--text2)">Level 2 unlocked — Offensive Ops await.</span></div>
+    </div>
+    <div class="part-nav">
+      <button class="btn-back-sm" onclick="reconGoPart(2)">← Back to Quiz</button>
+      <button class="btn-next-sm" id="reconBtnFinish" onclick="finishReconL1()" disabled>✓ COMPLETE LEVEL 1</button>
+    </div>
+  </div><!-- /part3 -->
+
+</div><!-- /pinner -->
+</div><!-- /page-recon1 -->
+
+<script>
+const API = window.location.origin;
+let reconCurPart = 1, reconMcqDone = {}, reconFitbDone = {};
+
+// ── Auth init ──────────────────────────────────────────
+const saved = localStorage.getItem('ss_user');
+let user;
+if (!saved) {
+  user = { username: 'OPERATOR', progress: {} };
+  localStorage.setItem('ss_user', JSON.stringify(user)); // ← ADD THIS LINE
+} else {
+  try { user = JSON.parse(saved); } catch(e) { user = { username: 'OPERATOR', progress: {} }; }
+}
+document.getElementById('navUser').textContent = user.username;
+
+// ── Stepper logic ──────────────────────────────────────
+function reconGoPart(n) {
+  reconCurPart = n;
+  reconRenderStepper();
+  reconShowPart(n);
+  document.getElementById('page-recon1').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function reconShowPart(n) {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('reconpart' + i);
+    e.className = 'part' + (i === n ? ' part-on' : '');
+  }
+}
+
+function reconRenderStepper() {
+  for (let i = 1; i <= 3; i++) {
+    const e = document.getElementById('rstp' + i);
+    e.className = 'stp' + (i < reconCurPart ? ' stp-done' : i === reconCurPart ? ' stp-active' : '');
+  }
+  document.getElementById('rsl1').className = 'stp-line' + (reconCurPart > 1 ? ' stp-done' : '');
+  document.getElementById('rsl2').className = 'stp-line' + (reconCurPart > 2 ? ' stp-done' : '');
+}
+
+// ── MCQ Data ───────────────────────────────────────────
+const RECON_CANS = { rq1: 1, rq2: 0, rq3: 2, rq4: 1, rq5: 3 };
+const RECON_CFBT = {
+  rq1: [
+    '❌ Tool choice (automated vs manual) is not the defining distinction — both types can use scripts.',
+    '✅ Correct! Passive recon uses public sources only — no contact with the target, zero trace. Active recon directly sends packets to the target and can trigger IDS/IPS alerts.',
+    '❌ Authorization requirements apply to active recon. The distinction is about target interaction, not legality per se.',
+    '❌ These are reversed — social media and public databases are passive; port scanners like Nmap are active.'
+  ],
+  rq2: [
+    '✅ Exactly! WHOIS exposes registrant name, organization, email, phone number, registrar, creation/expiry dates, and nameservers — all from public registrar records.',
+    '❌ Internal database schemas are private and not accessible through WHOIS — that requires exploiting the application directly.',
+    '❌ Open ports require active scanning with tools like Nmap. WHOIS is a domain registration lookup, not a port scanner.',
+    '❌ Passwords are never stored in WHOIS records — they are private authentication data unrelated to domain registration.'
+  ],
+  rq3: [
+    '❌ inurl: searches within the URL path — it does not restrict results to a specific domain or filter by file type alone.',
+    '❌ This is a generic keyword search — it does not use site: to restrict to the target domain or filetype: to find only PDFs.',
+    '✅ Correct! site:mega-corp.com restricts all results to that exact domain, and filetype:pdf narrows to PDF files only — a precise, powerful dork combination used in real attacks.',
+    '❌ The OR operator broadens results across multiple conditions — this would not specifically find PDFs on just that one domain.'
+  ],
+  rq4: [
+    '❌ Shodan does not index web content like pages or blog posts — that is what Google and Bing do.',
+    '✅ Spot on! Google and Bing index websites and content. Shodan scans every internet-facing IP and records open ports, service banners, software versions, CVEs, and device types — completely different data.',
+    '❌ Shodan is a passive information gathering tool — it records publicly visible data. It does not exploit anything.',
+    '❌ Shodan crawls the entire public internet including commercial, residential, industrial, and consumer IoT infrastructure globally — not just government networks.'
+  ],
+  rq5: [
+    '❌ A records map hostnames to IPv4 addresses — they reveal web and app server IPs, not mail servers.',
+    '❌ CNAME records are hostname aliases pointing one name to another — not related to mail routing.',
+    '❌ NS records identify the authoritative nameservers responsible for a domain\'s DNS zone — not the mail servers.',
+    '✅ Correct! MX (Mail Exchange) records specifically designate which servers are responsible for receiving email for a domain — a key target for identifying email providers and planning phishing infrastructure.'
+  ]
+};
+
+function reconAnsQ(qId, chosen) {
+  const c = RECON_CANS[qId];
+  const opts = document.getElementById(qId).querySelectorAll('.q-opt');
+  opts.forEach(o => o.classList.add('q-dis'));
+  opts[chosen].classList.add(chosen === c ? 'q-ok' : 'q-no');
+  if (chosen !== c) opts[c].classList.add('q-ok');
+  const fb = document.getElementById(qId + 'fb');
+  fb.textContent = RECON_CFBT[qId][chosen];
+  fb.className = 'q-fb show ' + (chosen === c ? 'ok' : 'no');
+  reconMcqDone[qId] = (chosen === c);
+  if (Object.keys(reconMcqDone).length === 5) {
+    const score = Object.values(reconMcqDone).filter(Boolean).length;
+    const sv = document.getElementById('reconMcqSV');
+    sv.textContent = score + '/5';
+    sv.style.color = score >= 4 ? 'var(--green)' : score >= 3 ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('reconMcqScore').classList.add('show');
+    document.getElementById('reconBtnP3').disabled = false;
+    reconSaveP('p2');
+  }
+}
+
+// ── Fill in the Blanks ─────────────────────────────────
+const RECON_BANS = { rb1: 'passive', rb2: 'whois', rb3: 'google dorking', rb4: 'shodan', rb5: 'dns enumeration', rb6: 'osint' };
+
+function reconChkB(id, ans, fbId) {
+  const inp = document.getElementById(id);
+  const val = inp.value.trim().toLowerCase();
+  const fb = document.getElementById(fbId);
+  if (!val) { fb.textContent = '⚠️ Type an answer first.'; fb.className = 'fitb-fb show no'; return; }
+  if (val === ans) {
+    inp.classList.add('bok'); inp.disabled = true;
+    fb.textContent = '✅ Correct!'; fb.className = 'fitb-fb show ok';
+    reconFitbDone[id] = true;
+  } else {
+    inp.classList.add('bno');
+    fb.textContent = '❌ Not quite — check the word bank and try again.'; fb.className = 'fitb-fb show no';
+    reconFitbDone[id] = false;
+    setTimeout(() => { inp.classList.remove('bno'); inp.value = ''; }, 1300);
+  }
+  if (Object.keys(RECON_BANS).every(k => reconFitbDone[k] === true)) {
+    const sv = document.getElementById('reconFitbSV');
+    sv.textContent = '6/6'; sv.style.color = 'var(--green)';
+    document.getElementById('reconFitbScore').classList.add('show');
+    document.getElementById('reconBtnFinish').disabled = false;
+    reconSaveP('p3');
+  }
+}
+
+// ── Progress Save ──────────────────────────────────────
+async function reconSaveP(part) {
+  if (!user.progress) user.progress = {};
+  if (!user.progress.recon) user.progress.recon = {};
+  if (!user.progress.recon.level1) user.progress.recon.level1 = {};
+  user.progress.recon.level1[part] = true;
+  localStorage.setItem('ss_user', JSON.stringify(user));
+  try {
+    await fetch(`${API}/api/progress/${user.username}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ game: 'recon', level: 'level1', mode: part, completed: true })
+    });
+  } catch {}
+}
+
+async function finishReconL1() {
+  // Save all three parts
+  await reconSaveP('p1');
+  await reconSaveP('p2');
+  await reconSaveP('p3');
+
+  // Make sure localStorage is fully written before redirecting
+  const currentUser = JSON.parse(localStorage.getItem('ss_user') || '{}');
+  if (!currentUser.progress) currentUser.progress = {};
+  if (!currentUser.progress.recon) currentUser.progress.recon = {};
+  if (!currentUser.progress.recon.level1) currentUser.progress.recon.level1 = {};
+  currentUser.progress.recon.level1.p1 = true;
+  currentUser.progress.recon.level1.p2 = true;
+  currentUser.progress.recon.level1.p3 = true;
+  localStorage.setItem('ss_user', JSON.stringify(currentUser));
+
+  // Set the redirect target
+  sessionStorage.setItem('ss_goto', 'page-reconlevels');
+
+  // Small delay to ensure everything is written
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 100);
+}
+
+function goHome() { sessionStorage.setItem('ss_goto', 'page-scenarios'); window.location.href = 'index.html'; }
+function goReconLevels() { sessionStorage.setItem('ss_goto', 'page-reconlevels'); window.location.href = 'index.html'; }
+function logout() { localStorage.removeItem('ss_user'); window.location.href = 'index.html'; }
+
+// Boot stepper
+reconRenderStepper();
+</script>
+</body>
+</html>

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ShieldSimulation — Recon & OSINT Level 2: Offensive Operations</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#040d1a;--bg2:#061020;--card:#0a1628;--border:#1a3a5c;--border2:#0f2744;
+  --cyan:#00f5ff;--cyan2:#00bcd4;--green:#00ff88;--red:#ff3366;--yellow:#ffd700;
+  --orange:#ff6b35;--purple:#a855f7;--text:#c8dff0;--text2:#7a9ab8;
+  --glow:0 0 20px rgba(0,245,255,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);pointer-events:none;z-index:9998;}
+#gridbg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:rgba(4,13,26,0.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--border2);}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:900;font-size:15px;color:#040d1a;box-shadow:var(--glow);}
+.nav-logo-text{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{color:var(--text2);font-size:13px;font-weight:500;letter-spacing:1px;text-transform:uppercase;cursor:default;transition:color .2s;}
+.nav-links a:hover{color:var(--cyan);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+#navUser{font-family:'Share Tech Mono',monospace;color:var(--cyan);font-size:13px;}
+#navLogout{background:transparent;border:1px solid var(--border);color:var(--text2);padding:6px 14px;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:4px;transition:all .2s;}
+#navLogout:hover{border-color:var(--red);color:var(--red);}
+#statusbar{position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(4,13,26,0.96);border-top:1px solid var(--border2);padding:7px 48px;display:flex;justify-content:space-between;align-items:center;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:7px;animation:gp 2s infinite;}
+.sdot.red{background:var(--red);animation:rp 1s infinite;}
+@keyframes gp{0%,100%{box-shadow:0 0 5px var(--green);}50%{box-shadow:0 0 12px var(--green);}}
+@keyframes rp{0%,100%{box-shadow:0 0 5px var(--red);}50%{box-shadow:0 0 14px var(--red);}}
+/* Glitch */
+@keyframes glitch{0%,100%{clip-path:inset(0 0 98% 0);transform:translate(-2px,0);}20%{clip-path:inset(30% 0 50% 0);transform:translate(2px,0);}40%{clip-path:inset(60% 0 20% 0);transform:translate(-1px,0);}60%{clip-path:inset(80% 0 5% 0);transform:translate(1px,0);}80%{clip-path:inset(10% 0 80% 0);transform:translate(-2px,0);}}
+.glitch-wrap{position:relative;display:inline-block;}
+.glitch-wrap::before,.glitch-wrap::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
+.glitch-wrap::before{color:var(--cyan);animation:glitch 3s infinite linear;opacity:.7;}
+.glitch-wrap::after{color:var(--purple);animation:glitch 3s infinite linear reverse;opacity:.7;animation-delay:.15s;}
+/* Layout */
+.main-scroll{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;z-index:1;padding:90px 40px 80px;}
+.inner{max-width:1200px;margin:0 auto;}
+.breadcrumb{display:flex;align-items:center;gap:10px;margin-bottom:28px;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text2);}
+.bc-link{color:var(--cyan);cursor:pointer;}
+.bc-link:hover{text-decoration:underline;}
+.bc-sep{color:var(--border);}
+.callout{background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.2);border-left:3px solid var(--cyan);border-radius:8px;padding:18px 20px;margin-bottom:22px;font-size:14px;line-height:1.7;color:var(--text2);}
+.callout strong{color:var(--cyan);}
+.callout.warn{background:rgba(255,215,0,0.04);border-color:rgba(255,215,0,0.2);border-left-color:var(--yellow);}
+.callout.warn strong{color:var(--yellow);}
+.callout.danger{background:rgba(255,51,102,0.04);border-color:rgba(255,51,102,0.2);border-left-color:var(--red);}
+.callout.danger strong{color:var(--red);}
+/* Ops layout */
+.ops-layout{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start;}
+.bio-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;position:sticky;top:0;}
+.bio-header{background:linear-gradient(135deg,rgba(0,245,255,0.08),rgba(168,85,247,0.08));border-bottom:1px solid var(--border2);padding:18px 22px;display:flex;align-items:center;gap:12px;}
+.bio-status{width:9px;height:9px;border-radius:50%;background:var(--cyan);animation:gp 2s infinite;flex-shrink:0;}
+.bio-header-text{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;color:var(--cyan);}
+.bio-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#1a2a3a,#0a1628);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;margin:22px auto 14px;}
+.bio-name{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px;}
+.bio-role{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);text-align:center;margin-bottom:22px;}
+.bio-rows{padding:0 22px 22px;}
+.bio-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);}
+.bio-row:last-child{border-bottom:none;}
+.bio-key{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);}
+.bio-val{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cyan);}
+.intel-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.25);color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;padding:3px 9px;border-radius:3px;margin-top:14px;}
+.osint-score{background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:8px;padding:12px 16px;margin:14px 22px 22px;text-align:center;}
+.osint-score-label{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:6px;}
+.osint-score-val{font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--purple);text-shadow:0 0 20px rgba(168,85,247,0.5);}
+/* Ops panel */
+.ops-panel{display:flex;flex-direction:column;gap:18px;}
+.step-card{background:var(--card);border:1px solid var(--border2);border-radius:14px;overflow:hidden;transition:border-color .3s;}
+.step-card.s-active{border-color:rgba(0,245,255,0.4);box-shadow:0 0 30px rgba(0,245,255,0.07);}
+.step-card.s-done{border-color:rgba(0,255,136,0.35);}
+.step-card.s-locked{opacity:.45;pointer-events:none;}
+.step-hdr{padding:18px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border2);}
+.step-num{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;transition:all .3s;}
+.s-active .step-num{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,255,0.1);box-shadow:0 0 12px rgba(0,245,255,0.3);}
+.s-done .step-num{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.1);}
+.step-meta{flex:1;}
+.step-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;}
+.step-sub{font-size:12px;color:var(--text2);}
+.step-badge{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;padding:4px 10px;border-radius:4px;}
+.badge-active{background:rgba(0,245,255,.1);border:1px solid var(--cyan);color:var(--cyan);}
+.badge-done{background:rgba(0,255,136,.1);border:1px solid var(--green);color:var(--green);}
+.badge-locked{background:rgba(122,154,184,.08);border:1px solid var(--border);color:var(--text2);}
+.step-body{padding:22px;}
+/* Browser sim */
+.browser-sim{background:#020a14;border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.browser-bar{background:#0a1628;border-bottom:1px solid var(--border2);padding:10px 16px;display:flex;align-items:center;gap:8px;}
+.b-dot{width:9px;height:9px;border-radius:50%;}
+.b-url{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-left:8px;flex:1;}
+.b-url.searching{color:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.browser-body{padding:22px;}
+/* Dork input */
+.dork-field{display:flex;gap:10px;margin-bottom:14px;}
+.ls-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:#fff;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;transition:all .2s;}
+.ls-input:focus{border-color:var(--cyan);}
+.ls-input.bok{border-color:var(--green);background:rgba(0,255,136,0.05);}
+.ls-input.bno{border-color:var(--red);}
+.ls-btn{padding:11px 18px;background:linear-gradient(135deg,rgba(0,245,255,0.1),rgba(168,85,247,0.08));border:1px solid var(--cyan);color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;cursor:pointer;border-radius:6px;transition:all .2s;white-space:nowrap;}
+.ls-btn:hover{background:var(--cyan);color:#040d1a;}
+.ls-btn:disabled{opacity:.4;cursor:not-allowed;}
+.dork-hints{margin-bottom:16px;}
+.dork-hints-lbl{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text2);margin-bottom:8px;}
+.hint-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.hint-tag{background:rgba(0,245,255,0.06);border:1px solid var(--border2);color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;transition:all .2s;}
+.hint-tag:hover{border-color:var(--cyan);color:var(--cyan);}
+.search-results{display:none;margin-top:14px;}
+.search-results.show{display:block;animation:popIn .4s ease;}
+@keyframes popIn{0%{opacity:0;transform:translateY(8px);}100%{opacity:1;transform:translateY(0);}}
+.sr-item{padding:14px;border:1px solid var(--border2);border-radius:8px;margin-bottom:10px;background:rgba(255,255,255,0.02);transition:border-color .2s;}
+.sr-item:hover{border-color:var(--border);}
+.sr-item.leaked{border-color:rgba(255,51,102,0.3);background:rgba(255,51,102,0.04);cursor:pointer;}
+.sr-item.leaked:hover{border-color:var(--red);}
+.sr-url{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);margin-bottom:4px;}
+.sr-title{font-size:14px;color:var(--cyan);font-weight:600;margin-bottom:4px;}
+.sr-snippet{font-size:12px;color:var(--text2);}
+.sr-badge{display:inline-block;background:rgba(255,51,102,0.15);border:1px solid rgba(255,51,102,0.4);color:var(--red);font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:3px;margin-left:8px;}
+.ls-result{margin-top:14px;min-height:24px;font-family:'Share Tech Mono',monospace;font-size:12px;border-radius:6px;padding:10px 14px;display:none;}
+.ls-result.show{display:block;}
+.ls-result.fail{background:rgba(255,51,102,0.07);border:1px solid rgba(255,51,102,0.3);color:var(--red);}
+.ls-result.success{background:rgba(0,255,136,0.07);border:1px solid rgba(0,255,136,0.3);color:var(--green);}
+/* Terminal */
+.terminal{background:#020a14;border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.terminal-bar{background:#0a1628;border-bottom:1px solid var(--border2);padding:9px 14px;display:flex;align-items:center;gap:8px;}
+.t-dot{width:10px;height:10px;border-radius:50%;}
+.t-red{background:#ff5f57;}.t-yellow-dot{background:#ffbd2e;}.t-green-dot{background:#28c840;}
+.terminal-title{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-left:auto;}
+.terminal-body{padding:16px;height:280px;overflow-y:auto;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.7;}
+.terminal-body::-webkit-scrollbar{width:4px;}
+.terminal-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.t-line{margin-bottom:2px;}
+.t-cmd{color:var(--cyan);}
+.t-fail{color:rgba(255,51,102,0.7);}
+.t-warn{color:var(--yellow);}
+.t-ok{color:var(--green);font-weight:bold;}
+.t-dim{color:rgba(122,154,184,0.5);}
+.t-data{color:var(--purple);font-weight:bold;}
+.t-found{color:var(--cyan);font-weight:bold;}
+.btn-launch{width:100%;padding:13px;background:linear-gradient(135deg,rgba(255,107,53,0.15),rgba(255,51,102,0.1));border:1px solid var(--orange);color:var(--orange);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:8px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-launch:hover:not(:disabled){background:var(--orange);color:#040d1a;}
+.btn-launch:disabled{opacity:.4;cursor:not-allowed;}
+/* Vuln popup */
+.vuln-popup{display:none;background:linear-gradient(135deg,rgba(0,255,136,0.07),rgba(0,245,255,0.04));border:1px solid rgba(0,255,136,0.35);border-radius:12px;padding:20px;margin-top:16px;}
+.vuln-popup.show{display:block;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+.vuln-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.vuln-body{font-size:13px;color:var(--text2);line-height:1.65;}
+.vuln-body strong{color:var(--cyan);}
+/* Stats */
+.dict-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.dstat{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:12px;text-align:center;}
+.dstat-val{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);}
+.dstat-lbl{font-size:10px;color:var(--text2);letter-spacing:1px;margin-top:3px;}
+/* Social profile sim */
+.social-profile{background:#020a14;border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.social-bar{background:#0d1117;border-bottom:1px solid var(--border2);padding:10px 16px;display:flex;align-items:center;gap:8px;}
+.social-logo{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;color:var(--purple);}
+.profile-header{padding:18px 22px;display:flex;gap:18px;align-items:flex-start;border-bottom:1px solid var(--border2);}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;border:2px solid var(--border2);}
+.profile-info{flex:1;}
+.profile-name{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;}
+.profile-handle{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:8px;}
+.profile-bio{font-size:13px;color:var(--text);line-height:1.5;}
+.profile-meta{display:flex;gap:18px;margin-top:8px;}
+.pmeta-item{font-size:11px;color:var(--text2);}
+.pmeta-item strong{color:var(--cyan);}
+.posts-grid{padding:14px 22px;}
+.posts-label{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:12px;}
+.post-card{border:1px solid var(--border2);border-radius:8px;padding:14px;margin-bottom:12px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,0.015);}
+.post-card:hover{border-color:var(--border);background:rgba(255,255,255,0.03);}
+.post-card.selected{border-color:var(--purple);background:rgba(168,85,247,0.06);}
+.post-card.has-clue:hover{border-color:var(--yellow);background:rgba(255,215,0,0.04);}
+.post-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.post-author{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);}
+.post-time{font-size:11px;color:var(--text2);}
+.post-text{font-size:13px;color:var(--text);line-height:1.6;}
+.post-text .highlight{background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);border-radius:3px;padding:1px 5px;color:var(--yellow);cursor:pointer;}
+.post-clue-tag{display:inline-block;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);color:var(--purple);font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;margin-top:8px;}
+.clue-counter{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text2);margin-bottom:14px;}
+.clue-counter span{color:var(--yellow);}
+.osint-submit{margin-top:18px;}
+.osint-field{margin-bottom:12px;}
+.osint-label{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:2px;color:var(--text2);margin-bottom:5px;}
+/* Breach alert */
+.breach-alert{display:none;background:linear-gradient(135deg,rgba(0,245,255,0.09),rgba(168,85,247,0.07));border:2px solid var(--cyan);border-radius:12px;padding:22px;text-align:center;margin-top:14px;}
+.breach-alert.show{display:block;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
+.breach-ico{font-size:44px;margin-bottom:10px;}
+.breach-title{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,255,0.5);margin-bottom:6px;}
+.breach-sub{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:16px;}
+.breach-sub strong{color:var(--cyan);}
+.btn-complete{padding:13px 36px;background:linear-gradient(135deg,var(--green),#00cc66);border:none;border-radius:8px;color:#040d1a;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;box-shadow:0 0 28px rgba(0,255,136,0.3);}
+.btn-complete:hover{transform:translateY(-2px);box-shadow:0 0 44px rgba(0,255,136,0.5);}
+/* Progress bar */
+.l2-progress{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:16px 22px;margin-bottom:22px;display:flex;align-items:center;gap:18px;}
+.l2-prog-label{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;color:var(--text2);white-space:nowrap;}
+.l2-prog-track{flex:1;background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;}
+.l2-prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--green));border-radius:4px;transition:width .8s ease;width:0%;}
+.l2-prog-pct{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--cyan);min-width:36px;text-align:right;}
+/* Spinning text animation */
+@keyframes spinChar{0%{opacity:1;}100%{opacity:1;}}
+.spinning-cell{color:var(--yellow);font-family:'Share Tech Mono',monospace;}
+.revealed-cell{color:var(--green);transition:color .3s;}
+@media(max-width:860px){
+  .ops-layout{grid-template-columns:1fr;}
+  .bio-card{position:static;}
+  #nav{padding:12px 20px;}
+  #statusbar{padding:7px 20px;}
+  .main-scroll{padding:80px 20px 70px;}
+  .dork-field{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<div id="gridbg"></div>
+
+<nav id="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">S</div>
+    <span class="nav-logo-text">ShieldSimulation</span>
+  </div>
+  <div class="nav-links"><a>About</a><a>Features</a><a>Contact</a></div>
+  <div class="nav-right">
+    <span id="navUser"></span>
+    <button id="navLogout" onclick="logout()">LOGOUT</button>
+  </div>
+</nav>
+
+<div id="statusbar">
+  <div><span class="sdot red" id="sdot"></span><span id="stext">⚠ OFFENSIVE MODE ACTIVE — Training Environment Only</span></div>
+  <span>© 2025 ShieldSimulation | Secure Training Platform</span>
+</div>
+
+<div class="main-scroll">
+<div class="inner">
+
+  <div class="breadcrumb">
+    <span class="bc-link" onclick="goHome()">Home</span>
+    <span class="bc-sep">›</span>
+    <span class="bc-link" onclick="goReconLevels()">Recon & OSINT</span>
+    <span class="bc-sep">›</span>
+    <span style="color:var(--cyan)">Level 2: Offensive Ops</span>
+  </div>
+
+  <div style="margin-bottom:28px;">
+    <div class="glitch-wrap" data-text="RECON OPERATIONS" style="font-family:'Orbitron',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:900;color:var(--cyan);text-shadow:0 0 30px rgba(0,245,255,0.5);margin-bottom:6px;">RECON OPERATIONS</div>
+    <div style="color:var(--text2);font-size:15px;">You are the threat actor. Enumerate the target surface, enumerate subdomains, harvest intelligence. Leave no digital footprint. 🕵️</div>
+  </div>
+
+  <div class="l2-progress">
+    <div class="l2-prog-label">LEVEL 2 PROGRESS</div>
+    <div class="l2-prog-track"><div class="l2-prog-fill" id="l2progFill"></div></div>
+    <div class="l2-prog-pct" id="l2progPct">0%</div>
+  </div>
+
+  <div class="ops-layout">
+
+    <!-- Bio / Target Dossier -->
+    <div class="bio-card">
+      <div class="bio-header">
+        <div class="bio-status"></div>
+        <span class="bio-header-text">◈ TARGET DOSSIER</span>
+      </div>
+      <div class="bio-avatar">🏢</div>
+      <div class="bio-name">mega-corp.com</div>
+      <div class="bio-role">// TARGET LOCKED — BEGIN RECON</div>
+      <div class="bio-rows">
+        <div class="bio-row"><span class="bio-key">DOMAIN</span><span class="bio-val">mega-corp.com</span></div>
+        <div class="bio-row"><span class="bio-key">REGISTRAR</span><span class="bio-val">GoDaddy LLC</span></div>
+        <div class="bio-row"><span class="bio-key">REG DATE</span><span class="bio-val">2009-03-14</span></div>
+        <div class="bio-row"><span class="bio-key">ORG</span><span class="bio-val" style="color:var(--text)">MegaCorp Industries</span></div>
+        <div class="bio-row"><span class="bio-key">NAMESERVERS</span><span class="bio-val">ns1.mega-corp.com</span></div>
+        <div class="bio-row"><span class="bio-key">IP RANGE</span><span class="bio-val">192.168.40.0/24</span></div>
+        <div class="bio-row"><span class="bio-key">TECH STACK</span><span class="bio-val">Apache / PHP</span></div>
+        <div class="bio-row"><span class="bio-key">PHASE</span><span class="bio-val" id="curPhase" style="color:var(--yellow)">DORKING</span></div>
+        <div style="text-align:center;margin-top:6px;"><span class="intel-tag">🔍 PASSIVE RECON IN PROGRESS</span></div>
+      </div>
+      <div class="osint-score">
+        <div class="osint-score-label">INTEL SCORE</div>
+        <div class="osint-score-val" id="intelScore">0</div>
+      </div>
+    </div>
+
+    <!-- Ops Panel -->
+    <div class="ops-panel">
+
+      <!-- Phase 2.1 — Google Dorking -->
+      <div class="step-card s-active" id="sc1">
+        <div class="step-hdr">
+          <div class="step-num" id="sn1">1</div>
+          <div class="step-meta">
+            <div class="step-title">Phase 2.1 — Google Dorking Simulation</div>
+            <div class="step-sub">Use search operators to expose leaked documents on mega-corp.com</div>
+          </div>
+          <span class="step-badge badge-active" id="sb1">ACTIVE</span>
+        </div>
+        <div class="step-body">
+          <div class="callout">
+            <strong>🧠 Attacker Mindset:</strong> Search engines index everything — including files the target never meant to expose. Advanced operators like <code style="color:var(--yellow)">site:</code>, <code style="color:var(--yellow)">filetype:</code>, and <code style="color:var(--yellow)">inurl:</code> let you surgically find sensitive documents without touching the server.
+          </div>
+          <div class="callout warn" style="margin-bottom:16px;">
+            <strong>🎯 Objective:</strong> Find the leaked Employee Handbook PDF hosted on mega-corp.com. Craft the correct Google Dork and execute the search.
+          </div>
+          <div class="dork-hints">
+            <div class="dork-hints-lbl">💡 Hint — click an operator to insert:</div>
+            <div class="hint-tags">
+              <span class="hint-tag" onclick="insertDork('site:mega-corp.com')">site:mega-corp.com</span>
+              <span class="hint-tag" onclick="insertDork('filetype:pdf')">filetype:pdf</span>
+              <span class="hint-tag" onclick="insertDork('intitle:handbook')">intitle:handbook</span>
+              <span class="hint-tag" onclick="insertDork('inurl:hr')">inurl:hr</span>
+              <span class="hint-tag" onclick="insertDork('confidential')">confidential</span>
+            </div>
+          </div>
+          <div class="browser-sim">
+            <div class="browser-bar">
+              <div class="b-dot" style="background:#ff5f57;"></div>
+              <div class="b-dot" style="background:#ffbd2e;"></div>
+              <div class="b-dot" style="background:#28c840;"></div>
+              <div class="b-url" id="dorkUrl">🔍 google.com/search?q=</div>
+            </div>
+            <div class="browser-body">
+              <div class="dork-field">
+                <input class="ls-input" id="dorkInput" type="text" placeholder='Try: site:mega-corp.com filetype:pdf' autocomplete="off" onkeydown="if(event.key==='Enter')runDork()"/>
+                <button class="ls-btn" onclick="runDork()">▶ SEARCH</button>
+              </div>
+              <div class="search-results" id="searchResults"></div>
+            </div>
+          </div>
+          <div class="ls-result" id="dorkResult"></div>
+          <div class="vuln-popup" id="dorkVuln">
+            <div class="vuln-title">✅ DOCUMENT EXPOSED — INTEL ACQUIRED</div>
+            <div class="vuln-body">
+              The dork <strong>site:mega-corp.com filetype:pdf</strong> revealed a publicly indexed Employee Handbook at <strong>/hr/docs/employee-handbook-2024.pdf</strong>. The document contains org charts, internal contacts, VPN access procedures, and security policy gaps. <strong>This is a goldmine for social engineering.</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2.2 — Subdomain Enumeration -->
+      <div class="step-card s-locked" id="sc2">
+        <div class="step-hdr">
+          <div class="step-num" id="sn2">2</div>
+          <div class="step-meta">
+            <div class="step-title">Phase 2.2 — Automated Subdomain Enumeration</div>
+            <div class="step-sub">Deploy Sublist3r to map the full attack surface of mega-corp.com</div>
+          </div>
+          <span class="step-badge badge-locked" id="sb2">LOCKED</span>
+        </div>
+        <div class="step-body">
+          <div class="callout">
+            <strong>🧠 Attacker Mindset:</strong> Subdomains reveal hidden infrastructure — dev servers, VPNs, admin panels, and staging environments that often have weaker security than the main domain. Subdomain enumeration is a critical first step in any pentest.
+          </div>
+          <div class="terminal" id="subTerminal">
+            <div class="terminal-bar">
+              <div class="t-dot t-red"></div>
+              <div class="t-dot t-yellow-dot" style="background:#ffbd2e;"></div>
+              <div class="t-dot t-green-dot"></div>
+              <div class="terminal-title">SUBLIST3R v2.1 — SUBDOMAIN SCANNER</div>
+            </div>
+            <div class="terminal-body" id="subLog">
+              <div class="t-line t-dim">// Awaiting launch command...</div>
+              <div class="t-line t-dim">// Target: mega-corp.com</div>
+              <div class="t-line t-dim">// Engines: Baidu, Yahoo, Google, Bing, Ask, Netcraft, Virustotal, ThreatCrowd, SSL, PassiveDNS</div>
+              <div class="t-line t-dim">────────────────────────────────────────────────────</div>
+            </div>
+          </div>
+          <div class="dict-stats">
+            <div class="dstat"><div class="dstat-val" id="subFound">0</div><div class="dstat-lbl">SUBDOMAINS</div></div>
+            <div class="dstat"><div class="dstat-val" id="subSrcs">0</div><div class="dstat-lbl">SOURCES HIT</div></div>
+            <div class="dstat"><div class="dstat-val" id="subStatus" style="font-size:11px;color:var(--text2)">IDLE</div><div class="dstat-lbl">STATUS</div></div>
+          </div>
+          <button class="btn-launch" id="launchSubBtn" onclick="launchSublist3r()" style="margin-top:14px;">
+            <span>⚡</span> LAUNCH SUBLIST3R
+          </button>
+          <div class="vuln-popup" id="subVuln">
+            <div class="vuln-title">✅ ATTACK SURFACE MAPPED — 6 SUBDOMAINS FOUND</div>
+            <div class="vuln-body">
+              <strong>Critical findings:</strong> <strong>dev.mega-corp.com</strong> is running a staging build with debug mode enabled. <strong>vpn.mega-corp.com</strong> is exposed on the public internet — an ideal entry point. <strong>admin.mega-corp.com</strong> returned HTTP 200 with no auth challenge on initial probe.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2.3 — OSINT Social Media -->
+      <div class="step-card s-locked" id="sc3">
+        <div class="step-hdr">
+          <div class="step-num" id="sn3">3</div>
+          <div class="step-meta">
+            <div class="step-title">Phase 2.3 — Social Media Intelligence (OSINT)</div>
+            <div class="step-sub">Harvest personal intel from the target's social profile to crack the password reset</div>
+          </div>
+          <span class="step-badge badge-locked" id="sb3">LOCKED</span>
+        </div>
+        <div class="step-body">
+          <div class="callout danger">
+            <strong>⚠ Mission Briefing:</strong> CEO of MegaCorp, <em>Marcus J. Holloway</em>, uses a personal LinkedIn profile. Your intelligence suggests his password reset hint is based on his pet's name. Scan his posts and find the clue.
+          </div>
+          <div class="clue-counter">Clues found: <span id="clueCount">0</span>/3 &nbsp;|&nbsp; Click highlighted text in posts to extract intelligence.</div>
+
+          <div class="social-profile">
+            <div class="social-bar">
+              <span class="social-logo">in</span>
+              <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-left:8px;">linkedin.com/in/marcus-holloway-ceo</span>
+            </div>
+            <div class="profile-header">
+              <div class="profile-avatar">👨‍💼</div>
+              <div class="profile-info">
+                <div class="profile-name">Marcus J. Holloway</div>
+                <div class="profile-handle">@marcus-holloway-ceo · 1st</div>
+                <div class="profile-bio">CEO @ MegaCorp Industries | Cybersecurity Advocate | Dog Dad 🐕 | Born Mar 1978 | Go Bulldogs!</div>
+                <div class="profile-meta">
+                  <div class="pmeta-item"><strong>847</strong> connections</div>
+                  <div class="pmeta-item"><strong>12K</strong> followers</div>
+                </div>
+              </div>
+            </div>
+            <div class="posts-grid">
+              <div class="posts-label">RECENT ACTIVITY</div>
+
+              <div class="post-card" id="post1">
+                <div class="post-meta">
+                  <span class="post-author">Marcus J. Holloway</span>
+                  <span class="post-time">2d ago</span>
+                </div>
+                <div class="post-text">
+                  Excited to announce MegaCorp's Q3 results — record revenue across all divisions! 🚀 Couldn't have done it without the amazing team. #Leadership #MegaCorp
+                </div>
+              </div>
+
+              <div class="post-card has-clue" id="post2" onclick="collectClue(1, this)">
+                <div class="post-meta">
+                  <span class="post-author">Marcus J. Holloway</span>
+                  <span class="post-time">5d ago</span>
+                </div>
+                <div class="post-text">
+                  Happy 4th birthday to my best buddy <span class="highlight" id="petClue">Titan</span>! 🐕 This golden retriever has been with me through every board meeting and late-night strategy session. #MansBestFriend #GoldenRetriever
+                </div>
+                <div class="post-clue-tag" id="clue1tag" style="display:none;">📌 INTEL: Pet name = <strong>Titan</strong></div>
+              </div>
+
+              <div class="post-card has-clue" id="post3" onclick="collectClue(2, this)">
+                <div class="post-meta">
+                  <span class="post-author">Marcus J. Holloway</span>
+                  <span class="post-time">2w ago</span>
+                </div>
+                <div class="post-text">
+                  Celebrating <span class="highlight" id="bdayClue">45 years</span> around the sun — March has always been my favorite month. Grateful for every lesson. Looking forward to what year 46 brings! 🎂
+                </div>
+                <div class="post-clue-tag" id="clue2tag" style="display:none;">📌 INTEL: Age 45 in March → Born 1978</div>
+              </div>
+
+              <div class="post-card has-clue" id="post4" onclick="collectClue(3, this)">
+                <div class="post-meta">
+                  <span class="post-author">Marcus J. Holloway</span>
+                  <span class="post-time">1mo ago</span>
+                </div>
+                <div class="post-text">
+                  Back from the most refreshing weekend in <span class="highlight" id="cityClue">Savannah, Georgia</span>. There's something magical about that city — my family's been going there every summer since I was a kid. The kind of place that recharges the soul. 🌿
+                </div>
+                <div class="post-clue-tag" id="clue3tag" style="display:none;">📌 INTEL: Hometown = Savannah, Georgia</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="osint-submit" id="osintSubmit" style="display:none;">
+            <div class="callout warn">
+              <strong>🔓 Password Reset Hint:</strong> <em>"What is your pet's name?"</em><br/>
+              You have 3 pieces of intel. Use your findings to answer the hint and trigger the account recovery.
+            </div>
+            <div class="osint-field">
+              <div class="osint-label">ENTER PET NAME (from OSINT)</div>
+              <div class="dork-field">
+                <input class="ls-input" id="osintInput" type="text" placeholder="Enter the answer..." autocomplete="off" onkeydown="if(event.key==='Enter')submitOsint()"/>
+                <button class="ls-btn" onclick="submitOsint()">▶ SUBMIT</button>
+              </div>
+            </div>
+            <div class="ls-result" id="osintResult"></div>
+          </div>
+
+          <div class="breach-alert" id="breachAlert">
+            <div class="breach-ico">🛰️</div>
+            <div class="breach-title">RECON COMPLETE — FULL INTEL ACQUIRED</div>
+            <div class="breach-sub">
+              You've successfully executed a full passive reconnaissance campaign against <strong>mega-corp.com</strong>. You exposed leaked documents via Google Dorking, mapped 6 live subdomains with Sublist3r, and harvested personal OSINT from social media to crack the CEO's password reset hint. This is the foundation of every real-world attack.
+            </div>
+            <button class="btn-complete" onclick="completeLevel()">✓ MISSION COMPLETE</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ops-panel -->
+  </div><!-- /ops-layout -->
+
+</div><!-- /inner -->
+</div><!-- /main-scroll -->
+
+<script>
+const API = window.location.origin;
+let l2p1 = false, l2p2 = false, l2p3 = false;
+let subRunning = false, cluesFound = 0, intelScore = 0;
+
+// ── Auth Init ──────────────────────────────────────────────
+const saved = localStorage.getItem('ss_user');
+let u;
+if (!saved) {
+  // Demo mode — create a guest session so the page renders in preview/standalone
+  u = { username: 'OPERATOR', progress: {} };
+} else {
+  try { u = JSON.parse(saved); } catch(e) { u = { username: 'OPERATOR', progress: {} }; }
+}
+document.getElementById('navUser').textContent = u.username;
+
+// Check existing progress
+const rp = u.progress?.recon?.level2 || {};
+if (rp.p1) { l2p1 = true; markDone(1); unlockStep(2); addIntel(30); }
+if (rp.p2) { l2p2 = true; markDone(2); unlockStep(3); addIntel(30); }
+if (rp.p3) { l2p3 = true; markDone(3); addIntel(40); }
+updateL2Bar();
+
+function addIntel(pts) {
+  intelScore += pts;
+  document.getElementById('intelScore').textContent = intelScore;
+}
+
+function updateL2Bar() {
+  const done = [l2p1, l2p2, l2p3].filter(Boolean).length;
+  const pct = Math.round((done / 3) * 100);
+  document.getElementById('l2progFill').style.width = pct + '%';
+  document.getElementById('l2progPct').textContent = pct + '%';
+  const phases = ['DORKING', 'ENUMERATION', 'OSINT', 'COMPLETE'];
+  document.getElementById('curPhase').textContent = phases[done];
+}
+
+function markDone(n) {
+  const sc = document.getElementById('sc' + n);
+  const sn = document.getElementById('sn' + n);
+  const sb = document.getElementById('sb' + n);
+  sc.className = 'step-card s-done';
+  sb.textContent = 'DONE';
+  sb.className = 'step-badge badge-done';
+}
+
+function unlockStep(n) {
+  const sc = document.getElementById('sc' + n);
+  const sb = document.getElementById('sb' + n);
+  sc.classList.remove('s-locked');
+  sc.classList.add('s-active');
+  sb.textContent = 'ACTIVE';
+  sb.className = 'step-badge badge-active';
+}
+
+// ─── Phase 2.1 Google Dorking ───
+function insertDork(op) {
+  const inp = document.getElementById('dorkInput');
+  const v = inp.value.trim();
+  inp.value = v ? v + ' ' + op : op;
+  inp.focus();
+}
+
+const VALID_DORKS = [
+  'site:mega-corp.com filetype:pdf',
+  'filetype:pdf site:mega-corp.com',
+  'site:mega-corp.com filetype:pdf confidential',
+  'site:mega-corp.com filetype:pdf intitle:handbook',
+  'site:mega-corp.com filetype:pdf handbook',
+];
+
+function runDork() {
+  if (l2p1) return;
+  const val = document.getElementById('dorkInput').value.trim();
+  if (!val) return;
+  const urlEl = document.getElementById('dorkUrl');
+  urlEl.textContent = '🔍 google.com/search?q=' + encodeURIComponent(val);
+  urlEl.classList.add('searching');
+
+  const resultsEl = document.getElementById('searchResults');
+  const resultMsg = document.getElementById('dorkResult');
+  resultsEl.classList.remove('show');
+  resultsEl.innerHTML = '';
+
+  const isCorrect = VALID_DORKS.some(d => val.toLowerCase().includes('site:mega-corp.com') && val.toLowerCase().includes('filetype:pdf'));
+
+  setTimeout(() => {
+    urlEl.classList.remove('searching');
+    if (isCorrect) {
+      resultsEl.innerHTML = `
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:10px;">About 14 results (0.24 seconds)</div>
+        <div class="sr-item"><div class="sr-url">mega-corp.com/about/overview.pdf</div><div class="sr-title">MegaCorp Corporate Overview 2024</div><div class="sr-snippet">General company information, product lines, executive team overview...</div></div>
+        <div class="sr-item leaked" onclick="triggerDocLeak()"><div class="sr-url">mega-corp.com/hr/docs/employee-handbook-2024.pdf <span class="sr-badge">EXPOSED</span></div><div class="sr-title">MegaCorp Employee Handbook 2024 — CONFIDENTIAL</div><div class="sr-snippet">...VPN access instructions, internal escalation procedures, security badge policies, emergency contact protocols for all MegaCorp staff...</div></div>
+        <div class="sr-item"><div class="sr-url">mega-corp.com/legal/privacy-policy.pdf</div><div class="sr-title">MegaCorp Privacy Policy v3.1</div><div class="sr-snippet">Standard privacy disclosure document for public website users...</div></div>
+      `;
+      resultsEl.classList.add('show');
+      resultMsg.textContent = '⚠ 1 sensitive document exposed — click the red result to extract it.';
+      resultMsg.className = 'ls-result show fail';
+    } else if (val.toLowerCase().includes('site:mega-corp.com')) {
+      resultsEl.innerHTML = `
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:10px;">About 1,280 results (0.41 seconds)</div>
+        <div class="sr-item"><div class="sr-url">mega-corp.com</div><div class="sr-title">MegaCorp Industries — Enterprise Solutions</div><div class="sr-snippet">Welcome to MegaCorp, your enterprise partner for digital transformation...</div></div>
+        <div class="sr-item"><div class="sr-url">mega-corp.com/blog</div><div class="sr-title">MegaCorp Blog — Latest News</div><div class="sr-snippet">Stay updated with the latest news from MegaCorp Industries...</div></div>
+      `;
+      resultsEl.classList.add('show');
+      resultMsg.textContent = '❌ Too broad — add filetype:pdf to narrow to documents.';
+      resultMsg.className = 'ls-result show fail';
+    } else {
+      resultsEl.innerHTML = `<div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text2);">No relevant results. Try adding site:mega-corp.com to focus on the target.</div>`;
+      resultsEl.classList.add('show');
+      resultMsg.textContent = '❌ Dork too generic — use site: operator to target mega-corp.com.';
+      resultMsg.className = 'ls-result show fail';
+    }
+  }, 900);
+}
+
+function triggerDocLeak() {
+  if (l2p1) return;
+  document.getElementById('dorkVuln').classList.add('show');
+  document.getElementById('dorkResult').textContent = '✅ Document extracted — intel logged.';
+  document.getElementById('dorkResult').className = 'ls-result show success';
+  l2p1 = true; saveP('p1'); addIntel(30); updateL2Bar();
+  setTimeout(() => { markDone(1); unlockStep(2); }, 800);
+}
+
+// ─── Phase 2.2 Subdomain Enumeration ───
+const SUBLIST3R_SEQ = [
+  {cls:'t-cmd', text:'$ python3 sublist3r.py -d mega-corp.com -o results.txt'},
+  {cls:'t-dim', text:'────────────────────────────────────────────────────'},
+  {cls:'t-warn', text:'[*] Enumerating subdomains for mega-corp.com'},
+  {cls:'t-warn', text:'[*] Searching Baidu...'},
+  {cls:'t-dim', text:'[*] Searching Yahoo...'},
+  {cls:'t-warn', text:'[*] Searching Google...'},
+  {cls:'t-dim', text:'[*] Searching Bing...'},
+  {cls:'t-warn', text:'[*] Searching Netcraft...'},
+  {cls:'t-dim', text:'[*] Searching SSL Certificates (crt.sh)...'},
+  {cls:'t-found', text:'[+] FOUND: www.mega-corp.com'},
+  {cls:'t-dim', text:'[*] Searching VirusTotal...'},
+  {cls:'t-found', text:'[+] FOUND: mail.mega-corp.com'},
+  {cls:'t-dim', text:'[*] Searching ThreatCrowd...'},
+  {cls:'t-found', text:'[+] FOUND: dev.mega-corp.com  ← ⚠ DEBUG MODE DETECTED'},
+  {cls:'t-dim', text:'[*] Searching PassiveDNS...'},
+  {cls:'t-found', text:'[+] FOUND: vpn.mega-corp.com  ← ⚠ PUBLICLY EXPOSED'},
+  {cls:'t-dim', text:'[*] Searching DNSdumpster...'},
+  {cls:'t-found', text:'[+] FOUND: admin.mega-corp.com  ← ⚠ NO AUTH ON PROBE'},
+  {cls:'t-dim', text:'[*] Searching Ask...'},
+  {cls:'t-found', text:'[+] FOUND: api.mega-corp.com'},
+  {cls:'t-dim', text:'[*] Searching AskDNS...'},
+  {cls:'t-dim', text:'[*] Total sources queried: 10'},
+  {cls:'t-ok', text:'[✓] Sublist3r completed — 6 subdomains discovered'},
+  {cls:'t-ok', text:'[✓] Results saved to: results.txt'},
+  {cls:'t-data', text:'[!] HIGH-VALUE TARGETS: dev, vpn, admin subdomains require immediate investigation'},
+];
+let smIdx = 0, smInterval = null;
+
+function launchSublist3r() {
+  if (subRunning || l2p2) return;
+  subRunning = true;
+  document.getElementById('launchSubBtn').disabled = true;
+  document.getElementById('subStatus').textContent = 'RUNNING';
+  document.getElementById('subStatus').style.color = 'var(--yellow)';
+  smIdx = 0;
+  let foundCount = 0, srcCount = 0;
+  smInterval = setInterval(() => {
+    if (smIdx < SUBLIST3R_SEQ.length) {
+      const line = SUBLIST3R_SEQ[smIdx];
+      addSubLine(line.cls, line.text);
+      if (line.cls === 't-found') { foundCount++; document.getElementById('subFound').textContent = foundCount; }
+      if (line.text.includes('Searching')) { srcCount++; document.getElementById('subSrcs').textContent = srcCount; }
+      smIdx++;
+    } else {
+      clearInterval(smInterval);
+      document.getElementById('subStatus').textContent = 'COMPLETE';
+      document.getElementById('subStatus').style.color = 'var(--green)';
+      document.getElementById('subVuln').classList.add('show');
+      subRunning = false; l2p2 = true; saveP('p2'); addIntel(30); updateL2Bar();
+      setTimeout(() => { markDone(2); unlockStep(3); }, 800);
+    }
+  }, 230);
+}
+
+function addSubLine(cls, text) {
+  const log = document.getElementById('subLog');
+  const div = document.createElement('div');
+  div.className = 't-line ' + cls;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ─── Phase 2.3 OSINT ───
+function collectClue(n, card) {
+  if (card.classList.contains('selected')) return;
+  card.classList.add('selected');
+  document.getElementById('clue' + n + 'tag').style.display = 'block';
+  cluesFound++;
+  document.getElementById('clueCount').textContent = cluesFound;
+  if (cluesFound >= 3) {
+    setTimeout(() => {
+      document.getElementById('osintSubmit').style.display = 'block';
+      document.getElementById('osintSubmit').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 400);
+  }
+}
+
+function submitOsint() {
+  if (l2p3) return;
+  const val = document.getElementById('osintInput').value.trim().toLowerCase();
+  const resultEl = document.getElementById('osintResult');
+  if (!val) { resultEl.textContent = '⚠ Enter the pet name extracted from OSINT.'; resultEl.className = 'ls-result show fail'; return; }
+  if (val === 'titan') {
+    resultEl.textContent = '✅ Correct! Password reset triggered for marcus@mega-corp.com. Account recovery email sent.';
+    resultEl.className = 'ls-result show success';
+    document.getElementById('osintInput').classList.add('bok');
+    document.getElementById('osintInput').disabled = true;
+    l2p3 = true; saveP('p3'); addIntel(40); updateL2Bar();
+    setTimeout(() => {
+      markDone(3);
+      document.getElementById('breachAlert').classList.add('show');
+      document.getElementById('breachAlert').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 800);
+  } else {
+    resultEl.textContent = '❌ Incorrect. Re-examine the posts — the clue is in there.';
+    resultEl.className = 'ls-result show fail';
+    document.getElementById('osintInput').classList.add('bno');
+    setTimeout(() => { document.getElementById('osintInput').classList.remove('bno'); document.getElementById('osintInput').value = ''; }, 1300);
+  }
+}
+
+// ─── Progress Save ───
+async function saveP(part) {
+  if (!u) return;
+  if (!u.progress) u.progress = {};
+  if (!u.progress.recon) u.progress.recon = {};
+  if (!u.progress.recon.level2) u.progress.recon.level2 = {};
+  u.progress.recon.level2[part] = true;
+  localStorage.setItem('ss_user', JSON.stringify(u));
+  try {
+    await fetch(`${API}/api/progress/${u.username}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: 'recon', level: 'level2', mode: part, completed: true }) });
+  } catch {}
+}
+
+function completeLevel() {
+  if (u) {
+    if (!u.progress) u.progress = {};
+    if (!u.progress.recon) u.progress.recon = {};
+    u.progress.recon.level2 = { p1: true, p2: true, p3: true, complete: true };
+    localStorage.setItem('ss_user', JSON.stringify(u));
+  }
+  sessionStorage.setItem('ss_goto', 'page-reconlevels');
+  window.location.href = 'index.html';
+}
+
+function goHome() { sessionStorage.setItem('ss_goto', 'page-scenarios'); window.location.href = 'index.html'; }
+function goReconLevels() { sessionStorage.setItem('ss_goto', 'page-reconlevels'); window.location.href = 'index.html'; }
+function logout() { localStorage.removeItem('ss_user'); window.location.href = 'index.html'; }
+</script>
+</body>
+</html>
